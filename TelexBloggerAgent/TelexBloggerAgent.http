@@ -1,0 +1,6 @@
+@TelexBloggerAgent_HostAddress = http://localhost:5267
+
+GET {{TelexBloggerAgent_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
