@@ -10,11 +10,12 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddScoped<IBlogAgentService, BlogAgentService>();
-
-builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("GeminiSettings"));
-
 builder.Services.AddScoped<ITelexIngegrationService, TelexIntegrationService>();
+
+builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("GeminiSetting"));
+builder.Services.Configure<TelexSetting>(builder.Configuration.GetSection("TelexSetting"));
 
 builder.Services.AddCors(options =>
 {
