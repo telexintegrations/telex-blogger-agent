@@ -19,7 +19,7 @@ namespace TelexBloggerAgent.Services
             _telexWebhookUrl = telexWebhookUrl.Value.WebhookUrl;
         }
 
-        public async Task<string> GenerateBlogAsync(string blogPrompt)
+        public async Task<string?> GenerateBlogAsync(string blogPrompt)
         {
             // Request body for Gemini api call
             var requestBody = new
