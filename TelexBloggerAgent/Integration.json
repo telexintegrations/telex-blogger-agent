@@ -26,30 +26,7 @@
         "display_name": "AI Blogger"
       }
     },
-    "settings": [
-      //{
-      //  "label": "blog_length",
-      //  "type": "dropdown",
-      //  "description": "Select the preferred blog length.",
-      //  "options": [ "short", "medium", "long" ],
-      //  "default": "medium",
-      //  "required": true
-      //},
-      //{
-      //  "label": "tone",
-      //  "type": "dropdown",
-      //  "description": "Choose the tone for the blog content.",
-      //  "options": [ "Professional", "Casual", "Persuasive", "Informative" ],
-      //  "default": "Informative",
-      //  "required": true
-      //},
-      //{
-      //  "label": "keywords",
-      //  "type": "text",
-      //  "description": "Provide keywords to focus on in the blog for SEO optimization.",
-      //  "default": "",
-      //  "required": false
-      //},
+    "settings": [      
       {
         "label": "webhook_url",
         "type": "text",
@@ -57,14 +34,6 @@
         "default": "",
         "required": true
       }
-      //{
-      //  "label": "format",
-      //  "type": "dropdown",
-      //  "description": "Choose the format for the blog output.",
-      //  "options": [ "Full Article", "Outline", "Summary" ],
-      //  "default": "Full Article",
-      //  "required": true
-      //}
     ],
     "target_url": "https://telex-blogger-agent-qdp4.onrender.com/api/BloggerAgent/generate-blog"
   }
