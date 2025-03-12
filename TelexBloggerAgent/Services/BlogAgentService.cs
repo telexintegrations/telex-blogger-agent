@@ -76,13 +76,13 @@ namespace TelexBloggerAgent.Services
 
             var telexWebhookUrl = blogPrompt.Settings
                 .Where(s => s.Label == "webhook_url")
-                .Select(s => s.Default);
+                .Select(s => s.Default).ToString();
 
-            if (string.IsNullOrEmpty(telexWebhookUrl.ToString()))
+            if (string.IsNullOrEmpty(telexWebhookUrl))
             {
                 throw new Exception("Telex Webhook Url is null");
             }
-            var telexResponse = await _httpClient.PostAsync(_telexWebhookUrl, telexContent);
+            var telexResponse = await _httpClient.PostAsync(telexWebhookUrl, telexContent);
 
 
             if (telexResponse.IsSuccessStatusCode)
