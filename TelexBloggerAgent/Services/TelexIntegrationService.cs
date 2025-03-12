@@ -6,7 +6,7 @@ namespace TelexBloggerAgent.Services
    
     public class TelexIntegrationService : ITelexIngegrationService
     {
-        private string _configurationFilePath = Path.Combine(Directory.GetCurrentDirectory(), "integration.json");
+        private string _configurationFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Integration.json");
 
 
         public string LoadIntegration()
