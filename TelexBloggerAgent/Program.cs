@@ -19,13 +19,9 @@ builder.Services.Configure<TelexSetting>(builder.Configuration.GetSection("Telex
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("TelexPolicy", policy =>
+    options.AddPolicy("AllowAnyOrigin", policy =>
     {
-        policy.WithOrigins(
-            "https://telex.im",
-            "http://staging.telextest.im",
-            "http://telextest.im",
-            "https://staging.telex.im")
+        policy.AllowAnyOrigin()
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
@@ -41,7 +37,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("TelexPolicy");
+app.UseCors("AllowAnyOrigin");
 
 app.UseHttpsRedirection();
 
