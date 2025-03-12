@@ -2,5 +2,6 @@
 {
     public interface ITelexIngegrationService
     {
+        string LoadIntegration();
     }
 }
