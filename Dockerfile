@@ -28,5 +28,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 # <-- Added this line to copy the JSON file
-COPY Integration.json /app/  
+COPY TelexBloggerAgent/Integration.json /app/  
 ENTRYPOINT ["dotnet", "TelexBloggerAgent.dll"]
