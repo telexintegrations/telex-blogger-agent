@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text;
 using TelexBloggerAgent.Helpers;
 using TelexBloggerAgent.IServices;
+using TelexBloggerAgent.Dtos;
 
 namespace TelexBloggerAgent.Services
 {
@@ -19,7 +20,7 @@ namespace TelexBloggerAgent.Services
             _telexWebhookUrl = telexWebhookUrl.Value.WebhookUrl;
         }
 
-        public async Task<string?> GenerateBlogAsync(string blogPrompt)
+        public async Task<string?> GenerateBlogAsync(GenerateBlogDto blogPrompt)
         {
             // Request body for Gemini api call
             var requestBody = new
@@ -33,7 +34,7 @@ namespace TelexBloggerAgent.Services
                         { 
                             new 
                             { 
-                                text = $"{blogPrompt}. Using a format of Title, Introduction, Body and Conclusion. Also remove any markdown, and just return as a plain string." 
+                                text = $"{blogPrompt.Message}. Using a format of Title, Introduction, Body and Conclusion. Also remove any markdown, and just return as a plain string." 
                             } 
                         } 
                     }
@@ -73,7 +74,16 @@ namespace TelexBloggerAgent.Services
             var jsonPayload = JsonSerializer.Serialize(payload);
             using var telexContent = new StringContent(jsonPayload, new UTF8Encoding(false), "application/json");
 
+            var telexWebhookUrl = blogPrompt.Settings
+                .Where(s => s.Label == "webhook_url")
+                .Select(s => s.Default);
+
+            if (string.IsNullOrEmpty(telexWebhookUrl.ToString()))
+            {
+                throw new Exception("Telex Webhook Url is null");
+            }
             var telexResponse = await _httpClient.PostAsync(_telexWebhookUrl, telexContent);
+
 
             if (telexResponse.IsSuccessStatusCode)
             {

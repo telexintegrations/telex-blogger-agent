@@ -19,11 +19,11 @@ namespace TelexBloggerAgent.Controllers
         /// <summary>
         /// Enter text
         /// </summary>
-        [HttpPost]
+        [HttpPost("generate-blog")]
         [ProducesResponseType(typeof(GenerateBlogDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
         {
-            var blogDraft = await _blogService.GenerateBlogAsync(blogDto.Message);
+            var blogDraft = await _blogService.GenerateBlogAsync(blogDto);
 
             if (blogDraft == null)
             {

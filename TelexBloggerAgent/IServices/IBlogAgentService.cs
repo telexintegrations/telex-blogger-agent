@@ -1,7 +1,9 @@
-﻿namespace TelexBloggerAgent.IServices
+﻿using TelexBloggerAgent.Dtos;
+
+namespace TelexBloggerAgent.IServices
 {
     public interface IBlogAgentService
     {
-        Task<string?> GenerateBlogAsync(string blogPrompt);
+        Task<string?> GenerateBlogAsync(GenerateBlogDto blogPrompt);
     }
 }
