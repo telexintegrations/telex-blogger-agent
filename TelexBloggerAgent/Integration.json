@@ -12,7 +12,7 @@
       "background_color": "#2ecc71"
     },
     "integration_category": "AI & Machine Learning",
-    "integration_type": "generator",
+    "integration_type": "modifier",
     "is_active": true,
     "key_features": [
       "Generates high-quality blog content using AI in seconds.",
