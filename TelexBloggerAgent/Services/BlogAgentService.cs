@@ -12,12 +12,14 @@ namespace TelexBloggerAgent.Services
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _telexWebhookUrl;
+        private ILogger<BlogAgentService> _logger;
 
-        public BlogAgentService(IOptions<GeminiSetting> geminiSettings, IOptions<TelexSetting> telexWebhookUrl)
+        public BlogAgentService(IOptions<GeminiSetting> geminiSettings, IOptions<TelexSetting> telexWebhookUrl, ILogger<BlogAgentService> logger)
         {
             _httpClient = new HttpClient();
             _apiKey = geminiSettings.Value.ApiKey;
             _telexWebhookUrl = telexWebhookUrl.Value.WebhookUrl;
+            _logger = logger;
         }
 
         public async Task<string?> GenerateBlogAsync(GenerateBlogDto blogPrompt)
@@ -56,8 +58,11 @@ namespace TelexBloggerAgent.Services
                 .GetProperty("text")
                 .GetString();
 
+            _logger.LogInformation("Blog post successfully generated");
+
             if (string.IsNullOrEmpty(blogResponse))
             {
+                _logger.LogInformation("Failed to generate blog post");
                 return null;
             }
 
@@ -76,7 +81,9 @@ namespace TelexBloggerAgent.Services
 
             var telexWebhookUrl = blogPrompt.Settings
                 .Where(s => s.Label == "webhook_url")
-                .Select(s => s.Default).ToString();
+                .Select(s => s.Default)
+                .FirstOrDefault()
+                .ToString();
 
             if (string.IsNullOrEmpty(telexWebhookUrl))
             {
@@ -87,8 +94,8 @@ namespace TelexBloggerAgent.Services
 
             if (telexResponse.IsSuccessStatusCode)
             {
-                string responseContent = await telexResponse.Content.ReadAsStringAsync();                
-
+                string responseContent = await telexResponse.Content.ReadAsStringAsync();
+                _logger.LogInformation("Blog post successfully sent to telex: {responseContent}",responseContent);
                 // return responseContent;
                 return blogResponse;
                 

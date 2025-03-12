@@ -10,10 +10,11 @@ namespace TelexBloggerAgent.Controllers
     public class BloggerAgentController : ControllerBase
     {
         private readonly IBlogAgentService _blogService;
-
-        public BloggerAgentController(IBlogAgentService blogService)
+        private ILogger<BloggerAgentController> _logger;
+        public BloggerAgentController(IBlogAgentService blogService, ILogger<BloggerAgentController> logger)
         {
             _blogService = blogService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -23,13 +24,16 @@ namespace TelexBloggerAgent.Controllers
         [ProducesResponseType(typeof(GenerateBlogDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
         {
-            var blogDraft = await _blogService.GenerateBlogAsync(blogDto);
-
-            if (blogDraft == null)
+            if (blogDto == null)
             {
-                return BadRequest(blogDraft);
+                return BadRequest(blogDto);
             }
-            return Ok(blogDraft);
+
+            _logger.LogInformation($"{blogDto}");
+
+            Task.Run(() => _blogService.GenerateBlogAsync(blogDto));
+
+            return Ok(blogDto.Message);
         }
                         
     }
