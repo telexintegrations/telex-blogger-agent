@@ -11,7 +11,7 @@
       "app_url": "https://example.com/ai-blogger-agent",
       "background_color": "#2ecc71"
     },
-    "integration_category": "AI & Automation",
+    "integration_category": "AI & Machine Learning",
     "integration_type": "generator",
     "is_active": true,
     "key_features": [
@@ -23,10 +23,10 @@
     "permissions": {
       "blogger_agent": {
         "always_online": true,
-        "display_name": "AI Blogger"
+        "display_name": "Blogger Agent"
       }
     },
-    "settings": [      
+    "settings": [
       {
         "label": "webhook_url",
         "type": "text",
