@@ -1,7 +1,7 @@
 # Telex Blogger Agent V1.0
 
 ## Overview
-The **Telex Blogger Agent** is an AI-powered blogging assistant that generates high-quality blog posts using the **Gemini API**. It integrates seamlessly with **Telex**, allowing users to automate blog content creation.
+The **Telex Blogger** Agent is an AI-driven assistant that leverages the **Gemini API** to generate high-quality blog posts. Designed for seamless integration with Telex, it enables users to automate their **blog content** creation effortlessly.
 
 ## 1. Setting Up the Blogger Agent in Telex
 To begin using the **Blogger Agent** in Telex, follow these steps:
