@@ -24,9 +24,9 @@ namespace TelexBloggerAgent.Controllers
         [ProducesResponseType(typeof(GenerateBlogDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
         {
-            if (blogDto == null)
+            if (string.IsNullOrEmpty(blogDto.Message) || blogDto.Settings == null)
             {
-                return BadRequest(blogDto);
+                return BadRequest("Message or Settings cannot be null");
             }
 
             _logger.LogInformation($"{blogDto}");
