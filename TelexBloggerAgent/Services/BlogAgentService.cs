@@ -26,9 +26,12 @@ namespace TelexBloggerAgent.Services
         private string FormatBlogPrompt(string userPrompt)
         {
             return $"{userPrompt}. Ensure the response is a well-structured, engaging, and informative article. " +
-                   "Start with an attention-grabbing opening, provide valuable insights in a natural flow, " +
-                   "and end with a compelling conclusion. Keep the content clear and concise, and return it as plain text.";
+                   "Start with an attention-grabbing opening, provide valuable insights in a natural flow, and end with a compelling conclusion." +
+                   "Keep the content clear with a title, introduction, body and conclusion, which should not be explicitly categorized." +
+                   "Return it as plain text without markdown formatting." +
+                   "Use ALL CAPS to emphasize important words and (•) for bullet points";
         }
+
 
         public async Task GenerateBlogAsync(GenerateBlogDto blogPrompt)
         {
