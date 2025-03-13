@@ -23,23 +23,21 @@ namespace TelexBloggerAgent.Services
             _logger = logger;
         }
 
-
-        private string FormatBlogPrompt(string userPrompt)
-        {
-            return $"{userPrompt}. Ensure the response is a well-structured, engaging, and informative article. " +
-                   "Start with an attention-grabbing opening, provide valuable insights in a natural flow, and end with a compelling conclusion." +
-                   "Keep the content clear with a title, introduction, body and conclusion, which should not be explicitly categorized." +
-                   "Return it as plain text without markdown formatting." +
-                   "Use ALL CAPS for section headers and to emphasize important words, and use (•) for bullet points";
-        }
-
-
         public async Task GenerateBlogAsync(GenerateBlogDto blogPrompt)
         {
             if (blogPrompt.Message.Contains(identifier))
             {
                 _logger.LogInformation("Telex message contains identifier. Skipping API call to prevent loop.");
                 return;
+            }
+            string prompt = $" Ensure the response is a well-structured, engaging, and informative article. " +
+                  "Start with an attention-grabbing opening, provide valuable insights in a natural flow, and end with a compelling conclusion." +
+                  "Keep the content clear with a title, introduction, body and conclusion, which should not be explicitly categorized." +
+                  "Return it as plain text without markdown formatting." +
+                  "Use ALL CAPS for section headers and to emphasize important words, and use (•) for bullet points";
+            if (blogPrompt.Company != null)
+            {
+                prompt += $" Ensure the content aligns with {blogPrompt.Company.Name}, which specializes in {blogPrompt.Company.Description}. Visit {blogPrompt.Company.Website} for more.";
             }
 
             try
@@ -54,9 +52,9 @@ namespace TelexBloggerAgent.Services
                             role = "user", 
                             parts = new[] 
                             { 
-                                new 
-                                { 
-                                    text = FormatBlogPrompt(blogPrompt.Message)
+                                new
+                                {
+                                    text =$"{blogPrompt.Message} {prompt}" 
                                 } 
                             } 
                         }
