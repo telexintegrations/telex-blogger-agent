@@ -99,6 +99,7 @@ GET https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-integration
 │   │   ├── BlogAgentService.cs        
 │   │   ├── TelexIntegrationService.cs  
 │   │   │
+|   ├── appsettings.json
 │   ├── Integration.json                
 │   ├── Program.cs                     
 │                              
