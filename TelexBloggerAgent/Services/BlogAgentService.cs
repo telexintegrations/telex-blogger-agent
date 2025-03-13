@@ -11,66 +11,84 @@ namespace TelexBloggerAgent.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
-        private readonly string _telexWebhookUrl;
+        private readonly string _geminiUrl;
         private ILogger<BlogAgentService> _logger;
 
-        public BlogAgentService(IOptions<GeminiSetting> geminiSettings, IOptions<TelexSetting> telexWebhookUrl, ILogger<BlogAgentService> logger)
+        public BlogAgentService(IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger)
         {
             _httpClient = new HttpClient();
             _apiKey = geminiSettings.Value.ApiKey;
-            _telexWebhookUrl = telexWebhookUrl.Value.WebhookUrl;
+            _geminiUrl = geminiSettings.Value.GeminiUrl;
             _logger = logger;
         }
 
-        public async Task<string?> GenerateBlogAsync(GenerateBlogDto blogPrompt)
+
+        private string FormatBlogPrompt(string userPrompt)
         {
-            // Request body for Gemini api call
-            var requestBody = new
+            return $"{userPrompt}. Ensure the response is a well-structured, engaging, and informative article. " +
+                   "Start with an attention-grabbing opening, provide valuable insights in a natural flow, " +
+                   "and end with a compelling conclusion. Keep the content clear and concise, and return it as plain text.";
+        }
+
+        public async Task GenerateBlogAsync(GenerateBlogDto blogPrompt)
+        {
+            try
             {
-                contents = new[]
+
+                // Request body for Gemini api call
+                var requestBody = new
                 {
-                    new 
-                    { 
-                        role = "user", 
-                        parts = new[] 
+                    contents = new[]
+                    {
+                        new 
                         { 
-                            new 
+                            role = "user", 
+                            parts = new[] 
                             { 
-                                text = $"{blogPrompt.Message}. Using a format of Title, Introduction, Body and Conclusion. Also remove any markdown, and just return as a plain string." 
+                                new 
+                                { 
+                                    text = FormatBlogPrompt(blogPrompt.Message)
+                                } 
                             } 
-                        } 
+                        }
                     }
+                };
 
+                var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-                }
-            };
+                var response = await _httpClient.PostAsync($"{_geminiUrl}?key={_apiKey}", content);
+                var responseString = await response.Content.ReadAsStringAsync();
 
-            var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+                var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
+                _logger.LogInformation("Blog post successfully generated");
 
-            var response = await _httpClient.PostAsync($"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key={_apiKey}", content);
-            var responseString = await response.Content.ReadAsStringAsync();
+                var blogPost = responseJson.GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
 
-            var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
+                await SendBlogAsync(blogPost, blogPrompt.Settings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate blog post");
+            }
+        }
 
-            var blogResponse = responseJson.GetProperty("candidates")[0]
-                .GetProperty("content")
-                .GetProperty("parts")[0]
-                .GetProperty("text")
-                .GetString();
-
-            _logger.LogInformation("Blog post successfully generated");
-
-            if (string.IsNullOrEmpty(blogResponse))
+        public async Task SendBlogAsync(string blogPost, List<Setting> settings)
+        {
+            if (string.IsNullOrEmpty(blogPost))
             {
                 _logger.LogInformation("Failed to generate blog post");
-                return null;
+                return;
             }
 
             // Define the payload for the telex channel
             var payload = new
             {
-                event_name = "Blog A.I",
-                message = blogResponse,
+                event_name = "Blog AI",
+                message = blogPost,
                 status = "success",
                 username = "Blogger Agent"
             };
@@ -79,7 +97,7 @@ namespace TelexBloggerAgent.Services
             var jsonPayload = JsonSerializer.Serialize(payload);
             using var telexContent = new StringContent(jsonPayload, new UTF8Encoding(false), "application/json");
 
-            var telexWebhookUrl = blogPrompt.Settings
+            var telexWebhookUrl = settings
                 .Where(s => s.Label == "webhook_url")
                 .Select(s => s.Default)
                 .FirstOrDefault()
@@ -89,19 +107,14 @@ namespace TelexBloggerAgent.Services
             {
                 throw new Exception("Telex Webhook Url is null");
             }
-            var telexResponse = await _httpClient.PostAsync(telexWebhookUrl, telexContent);
 
+            var telexResponse = await _httpClient.PostAsync(telexWebhookUrl, telexContent);
 
             if (telexResponse.IsSuccessStatusCode)
             {
                 string responseContent = await telexResponse.Content.ReadAsStringAsync();
-                _logger.LogInformation("Blog post successfully sent to telex: {responseContent}",responseContent);
-                // return responseContent;
-                return blogResponse;
-                
+                _logger.LogInformation("Blog post successfully sent to telex: {responseContent}", responseContent);
             }
-
-            return null;
         }
     }
 }

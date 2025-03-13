@@ -30,7 +30,7 @@
       {
         "label": "webhook_url",
         "type": "text",
-        "description": "Provide your slack channel webhook url.",
+        "description": "Provide your telex channel webhook url.",
         "default": "",
         "required": true
       }

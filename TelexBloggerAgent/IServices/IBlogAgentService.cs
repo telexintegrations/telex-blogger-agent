@@ -4,6 +4,7 @@ namespace TelexBloggerAgent.IServices
 {
     public interface IBlogAgentService
     {
-        Task<string?> GenerateBlogAsync(GenerateBlogDto blogPrompt);
+        Task GenerateBlogAsync(GenerateBlogDto blogPrompt);
+        Task SendBlogAsync(string blogPost, List<Setting> settings);
     }
 }
