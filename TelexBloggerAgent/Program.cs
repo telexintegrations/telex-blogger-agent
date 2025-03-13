@@ -12,7 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IBlogAgentService, BlogAgentService>();
-builder.Services.AddScoped<ITelexIngegrationService, TelexIntegrationService>();
+builder.Services.AddScoped<ITelexIntegrationService, TelexIntegrationService>();
 
 builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("GeminiSetting"));
 builder.Services.Configure<TelexSetting>(builder.Configuration.GetSection("TelexSetting"));

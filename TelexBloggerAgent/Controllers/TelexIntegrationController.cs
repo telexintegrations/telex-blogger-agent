@@ -9,8 +9,8 @@ namespace TelexBloggerAgent.Controllers
     public class TelexIntegrationController : ControllerBase
     {
 
-        private readonly ITelexIngegrationService _integrationService;
-        public TelexIntegrationController(ITelexIngegrationService integrationService)
+        private readonly ITelexIntegrationService _integrationService;
+        public TelexIntegrationController(ITelexIntegrationService integrationService)
         {
             _integrationService = integrationService;
         }
