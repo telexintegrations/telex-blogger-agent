@@ -5,7 +5,7 @@ using TelexBloggerAgent.IServices;
 
 namespace TelexBloggerAgent.Controllers
 {
-    [Route("api/blogger-agent")]
+    [Route("api/v1/blogger-agent")]
     [ApiController]
     public class BloggerAgentController : ControllerBase
     {
