@@ -27,7 +27,7 @@ You can generate a blog post by sending a message in Telex with an optional cont
 
 👉 **Example Usage:**
 ```
-"Generate a blog on The Future of AI in Blogging"
+"Generate a blog post on The Future of AI in Blogging"
 ```
 
 The agent will **automatically send a structured blog post** to the webhook URL you provided during integration setup in the format of title, introduction, body and conclusion.
@@ -72,7 +72,7 @@ Retrieves the integration.json.
 
 👉 **Endpoint URL:**
 ```
-GET https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-blogger-agent/integration
+GET https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-integration
 ```
 
 ## 3. Project Structure
@@ -118,7 +118,7 @@ git clone https://github.com/telexintegrations/Telex-Blogger-Agent.git
 
 ### Step 2: Install Dependencies
 ```sh
-cd telex-blogger-agent
+cd Telex-Blogger-agent
 dotnet restore
 ```
 
