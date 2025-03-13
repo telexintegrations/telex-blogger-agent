@@ -1,4 +1,4 @@
-# Telex Blogger Agent (v1)
+# Telex Blogger Agent V1.0
 
 ## Overview
 The **Telex Blogger Agent** is an AI-powered blogging assistant that generates high-quality blog posts using the **Gemini API**. It integrates seamlessly with **Telex**, allowing users to automate blog content creation.
@@ -13,29 +13,24 @@ To begin using the **Blogger Agent** in Telex, follow these steps:
    
    👉 **Integration URL:**
    ```
-   https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-blogger-agent/integration.json
+   https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-integration
    ```
 4. Locate **Telex Blogger Agent** in the integration list and **Activate** it.
 5. **Enter your channel’s webhook URL** in the settings field to allow the agent to send generated blog posts to your desired channel.
 6. Click **Save** to complete the setup.
 
 ### Step 2: Generating Blog Content in Telex
-Once the integration is active, you can use the **Blogger Agent** inside any **Telex chat/channel**.
+Once the integration is active, you can use the **Blogger Agent** inside any **Telex channel**.
 
 #### Triggering the Agent
-You can generate a blog post by sending a command in Telex:
-
-👉 **Command Format:**
-```
-/blogger-agent generate <topic>
-```
+You can generate a blog post by sending a message in Telex with an optional context provided:
 
 👉 **Example Usage:**
 ```
-/blogger-agent generate "Generate a blog on The Future of AI in Blogging"
+"Generate a blog on The Future of AI in Blogging"
 ```
 
-The agent will **automatically send the generated blog post** to the webhook URL you provided during integration.
+The agent will **automatically send a structured blog post** to the webhook URL you provided during integration setup in the format of title, introduction, body and conclusion.
 
 ## 2. API Endpoints
 The Blogger Agent provides two API endpoints:
@@ -45,13 +40,21 @@ Generates a blog post based on user input.
 
 👉 **Endpoint URL:**
 ```
-POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-blogger-agent/generate-blog
+POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate-blog
 ```
 
 👉 **Request Body (JSON):**
 ```json
 {
-  "message": "The Impact of AI on Content Writing"
+  "message": "The Impact of AI on Content Writing",
+  "settings": [
+    {
+      "label": "webhook_url_",
+      "type": "text",
+      "required": true,
+      "default": "https://your-webhook-url"
+    }
+  ]
 }
 ```
 
@@ -65,32 +68,16 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-blogger-agent/ge
 Once the blog is generated, it will be **automatically sent** to the provided webhook URL.
 
 ### 2️⃣ Telex Integration Configuration (GET)
-Retrieves the integration settings.
+Retrieves the integration.json.
 
 👉 **Endpoint URL:**
 ```
 GET https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-blogger-agent/integration
 ```
 
-👉 **Response:**
-```json
-{
-  "name": "Telex Blogger Agent",
-  "version": "v1",
-  "status": "active",
-  "settings": [
-    {
-      "label": "Webhook URL",
-      "type": "string",
-      "required": true
-    }
-  ]
-}
-```
-
 ## 3. Project Structure
 ```
-/telex-blogger-agent
+/Telex-Blogger-Agent
 │── TelexBloggerAgent/                 
 │   ├── Controllers/                    
 │   │   ├── BloggerAgentController.cs   
@@ -112,7 +99,7 @@ GET https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-blogger-agent/int
 │   │   ├── BlogAgentService.cs        
 │   │   ├── TelexIntegrationService.cs  
 │   │   │
-│   ├── integration.json                
+│   ├── Integration.json                
 │   ├── Program.cs                     
 │                              
 │── README.md                           
@@ -126,7 +113,7 @@ To set up the project locally, follow these steps:
 
 ### Step 1: Clone the Repository
 ```sh
-git clone https://github.com/telexintegrations/telex-blogger-agent.git
+git clone https://github.com/telexintegrations/Telex-Blogger-Agent.git
 ```
 
 ### Step 2: Install Dependencies
@@ -138,10 +125,6 @@ dotnet restore
 ### Step 3: Run the Application
 ```sh
 dotnet run
-```
-The app will be available at:
-```
-http://localhost:5000
 ```
 
 ## 5. Deployment
@@ -163,7 +146,12 @@ docker build -t telex-blogger-agent .
 
 #### Run the Container
 ```sh
-docker run -p 8080:80 telex-blogger-agent
+docker run -p 8080:8080 telex-blogger-agent
+```
+
+The app will be available at:
+```
+http://localhost:8080
 ```
 
 ## 6. Testing the Integration
@@ -171,16 +159,16 @@ To test if the **Blogger Agent** is working as expected:
 
 1️⃣ **Send a Blog Generation Request**
 ```sh
-curl -X POST "https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-blogger-agent/generate-blog" \
+curl -X POST "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate-blog" \
      -H "Content-Type: application/json" \
-     -d '{ "message": "How AI is Changing Blogging" }'
+     -d '{ "message": "Generate a blog post on How AI is Changing Blogging" }'
 ```
 
 2️⃣ **Check Response**
 Ensure the output contains the generated blog content.
 
 3️⃣ **Verify in Telex**
-Check your Telex channel to see if the generated blog post was sent to the **webhook URL** you provided.
+Check your Telex channel to see if the generated blog post was sent to the **channel webhook URL** you provided.
 
 ## Conclusion
 The **Telex Blogger Agent** simplifies blog writing by leveraging **AI-powered content generation**. With seamless integration into **Telex**, users can generate high-quality blog posts effortlessly.
