@@ -1,3 +1,4 @@
 .vs/
 bin/
 obj/
+TelexBloggerAgent/appsettings.Development.json

@@ -9,6 +9,7 @@ namespace TelexBloggerAgent.Services
 {
     public class BlogAgentService : IBlogAgentService
     {
+        const string identifier = "📝 #TelexBlog"; // Identifier
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _geminiUrl;
@@ -29,15 +30,20 @@ namespace TelexBloggerAgent.Services
                    "Start with an attention-grabbing opening, provide valuable insights in a natural flow, and end with a compelling conclusion." +
                    "Keep the content clear with a title, introduction, body and conclusion, which should not be explicitly categorized." +
                    "Return it as plain text without markdown formatting." +
-                   "Use ALL CAPS to emphasize important words and (•) for bullet points";
+                   "Use ALL CAPS for section headers and to emphasize important words, and use (•) for bullet points";
         }
 
 
         public async Task GenerateBlogAsync(GenerateBlogDto blogPrompt)
         {
+            if (blogPrompt.Message.Contains(identifier))
+            {
+                _logger.LogInformation("Telex message contains identifier. Skipping API call to prevent loop.");
+                return;
+            }
+
             try
             {
-
                 // Request body for Gemini api call
                 var requestBody = new
                 {
@@ -59,11 +65,13 @@ namespace TelexBloggerAgent.Services
 
                 var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
+                _logger.LogInformation("Generating blog post.....");
+
                 var response = await _httpClient.PostAsync($"{_geminiUrl}?key={_apiKey}", content);
                 var responseString = await response.Content.ReadAsStringAsync();
 
                 var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
-                _logger.LogInformation("Blog post successfully generated");
+                _logger.LogInformation("Blog post generated successfully");
 
                 var blogPost = responseJson.GetProperty("candidates")[0]
                     .GetProperty("content")
@@ -81,17 +89,13 @@ namespace TelexBloggerAgent.Services
 
         public async Task SendBlogAsync(string blogPost, List<Setting> settings)
         {
-            if (string.IsNullOrEmpty(blogPost))
-            {
-                _logger.LogInformation("Failed to generate blog post");
-                return;
-            }
-
+            var signedBlogPost = $"{blogPost}\n\n{identifier}";
+           
             // Define the payload for the telex channel
             var payload = new
             {
                 event_name = "Blog AI",
-                message = blogPost,
+                message = signedBlogPost,
                 status = "success",
                 username = "Blogger Agent"
             };
