@@ -4,13 +4,13 @@ using TelexBloggerAgent.IServices;
 
 namespace TelexBloggerAgent.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/telex-integration")]
     [ApiController]
     public class TelexIntegrationController : ControllerBase
     {
 
-        private readonly ITelexIngegrationService _integrationService;
-        public TelexIntegrationController(ITelexIngegrationService integrationService)
+        private readonly ITelexIntegrationService _integrationService;
+        public TelexIntegrationController(ITelexIntegrationService integrationService)
         {
             _integrationService = integrationService;
         }

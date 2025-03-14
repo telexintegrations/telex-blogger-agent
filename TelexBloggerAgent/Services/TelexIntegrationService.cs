@@ -4,9 +4,9 @@ using TelexBloggerAgent.IServices;
 namespace TelexBloggerAgent.Services
 {
    
-    public class TelexIntegrationService : ITelexIngegrationService
+    public class TelexIntegrationService : ITelexIntegrationService
     {
-        private string _configurationFilePath = Path.Combine(Directory.GetCurrentDirectory(), "integration.json");
+        private string _configurationFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Integration.json");
 
 
         public string LoadIntegration()

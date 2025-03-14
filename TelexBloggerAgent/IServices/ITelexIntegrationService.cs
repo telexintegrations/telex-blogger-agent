@@ -1,6 +1,6 @@
 ﻿namespace TelexBloggerAgent.IServices
 {
-    public interface ITelexIngegrationService
+    public interface ITelexIntegrationService
     {
         string LoadIntegration();
     }

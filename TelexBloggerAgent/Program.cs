@@ -10,21 +10,18 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddScoped<IBlogAgentService, BlogAgentService>();
+builder.Services.AddScoped<ITelexIntegrationService, TelexIntegrationService>();
 
-builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("GeminiSettings"));
-
-builder.Services.AddScoped<ITelexIngegrationService, TelexIntegrationService>();
+builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("GeminiSetting"));
+builder.Services.Configure<TelexSetting>(builder.Configuration.GetSection("TelexSetting"));
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("TelexPolicy", policy =>
+    options.AddPolicy("AllowAnyOrigin", policy =>
     {
-        policy.WithOrigins(
-            "https://telex.im",
-            "http://staging.telextest.im",
-            "http://telextest.im",
-            "https://staging.telex.im")
+        policy.AllowAnyOrigin()
                .AllowAnyHeader()
                .AllowAnyMethod();
     });
@@ -34,13 +31,13 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors("TelexPolicy");
+app.UseCors("AllowAnyOrigin");
 
 app.UseHttpsRedirection();
 

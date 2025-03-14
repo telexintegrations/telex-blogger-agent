@@ -11,8 +11,8 @@
       "app_url": "https://example.com/ai-blogger-agent",
       "background_color": "#2ecc71"
     },
-    "integration_category": "AI & Automation",
-    "integration_type": "generator",
+    "integration_category": "AI & Machine Learning",
+    "integration_type": "modifier",
     "is_active": true,
     "key_features": [
       "Generates high-quality blog content using AI in seconds.",
@@ -23,42 +23,18 @@
     "permissions": {
       "blogger_agent": {
         "always_online": true,
-        "display_name": "AI Blogger"
+        "display_name": "Blogger Agent"
       }
     },
     "settings": [
       {
-        "label": "blog_length",
-        "type": "dropdown",
-        "description": "Select the preferred blog length.",
-        "options": [ "short", "medium", "long" ],
-        "default": "medium",
-        "required": true
-      },
-      {
-        "label": "tone",
-        "type": "dropdown",
-        "description": "Choose the tone for the blog content.",
-        "options": [ "Professional", "Casual", "Persuasive", "Informative" ],
-        "default": "Informative",
-        "required": true
-      },
-      {
-        "label": "keywords",
+        "label": "webhook_url",
         "type": "text",
-        "description": "Provide keywords to focus on in the blog for SEO optimization.",
+        "description": "Provide your telex channel webhook url.",
         "default": "",
-        "required": false
-      },
-      {
-        "label": "format",
-        "type": "dropdown",
-        "description": "Choose the format for the blog output.",
-        "options": [ "Full Article", "Outline", "Summary" ],
-        "default": "Full Article",
         "required": true
       }
     ],
-    "target_url": "https://ai-blogger-agent.onrender.com/api/v1/telex-blogger-agent/generate-blog"
+    "target_url": "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate-blog"
   }
 }
