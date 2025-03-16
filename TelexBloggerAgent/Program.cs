@@ -11,7 +11,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IBlogAgentService, BlogAgentService>();
+builder.Services.AddHttpClient();
+builder.Services.AddTransient<IBlogAgentService, BlogAgentService>();
+
 builder.Services.AddScoped<ITelexIntegrationService, TelexIntegrationService>();
 
 builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("GeminiSetting"));
