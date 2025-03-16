@@ -47,7 +47,7 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate
 
 👉 **Request Body (JSON):**
 
-Make sure to copy your channel webhook URL into the default payload. If not, the blog post will not be sent to the channel.
+Make sure to provide your channel webhook URL in the default payload. If not, the blog post will not be sent to the telex channel.
 
 ```json
 {
@@ -71,7 +71,7 @@ The response is a plain string containing the message you sent. The blog request
 Generate a blog post on The Impact of AI on Content Writing
 ```
 
-Once the blog is generated, it will be **automatically sent** to the provided channel with the webhook URL you provided. This is done within a few seconds.
+Once the blog is generated, it will be **automatically sent** to the channel with the webhook URL you provided. This is done within a few seconds.
 
 ---
 
