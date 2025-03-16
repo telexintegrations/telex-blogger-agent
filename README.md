@@ -46,7 +46,7 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate
 👉 **Request Body (JSON):**
 ```json
 {
-  "message": "The Impact of AI on Content Writing",
+  "message": "Generate a blog post on The Impact of AI on Content Writing",
   "settings": [
     {
       "label": "webhook_url_",
@@ -114,12 +114,12 @@ To set up the project locally, follow these steps:
 
 ### Step 1: Clone the Repository
 ```sh
-git clone https://github.com/telexintegrations/Telex-Blogger-Agent.git
+git clone https://github.com/telexintegrations/telex-blogger-agent.git
 ```
 
 ### Step 2: Install Dependencies
 ```sh
-cd Telex-Blogger-agent
+cd telex-blogger-agent
 dotnet restore
 ```
 
