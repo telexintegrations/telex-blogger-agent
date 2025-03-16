@@ -32,8 +32,10 @@ You can generate a blog post by sending a message in Telex with an optional cont
 
 The agent will **automatically send a structured blog post** to the webhook URL you provided during integration setup in the format of title, introduction, body and conclusion.
 
-## 2. API Endpoints
+## 2. API Endpoints For Testing
 The Blogger Agent provides two API endpoints:
+
+---
 
 ### 1️⃣ Generate Blog Post (POST)
 Generates a blog post based on user input.
@@ -44,12 +46,15 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate
 ```
 
 👉 **Request Body (JSON):**
+
+Make sure to copy your channel webhook URL into the default payload. If not, the blog post will not be sent to the channel.
+
 ```json
 {
   "message": "Generate a blog post on The Impact of AI on Content Writing",
   "settings": [
     {
-      "label": "webhook_url_",
+      "label": "webhook_url",
       "type": "text",
       "required": true,
       "default": "https://your-webhook-url"
@@ -59,13 +64,16 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate
 ```
 
 👉 **Response:**
-```json
-{
-  "message": "AI has revolutionized content writing by enhancing efficiency, creativity, and personalization..."
-}
+
+The response is a plain string containing the message you sent. The blog request is processed in the background.
+
+```
+Generate a blog post on The Impact of AI on Content Writing
 ```
 
-Once the blog is generated, it will be **automatically sent** to the provided webhook URL.
+Once the blog is generated, it will be **automatically sent** to the provided channel with the webhook URL you provided. This is done within a few seconds.
+
+---
 
 ### 2️⃣ Telex Integration Configuration (GET)
 Retrieves the integration.json.
@@ -74,6 +82,15 @@ Retrieves the integration.json.
 ```
 GET https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-integration
 ```
+
+👉 **Response:**
+
+Retrieves the integration.json configuration for the agent. Example:
+
+```
+{"data":{"date":{"created_at":"2025-03-10","updated_at":"2025-03-10"},"descriptions":{"app_description":"AI-powered Blogging Assistant for Telex"},"integration_category":"AI & Machine Learning","integration_type":"modifier"}}
+```
+
 
 ## 3. Project Structure
 ```
