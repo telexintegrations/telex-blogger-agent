@@ -111,7 +111,7 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate
 }
 ```
 
-Note that you can choose only the settings you which to include but the webhook_url, company__name and company__overview should be included.
+Note that you can choose only the settings you wish to include but the webhook_url, company__name and company__overview should be included.
 
 👉 **Response:**
 The response is a plain string containing the message you sent. The blog request is processed in the background.
