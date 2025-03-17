@@ -49,6 +49,13 @@
         "required": false
       },
       {
+        "label": "company_website",
+        "type": "text",
+        "description": "Provide the company’s website URL to be included in the blog post conclusion.",
+        "default": "https://www.technology-innovators.com",
+        "required": false
+      },
+      {
         "label": "tone",
         "type": "dropdown",
         "description": "Choose the tone for the blog content.",
