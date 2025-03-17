@@ -15,9 +15,9 @@ namespace TelexBloggerAgent.Services
         private readonly string _geminiUrl;
         private ILogger<BlogAgentService> _logger;
 
-        public BlogAgentService(IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger)
+        public BlogAgentService(IHttpClientFactory httpClientFactory, IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger)
         {
-            _httpClient = new HttpClient();
+            _httpClient = httpClientFactory.CreateClient();
             _apiKey = geminiSettings.Value.ApiKey;
             _geminiUrl = geminiSettings.Value.GeminiUrl;
             _logger = logger;
@@ -71,7 +71,6 @@ namespace TelexBloggerAgent.Services
                 var responseString = await response.Content.ReadAsStringAsync();
 
                 var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
-                _logger.LogInformation("Blog post generated successfully");
 
                 var blogPost = responseJson.GetProperty("candidates")[0]
                     .GetProperty("content")
@@ -79,11 +78,19 @@ namespace TelexBloggerAgent.Services
                     .GetProperty("text")
                     .GetString();
 
+                if (blogPost == null)
+                {
+                    throw new Exception("Failed to generate blog post");
+                }
+
+                _logger.LogInformation("Blog post generated successfully");
+
                 await SendBlogAsync(blogPost, blogPrompt.Settings);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to generate blog post");
+                throw;
             }
         }
 
@@ -104,10 +111,8 @@ namespace TelexBloggerAgent.Services
             var jsonPayload = JsonSerializer.Serialize(payload);
             using var telexContent = new StringContent(jsonPayload, new UTF8Encoding(false), "application/json");
 
-            var telexWebhookUrl = settings
-                .Where(s => s.Label == "webhook_url")
-                .Select(s => s.Default)
-                .FirstOrDefault()
+            var telexWebhookUrl = settings                
+                .FirstOrDefault(s => s.Label == "webhook_url")?.Default
                 .ToString();
 
             if (string.IsNullOrEmpty(telexWebhookUrl))
@@ -117,10 +122,10 @@ namespace TelexBloggerAgent.Services
 
             var telexResponse = await _httpClient.PostAsync(telexWebhookUrl, telexContent);
 
-            if (telexResponse.IsSuccessStatusCode)
+            if ((int)telexResponse.StatusCode == StatusCodes.Status202Accepted)
             {
                 string responseContent = await telexResponse.Content.ReadAsStringAsync();
-                _logger.LogInformation("Blog post successfully sent to telex: {responseContent}", responseContent);
+                _logger.LogInformation("Blog post successfully sent to telex");
             }
         }
     }
