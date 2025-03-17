@@ -29,7 +29,7 @@ To begin using the **Blogger Agent** in Telex, follow these steps:
 Once the integration is active, you can use the **Blogger Agent** inside any **Telex channel**.
 
 #### Triggering the Agent
-You can generate a blog post by sending a message in Telex with an optional context provided:
+You can generate a blog post by sending a message in Telex:
 
 👉 **Example Usage:**
 ```
@@ -63,14 +63,55 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate
       "default": "https://your-webhook-url"
     },
     {
+      "label": "company_name",
+      "type": "text",
+      "description": "Provide the company name.",
+      "default": "Tech Innovators",
+      "required": true
+    },
+    {
+      "label": "company_overview",
+      "type": "text",
+      "description": "Provide a brief overview of the company.",
+      "default": "Tech Innovators specializes in AI-powered content solutions.",
+      "required": true
+    },
+    {
       "label": "company_website",
       "type": "text",
-      "required": false,
-      "default": "https://your-company-website.com"
+      "description": "Provide the company’s website URL to be included in the blog post conclusion.",
+      "default": "https://www.technology-innovators.com",
+      "required": false
+    },
+    {
+      "label": "tone",
+      "type": "dropdown",
+      "description": "Choose the tone for the blog content.",
+      "options": [ "Professional", "Casual", "Persuasive", "Informative" ],
+      "default": "Casual",
+      "required": true
+    },
+    {
+      "label": "blog_length",
+      "type": "dropdown",
+      "description": "Select the preferred blog length.",
+      "options": [ "short", "medium", "long" ],
+      "default": "medium",
+      "required": true
+    },
+    {
+      "label": "format",
+      "type": "dropdown",
+      "description": "Choose the format for the blog output.",
+      "options": [ "Full Article", "Outline", "Summary" ],
+      "default": "Full Article",
+      "required": false
     }
   ]
 }
 ```
+
+Note that you can choose only the settings you wish to include but the webhook_url, company__name and company__overview should be included.
 
 👉 **Response:**
 The response is a plain string containing the message you sent. The blog request is processed in the background.
