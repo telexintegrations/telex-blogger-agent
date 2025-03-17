@@ -23,15 +23,81 @@ namespace TelexBloggerAgent.Services
             _logger = logger;
         }
 
-
-        private string FormatBlogPrompt(string userPrompt)
+        private string GetSettingValue(List<Setting> settings, string key)
         {
-            return $"{userPrompt}. Ensure the response is a well-structured, engaging, and informative article. " +
-                   "Start with an attention-grabbing opening, provide valuable insights in a natural flow, and end with a compelling conclusion." +
-                   "Keep the content clear with a title, introduction, body and conclusion, which should not be explicitly categorized." +
-                   "Return it as plain text without markdown formatting." +
-                   "Use ALL CAPS for section headers and to emphasize important words, and use (•) for bullet points";
+            return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
         }
+
+        private string FormatBlogPrompt(string userPrompt, List<Setting> settings)
+        {
+            // Retrieve settings dynamically
+            string companyName = GetSettingValue(settings, "company_name");
+            string companyOverview = GetSettingValue(settings, "company_overview");
+            string companyWebsite = GetSettingValue(settings, "company_website");
+            string tone = GetSettingValue(settings, "tone");
+            string blogLength = GetSettingValue(settings, "blog_length");
+            string format = GetSettingValue(settings, "format");
+
+            // Base prompt structure
+            string prompt = $"{userPrompt}. Ensure the response is a well-structured, engaging, and informative article.";
+
+            // Adjust tone dynamically
+            prompt += tone switch
+            {
+                "Professional" => " Use a formal and authoritative tone suitable for industry professionals.",
+                "Casual" => " Use a conversational and friendly tone to keep the content engaging.",
+                "Persuasive" => " Craft the content in a marketing-focused way, encouraging action and conversions.",
+                "Informative" => " Keep the content objective, educational, and easy to understand.",
+                _ => ""
+            };
+
+            // Incorporate company branding if provided
+            if (!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(companyOverview))
+            {
+                prompt += $" Align the content with the company, {companyName}; {companyOverview}.";
+            }
+
+            // Adjust content length
+            prompt += blogLength switch
+            {
+                "short" => " Keep the article concise, around 300 words, focusing on key points.",
+                "medium" => " Provide a balanced article, around 600 words, with in-depth insights.",
+                "long" => " Create a comprehensive article, around 1000+ words, with detailed analysis.",
+                _ => ""
+            };
+
+            // Format preference
+            prompt += format switch
+            {
+                "Outline" => " Return the response as a structured outline with key points.",
+                "Summary" => " Summarize the content concisely, highlighting key takeaways.",
+                "Full Article" => " Structure the response with a title, introduction, body, and conclusion, but do not explicitly categorize them.",
+                _ => ""
+            };
+
+            if (!string.IsNullOrWhiteSpace(companyWebsite))
+            {
+                prompt += $" Add a call to action in the conclusion of the article. Use the raw link to the company website: {companyWebsite}";
+            }
+
+
+            // Formatting preferences
+            prompt += " Use ALL CAPS for section headers and important words, and use ✅ for bullet points.";
+            prompt += " Return the content as plain text without markdown formatting.";
+
+            return prompt;
+        }
+
+
+
+        //private string FormatBlogPrompt(string userPrompt)
+        //{
+        //    return $"{userPrompt}. Ensure the response is a well-structured, engaging, and informative article. " +
+        //           "Start with an attention-grabbing opening, provide valuable insights in a natural flow, and end with a compelling conclusion." +
+        //           "Keep the content clear with a title, introduction, body and conclusion, which should not be explicitly categorized." +
+        //           "Return it as plain text without markdown formatting." +
+        //           "Use ALL CAPS for section headers and to emphasize important words, and use (•) for bullet points";
+        //}
 
 
         public async Task GenerateBlogAsync(GenerateBlogDto blogPrompt)
@@ -56,7 +122,7 @@ namespace TelexBloggerAgent.Services
                             { 
                                 new 
                                 { 
-                                    text = FormatBlogPrompt(blogPrompt.Message)
+                                    text = FormatBlogPrompt(blogPrompt.Message, blogPrompt.Settings)
                                 } 
                             } 
                         }
