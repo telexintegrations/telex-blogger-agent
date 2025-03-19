@@ -33,6 +33,51 @@
         "description": "Provide your telex channel webhook url.",
         "default": "",
         "required": true
+      },
+      {
+        "label": "company_name",
+        "type": "text",
+        "description": "Provide the name of the company/brand that the blog content should align with",
+        "default": "",
+        "required": true
+      },
+      {
+        "label": "company_overview",
+        "type": "text",
+        "description": "Provide a short overview of the company, its mission, or its core services to tailor the blog's content",
+        "default": "",
+        "required": false
+      },
+      {
+        "label": "company_website",
+        "type": "text",
+        "description": "Provide the company’s website URL to be included in the blog post conclusion.",
+        "default": "https://www.technology-innovators.com",
+        "required": false
+      },
+      {
+        "label": "tone",
+        "type": "dropdown",
+        "description": "Choose the tone for the blog content.",
+        "options": [ "Professional", "Casual", "Persuasive", "Informative" ],
+        "default": "Informative",
+        "required": true
+      },
+      {
+        "label": "blog_length",
+        "type": "dropdown",
+        "description": "Select the preferred blog length.",
+        "options": [ "short", "medium", "long" ],
+        "default": "medium",
+        "required": true
+      },
+      {
+        "label": "format",
+        "type": "dropdown",
+        "description": "Choose the format for the blog output.",
+        "options": [ "Full Article", "Outline", "Summary" ],
+        "default": "Full Article",
+        "required": false
       }
     ],
     "target_url": "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate-blog"
