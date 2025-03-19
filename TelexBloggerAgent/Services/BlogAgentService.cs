@@ -11,7 +11,7 @@ namespace TelexBloggerAgent.Services
     public class BlogAgentService : IBlogAgentService
     {
         const string identifier = "📝 #TelexBlog"; // Identifier
-        const string topicIdentifier = "suggest topics";
+        const string topicIdentifier = "suggest topics topic";
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _geminiUrl;
@@ -223,7 +223,7 @@ namespace TelexBloggerAgent.Services
                             {
                                 new
                                  {
-                                    text = $"Suggest 5 to 10 engaging blog post topics related to: {blogPrompt.Message}. Return the topics in bullet points."
+                                    text = $"Suggest 5 to 10 engaging blog post topics related to: {blogPrompt.Message}. Return the topics in bullet points, use ✅ for bullet points. Return the content as plain text without markdown formatting."
                                  }
                             }
                         }
@@ -237,15 +237,12 @@ namespace TelexBloggerAgent.Services
 
                 var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
 
-                _logger.LogInformation($"{responseJson}");
-
                 var topics = responseJson.GetProperty("candidates")[0]
                     .GetProperty("content")
                     .GetProperty("parts")[0]
                     .GetProperty("text")
                     .GetString();
 
-                _logger.LogInformation($"{topics}");
 
 
                 if (topics == null)
