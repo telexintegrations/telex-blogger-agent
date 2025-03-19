@@ -31,7 +31,7 @@ namespace TelexBloggerAgent.Controllers
 
             _logger.LogInformation($"{blogDto}");
 
-            await Task.Run(() => _blogService.HandleBlogRequestAsync(blogDto));
+            Task.Run(() => _blogService.HandleBlogRequestAsync(blogDto));
 
             return Ok(blogDto.Message);
         }
