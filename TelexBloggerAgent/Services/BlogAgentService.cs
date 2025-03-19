@@ -4,12 +4,14 @@ using System.Text;
 using TelexBloggerAgent.Helpers;
 using TelexBloggerAgent.IServices;
 using TelexBloggerAgent.Dtos;
+using Microsoft.AspNetCore.Identity;
 
 namespace TelexBloggerAgent.Services
 {
     public class BlogAgentService : IBlogAgentService
     {
         const string identifier = "📝 #TelexBlog"; // Identifier
+        const string topicIdentifier = "suggest topics topic";
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
         private readonly string _geminiUrl;
@@ -91,12 +93,7 @@ namespace TelexBloggerAgent.Services
 
         public async Task GenerateBlogAsync(GenerateBlogDto blogPrompt)
         {
-            if (blogPrompt.Message.Contains(identifier))
-            {
-                _logger.LogInformation("Telex message contains identifier. Skipping API call to prevent loop.");
-                return;
-            }
-
+            
             try
             {
                 // Request body for Gemini api call
@@ -181,6 +178,87 @@ namespace TelexBloggerAgent.Services
             {
                 string responseContent = await telexResponse.Content.ReadAsStringAsync();
                 _logger.LogInformation("Blog post successfully sent to telex");
+            }
+        }
+
+        public async Task HandleBlogRequestAsync(GenerateBlogDto blogPrompt)
+        {
+            if (blogPrompt.Message.Contains(identifier))
+            {
+                _logger.LogInformation("Telex message contains identifier. Skipping API call to prevent loop.");
+                return;
+            }
+
+            try
+            {
+                if (blogPrompt.Message.Contains(topicIdentifier)) 
+                {
+                    _logger.LogInformation("User requested blog topic suggestions.");
+                    await SuggestTopicsAsync(blogPrompt);
+                } else
+                {
+                    _logger.LogInformation("Generating full blog post.");
+                    await GenerateBlogAsync(blogPrompt);
+
+                }
+
+            } catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process blog event");
+            }
+        }
+
+        public async Task SuggestTopicsAsync(GenerateBlogDto blogPrompt)
+        {
+            try
+            {
+                var requestBody = new
+                {
+                    contents = new[]
+                    {
+                        new
+                        {
+                            role = "user",
+                            parts = new[]
+                            {
+                                new
+                                 {
+                                    text = $"Suggest 5 to 10 engaging blog post topics related to: {blogPrompt.Message}. Return the topics in bullet points, use ✅ for bullet points. Return the content as plain text without markdown formatting."
+                                 }
+                            }
+                        }
+                    }
+                };
+
+                var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+                _logger.LogInformation("Requesting blog topic suggestions...");
+                var response = await _httpClient.PostAsync($"{_geminiUrl}?key={_apiKey}", content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
+
+                var topics = responseJson.GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+
+
+                if (topics == null)
+                {
+                    throw new Exception("Failed to retrieve blog topics");
+                } 
+                else
+                {
+                    _logger.LogInformation("Blog topics generated successfully");
+                    await SendBlogAsync(topics, blogPrompt.Settings);
+                }
+
+            } 
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate blog topics");
             }
         }
     }
