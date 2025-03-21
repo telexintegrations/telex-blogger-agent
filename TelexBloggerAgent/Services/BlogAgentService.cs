@@ -17,12 +17,15 @@ namespace TelexBloggerAgent.Services
         private ILogger<BlogAgentService> _logger;
         private readonly string _apiKey;
         private readonly string _geminiUrl;
+        private readonly RequestProcessingService _requestService;
 
-        public BlogAgentService(IHttpClientFactory httpClientFactory, IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger)
+
+        public BlogAgentService(IHttpClientFactory httpClientFactory, IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger, RequestProcessingService requestService)
         {
             _httpClient = httpClientFactory.CreateClient();
             _apiKey = geminiSettings.Value.ApiKey;
             _geminiUrl = geminiSettings.Value.GeminiUrl;
+            _requestService = requestService;
             _logger = logger;
         }
 
@@ -33,14 +36,17 @@ namespace TelexBloggerAgent.Services
             // Check if the message contains the identifier to prevent a loop
             if (blogPrompt.Message.Contains(identifier))
             {
-                _logger.LogInformation("Telex message contains identifier. Skipping API call to prevent loop.");
+                _logger.LogInformation("Identifier detected. Skipping API call to prevent loop.");
                 return;
             }
 
             try
             {
                 // Format the blog prompt based on user input and settings
-                string message = FormatBlogPrompt(blogPrompt.Message, blogPrompt.Settings);
+                string message = await _requestService.ProcessUserInputAsync(blogPrompt.Message);
+                
+                // Format the blog prompt based on user input and settings
+                string message = _requestService.FormatBlogPrompt(blogPrompt.Message, blogPrompt.Settings);
 
                 // Generate the blog post using the formatted message
                 var aiResponse = await GenerateResponse(blogPrompt.Message);
@@ -52,10 +58,10 @@ namespace TelexBloggerAgent.Services
                 }
 
                 // Append the identifier to the generated blog post
-                var signedBlogPost = $"{aiResponse}\n\n{identifier}";
+                var signedResponse = $"{aiResponse}\n\n{identifier}";
 
                 // Send the generated blog post to Telex
-                var suceeded = await SendBlogAsync(aiResponse, blogPrompt.Settings);
+                var suceeded = await SendBlogAsync(signedResponse, blogPrompt.Settings);
 
                 // Throw an exception if sending the blog post failed
                 if (!suceeded)

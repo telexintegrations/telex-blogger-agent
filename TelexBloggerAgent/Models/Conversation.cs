@@ -18,8 +18,6 @@ namespace TelexBloggerAgent.Models
 
         public string? ParentId { get; set; } // If it's a reply, it links to a parent conversation
 
-        //public List<string> Keywords { get; set; } = new(); // Keywords for context retrieval
-
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
