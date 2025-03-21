@@ -208,6 +208,80 @@ namespace TelexBloggerAgent.Services
             }
         }
 
+        public async Task RefineContentAsync(RefineBlogDto blogPrompt)
+        {
+            try
+            {
+                // Validate input
+                if (string.IsNullOrEmpty(blogPrompt.Message))
+                {
+                    throw new ArgumentException("Blog content is required.");
+                }
+
+                if (string.IsNullOrEmpty(blogPrompt.RefinementInstructions))
+                {
+                    throw new ArgumentException("Refinement instructions are required.");
+                }
+
+                // Prepare the refinement prompt for Gemini
+                var refinementPrompt = $"Refine the following blog content based on the user's request: {blogPrompt.Message}. " +
+                                      $"Make the following changes: {blogPrompt.RefinementInstructions}. " +
+                                      "Return the refined content as plain text without markdown formatting.";
+
+                // Create the request body for Gemini
+                var requestBody = new
+                {
+                    contents = new[]
+                    {
+                new
+                {
+                    role = "user",
+                    parts = new[]
+                    {
+                        new
+                        {
+                            text = refinementPrompt
+                        }
+                    }
+                }
+            }
+                };
+
+                // Serialize the request body to JSON
+                var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+                _logger.LogInformation("Refining blog content...");
+
+                // Call the Gemini API
+                var response = await _httpClient.PostAsync($"{_geminiUrl}?key={_apiKey}", content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                // Parse the Gemini API response
+                var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
+
+                var refinedContent = responseJson.GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+                if (refinedContent == null)
+                {
+                    throw new Exception("Failed to refine blog content");
+                }
+
+                _logger.LogInformation("Blog content refined successfully");
+
+                // Send the refined content to the user
+                await SendBlogAsync(refinedContent, blogPrompt.Settings);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to refine blog content");
+                throw;
+            }
+        }
+
         public async Task SuggestTopicsAsync(GenerateBlogDto blogPrompt)
         {
             try
