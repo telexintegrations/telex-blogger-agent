@@ -1,4 +1,5 @@
-﻿using System.Net;   
+﻿using System.Net;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -54,7 +55,7 @@ namespace TelexBloggerAgent.test.Services
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ThrowsAsync(new HttpRequestException("API failure"));
 
-            await Assert.ThrowsAsync<HttpRequestException>(() => _blogAgentService.GenerateBlogAsync(blogPrompt));
+            await Assert.ThrowsAsync<ArgumentNullException>(() => _blogAgentService.HandleAsync(blogPrompt));
             
         }
 
@@ -75,9 +76,9 @@ namespace TelexBloggerAgent.test.Services
 
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = new StringContent(apiResponse) });
+                .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK | HttpStatusCode.Accepted, Content = new StringContent(apiResponse) });
 
-            await _blogAgentService.GenerateBlogAsync(blogPrompt);
+            await _blogAgentService.HandleAsync(blogPrompt);
 
             _loggerMock.Verify(logger =>
                     logger.Log(
@@ -95,7 +96,7 @@ namespace TelexBloggerAgent.test.Services
         {
             var blogPrompt = new GenerateBlogDto { Message = "Some blog content " + Identifier };
 
-            await _blogAgentService.GenerateBlogAsync(blogPrompt);
+            await _blogAgentService.HandleAsync(blogPrompt);
 
             _httpMessageHandlerMock.Protected()
                 .Verify("SendAsync", Times.Never(), ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>());
