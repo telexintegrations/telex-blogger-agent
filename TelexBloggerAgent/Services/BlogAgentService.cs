@@ -18,15 +18,18 @@ namespace TelexBloggerAgent.Services
         private readonly string _apiKey;
         private readonly string _geminiUrl;
         private readonly IRequestProcessingService _requestService;
+        private readonly IBlogPostIntervalService _blogPostIntervalService;
 
 
-        public BlogAgentService(IHttpClientFactory httpClientFactory, IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger, IRequestProcessingService requestService)
+
+        public BlogAgentService(IHttpClientFactory httpClientFactory, IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger, IRequestProcessingService requestService, IBlogPostIntervalService blogPostIntervalService)
         {
             _httpClient = httpClientFactory.CreateClient();
             _apiKey = geminiSettings.Value.ApiKey;
             _geminiUrl = geminiSettings.Value.GeminiUrl;
             _requestService = requestService;
             _logger = logger;
+            _blogPostIntervalService = blogPostIntervalService;
         }
 
        
@@ -42,6 +45,15 @@ namespace TelexBloggerAgent.Services
 
             try
             {
+                // Check if duration is set
+                var duration = _requestService.GetBlogIntervalOption(blogPrompt);
+
+                if( duration != "None")
+                {
+                    _blogPostIntervalService.ScheduleBlogPostGeneration(duration, blogPrompt);
+                }
+                
+                
                 // Format the blog prompt based on user input and settings
                 var request = await _requestService.ProcessUserInputAsync(blogPrompt);
                 
