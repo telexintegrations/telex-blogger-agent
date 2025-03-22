@@ -30,10 +30,11 @@ namespace TelexBloggerAgent.Controllers
             }
 
             _logger.LogInformation($"{blogDto}");
+            var response = await _blogService.HandleAsync(blogDto);
+            //Task.Run(() => _blogService.HandleAsync(blogDto));
 
-            Task.Run(() => _blogService.HandleBlogRequestAsync(blogDto));
-
-            return Ok(blogDto.Message);
+            //return Ok(blogDto.Message);
+            return Ok(response);
         }
                         
     }
