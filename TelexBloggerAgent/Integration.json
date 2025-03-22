@@ -78,6 +78,14 @@
         "options": [ "Full Article", "Outline", "Summary" ],
         "default": "Full Article",
         "required": false
+      },
+      {
+        "label": "blog_generation_interval",
+        "type": "dropdown",
+        "description": "Select the preferred blog generation interval",
+        "options": [ "None", "Every 12 hours ", "Every 24 hours" ],
+        "default": "None",
+        "required": true
       }
     ],
     "target_url": "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate-blog"
