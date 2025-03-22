@@ -29,6 +29,7 @@ builder.Services.AddTransient<IBlogAgentService, BlogAgentService>();
 builder.Services.AddScoped<ITelexIntegrationService, TelexIntegrationService>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IRequestProcessingService, RequestProcessingService>();
 
 
 

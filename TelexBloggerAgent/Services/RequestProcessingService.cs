@@ -1,10 +1,11 @@
 ﻿using TelexBloggerAgent.Dtos;
 using TelexBloggerAgent.Enums;
+using TelexBloggerAgent.Helpers;
 using TelexBloggerAgent.IServices;
 
 namespace TelexBloggerAgent.Services
 {
-    public class RequestProcessingService 
+    public class RequestProcessingService : IRequestProcessingService
     {
         private static readonly HashSet<string> BlogKeywords = new()
         { "create", "generate", "write", "blog", "article", "post", "compose" };
@@ -13,27 +14,34 @@ namespace TelexBloggerAgent.Services
         { "suggest", "give", "need", "topic", "idea", "recommend" };
 
 
-        private readonly IBlogAgentService _aiService;
 
-        public RequestProcessingService(IBlogAgentService aiService)
+        public async Task<Request> ProcessUserInputAsync(GenerateBlogDto blogDto)
         {
-            _aiService = aiService;
-        }
+            var userInput = blogDto.Message;
 
-        public async Task<string> ProcessUserInputAsync(string userInput)
-        {
             // Step 1: Classify request (e.g., fetch blog, summarize, generate, etc.)
-            var classification = ClassifyRequest(userInput).ToString();
+            var classification = ClassifyRequest(userInput);
+
+            var prompt = userInput;
+            var systemMessage = GenerateSystemMessage(classification, blogDto.Settings);
 
             // Step 2: Generate appropriate prompt based on classification
-            var prompt = GeneratePrompt(userInput, classification);
+            if (classification == RequestType.BlogRequest)
+            {
+                prompt = GenerateBlogPrompt(userInput, blogDto.Settings);
+                systemMessage = "You name is Mike. You are an AI writing assistant designed for blogging and content generation.";
+            }
+            //else if (classification == RequestType.TopicRequest)
+            //{
 
-            // Step 3: Send to AI and retrieve response
-            var aiResponse = await _aiService.GenerateResponse(prompt);
+            //}
 
             // Step 4: Return structured response
-            return aiResponse;
-            
+            return new Request
+            {
+                SystemMessage = systemMessage,
+                UserPrompt = prompt
+            };
         }
 
         private string GetSettingValue(List<Setting> settings, string key)
@@ -41,18 +49,8 @@ namespace TelexBloggerAgent.Services
             return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
         }
 
-        private string GeneratePrompt(string userInput, string classification)
-        {
-            return classification switch
-            {
-                "FetchBlogDraft" => $"Retrieve the latest blog draft related to: {userInput}",
-                "TopicRequest" => $"Summarize the following: {userInput}",
-                "BlogRequest" => $"Generate a blog post on: {userInput}",
-                _ => userInput // Default case
-            };
-        }
 
-        private string FormatBlogPrompt(string userPrompt, List<Setting> settings)
+        private string GenerateBlogPrompt(string userPrompt, List<Setting> settings)
         {
             // Retrieve settings dynamically
             string companyName = GetSettingValue(settings, "company_name");
@@ -63,7 +61,7 @@ namespace TelexBloggerAgent.Services
             string format = GetSettingValue(settings, "format");
 
             // Base prompt structure
-            string prompt = $"{userPrompt}. Your name name is Mike. You are a blog expert";
+            string prompt = $"{userPrompt}.";
 
             // Adjust tone dynamically
             prompt += tone switch
@@ -134,29 +132,31 @@ namespace TelexBloggerAgent.Services
                 _ => ""
             };
 
+
+            systemMessage += " Use ALL CAPS for important words, and use ✅ for bullet points.";
+
             return systemMessage;
         }
 
         public static RequestType ClassifyRequest(string message)
-            {
-                if (string.IsNullOrWhiteSpace(message))
-                    return RequestType.Uncertain;
-
-                // Normalize input: convert to lowercase and split into words
-                var words = message.ToLower().Split(new[] { ' ', '.', ',', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
-
-                int blogScore = words.Count(word => BlogKeywords.Contains(word) && words.Count() > 1);
-                int topicScore = words.Count(word => TopicKeywords.Contains(word) && words.Count() > 1);
-
-                if (blogScore > topicScore)
-                    return RequestType.BlogRequest;
-
-                if (topicScore > blogScore)
-                    return RequestType.TopicRequest;
-
-
+        {
+            if (string.IsNullOrWhiteSpace(message))
                 return RequestType.Uncertain;
-            }
+
+            // Normalize input: convert to lowercase and split into words
+            var words = message.ToLower().Split(new[] { ' ', '.', ',', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+
+            int blogScore = words.Count(word => BlogKeywords.Contains(word));
+            int topicScore = words.Count(word => TopicKeywords.Contains(word));
+
+            if (blogScore > topicScore)
+                return RequestType.BlogRequest;
+
+            if (topicScore > blogScore)
+                return RequestType.TopicRequest;
+
+            return RequestType.Uncertain;
         }
     }
 }
+

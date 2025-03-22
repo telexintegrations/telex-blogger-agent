@@ -17,10 +17,10 @@ namespace TelexBloggerAgent.Services
         private ILogger<BlogAgentService> _logger;
         private readonly string _apiKey;
         private readonly string _geminiUrl;
-        private readonly RequestProcessingService _requestService;
+        private readonly IRequestProcessingService _requestService;
 
 
-        public BlogAgentService(IHttpClientFactory httpClientFactory, IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger, RequestProcessingService requestService)
+        public BlogAgentService(IHttpClientFactory httpClientFactory, IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger, IRequestProcessingService requestService)
         {
             _httpClient = httpClientFactory.CreateClient();
             _apiKey = geminiSettings.Value.ApiKey;
@@ -31,25 +31,22 @@ namespace TelexBloggerAgent.Services
 
        
 
-        public async Task HandleAsync(GenerateBlogDto blogPrompt)
+        public async Task<string> HandleAsync(GenerateBlogDto blogPrompt)
         {
             // Check if the message contains the identifier to prevent a loop
             if (blogPrompt.Message.Contains(identifier))
             {
                 _logger.LogInformation("Identifier detected. Skipping API call to prevent loop.");
-                return;
+                return null;
             }
 
             try
             {
                 // Format the blog prompt based on user input and settings
-                string message = await _requestService.ProcessUserInputAsync(blogPrompt.Message);
+                var request = await _requestService.ProcessUserInputAsync(blogPrompt);
                 
-                // Format the blog prompt based on user input and settings
-                string message = _requestService.FormatBlogPrompt(blogPrompt.Message, blogPrompt.Settings);
-
                 // Generate the blog post using the formatted message
-                var aiResponse = await GenerateResponse(blogPrompt.Message);
+                var aiResponse = await GenerateResponse(request.UserPrompt, request.SystemMessage);
 
                 // Throw an exception if the blog post generation failed
                 if (string.IsNullOrEmpty(aiResponse))
@@ -60,14 +57,15 @@ namespace TelexBloggerAgent.Services
                 // Append the identifier to the generated blog post
                 var signedResponse = $"{aiResponse}\n\n{identifier}";
 
-                // Send the generated blog post to Telex
-                var suceeded = await SendBlogAsync(signedResponse, blogPrompt.Settings);
+                return signedResponse;
+                //// Send the generated blog post to Telex
+                //var suceeded = await SendBlogAsync(signedResponse, blogPrompt.Settings);
 
-                // Throw an exception if sending the blog post failed
-                if (!suceeded)
-                {
-                    throw new Exception("Failed to send blog post to Telex");
-                }
+                //// Throw an exception if sending the blog post failed
+                //if (!suceeded)
+                //{
+                //    throw new Exception("Failed to send blog post to Telex");
+                //}
 
             }
             catch (Exception ex)
@@ -78,7 +76,7 @@ namespace TelexBloggerAgent.Services
             }
         }
 
-        public async Task<string> GenerateResponse(string message)
+        public async Task<string> GenerateResponse(string message, string systemMessage)
         {
 
             var userMessage = new ChatMessage
@@ -92,7 +90,7 @@ namespace TelexBloggerAgent.Services
             {
                 SystemInstruction = new SystemMessage
                 {
-                    Parts = { Text = "You are a blog expert. Your name is blogger." } 
+                    Parts = { Text = systemMessage } 
                 },
                 Contents =
                 {
