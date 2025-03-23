@@ -24,17 +24,21 @@ namespace TelexBloggerAgent.Controllers
         [ProducesResponseType(typeof(GenerateBlogDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
         {
-            if (string.IsNullOrEmpty(blogDto.Message) || blogDto.Settings == null)
+            if (string.IsNullOrEmpty(blogDto.Message))
             {
-                return BadRequest("Message or Settings cannot be null");
+                return BadRequest("Message is required");
+            }
+            if (string.IsNullOrEmpty(blogDto.ChannelId))
+            {
+                return BadRequest("Channel Id is required");
             }
 
-            _logger.LogInformation($"{blogDto}");
-            //var response = await _blogService.HandleAsync(blogDto);
+            _logger.LogInformation($"Request received: {blogDto}");
+
             Task.Run(() => _blogService.HandleAsync(blogDto));
 
             //return Ok(blogDto.Message);
-            return Ok();
+            return Ok(blogDto.Message);
         }
       
     }
