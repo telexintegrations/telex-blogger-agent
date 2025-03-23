@@ -17,7 +17,11 @@ namespace TelexBloggerAgent.Services
 
         public RequestProcessingService()
         {
-            
+        }
+
+        private string GetSettingValue(List<Setting> settings, string key)
+        {
+            return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
         }
 
         public async Task<Request> ProcessUserInputAsync(GenerateBlogDto blogDto)
@@ -36,11 +40,7 @@ namespace TelexBloggerAgent.Services
             {
                 prompt = GenerateBlogPrompt(userInput, blogDto.Settings);
             }
-            //else if (classification == RequestType.TopicRequest)
-            //{
-
-            //}
-
+           
             // Step 4: Return structured response
             return new Request
             {
@@ -49,10 +49,6 @@ namespace TelexBloggerAgent.Services
             };
         }
 
-        private string GetSettingValue(List<Setting> settings, string key)
-        {
-            return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
-        }
 
 
         private string GenerateBlogPrompt(string userPrompt, List<Setting> settings)
@@ -123,12 +119,11 @@ namespace TelexBloggerAgent.Services
         private string GenerateSystemMessage(RequestType requestType, List<Setting> settings)
         {
             string systemMessage = "Your name is Mike. You are an AI writing assistant designed for blogging and content generation." +
-                "When the user asks for you to generate or write or blog post, ensure the response is a well-structured, engaging, and informative article.";
-           
-            systemMessage += $" The responses should align with company's brand";                     
-
-            systemMessage += " Use ALL CAPS for important words, and use ✅ for bullet points." +
-                "Introduce yourself when exchanging pleasantries for the first time";
+                "If the user asks for you to generate or write or blog post, ensure the response is a well-structured, engaging, and informative article." +
+                "The responses should align with company's brand" +
+                "Only Introduce yourself when getting acquainted with the user for the first time" +
+                "Use ALL CAPS for important words, and use ✅ for bullet points.";
+          
 
             return systemMessage;
         }

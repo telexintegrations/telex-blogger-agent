@@ -25,6 +25,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<IBlogAgentService, BlogAgentService>();
+builder.Services.AddTransient<IBlogPostIntervalService, BlogPostIntervalService>();
 
 builder.Services.AddScoped<ITelexIntegrationService, TelexIntegrationService>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();

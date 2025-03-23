@@ -7,11 +7,14 @@ namespace TelexBloggerAgent.Services
     public class BlogPostIntervalService : IBlogPostIntervalService
     {
         private readonly IBlogAgentService blogAgentService;
+        private readonly ILogger<BlogPostIntervalService> _logger;
         private System.Timers.Timer _timer;
 
-        public BlogPostIntervalService(IBlogAgentService blogAgentService)
+
+        public BlogPostIntervalService(IBlogAgentService blogAgentService, ILogger<BlogPostIntervalService> logger)
         {
             this.blogAgentService = blogAgentService;
+            _logger = logger;
         }
 
         public void ScheduleBlogPostGeneration(string option, GenerateBlogDto blogPrompt)
@@ -29,11 +32,12 @@ namespace TelexBloggerAgent.Services
                 _timer.Elapsed += (sender, e) => GenerateBlogPost(blogPrompt);
                 _timer.AutoReset = true;
                 _timer.Start();
-                Console.WriteLine($"Blog post scheduler started. Next post in {TimeSpan.FromMilliseconds(interval).TotalHours} hours.");
+                _logger.LogInformation($"Blog post scheduler started. Next post in {TimeSpan.FromMilliseconds(interval).TotalHours} hours.");
             }
             else
             {
-                Console.WriteLine("Blog post scheduler stopped.");
+                _logger.LogInformation("Blog post scheduler stopped.");
+                return;
             }
         }
 
@@ -49,7 +53,7 @@ namespace TelexBloggerAgent.Services
 
         private void GenerateBlogPost(GenerateBlogDto blogPrompt)
         {
-            Console.WriteLine($"Blog post generated at {DateTime.Now}");
+            _logger.LogInformation($"Blog post generated at {DateTime.Now}");
             this.blogAgentService.HandleAsync(blogPrompt);
         }
     }
