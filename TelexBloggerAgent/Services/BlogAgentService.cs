@@ -176,9 +176,18 @@ namespace TelexBloggerAgent.Services
             var jsonPayload = JsonSerializer.Serialize(payload);
             using var telexContent = new StringContent(jsonPayload, new UTF8Encoding(false), "application/json");
 
-            
+            var telexWebhookUrl = settings
+                .FirstOrDefault(s => s.Label == "webhook_url")?.Default
+                .ToString();
+
+            // Throw an error if telex webhook url is empty
+            if (string.IsNullOrEmpty(telexWebhookUrl))
+            {
+                throw new Exception("Telex Webhook Url is null");
+            }
+
             // Send the response to telex
-            var telexResponse = await _httpClient.PostAsync($"{_webhookUrl}/{channelId}", telexContent);
+            var telexResponse = await _httpClient.PostAsync(telexWebhookUrl, telexContent);
 
             if ((int)telexResponse.StatusCode != StatusCodes.Status202Accepted)
             {
