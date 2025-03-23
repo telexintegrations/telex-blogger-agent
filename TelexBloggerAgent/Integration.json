@@ -56,6 +56,20 @@
         "required": false
       },
       {
+        "label": "industry",
+        "type": "text",
+        "description": "Provide the company’s industry.",
+        "default": "https://www.technology-innovators.com",
+        "required": false
+      },
+      {
+        "label": "target_audience",
+        "type": "text",
+        "description": "Provide the company’s target audience.",
+        "default": "https://www.technology-innovators.com",
+        "required": false
+      },
+      {
         "label": "tone",
         "type": "dropdown",
         "description": "Choose the tone for the blog content.",
