@@ -10,7 +10,7 @@ namespace TelexBloggerAgent.Services
 {
     public class BlogAgentService : IBlogAgentService
     {
-        private static readonly List<ChatMessage> list = new();
+        private static readonly List<ChatMessage> conversations = new();
 
         const string identifier = "📝 #TelexBlog"; // Identifier
         private readonly HttpClient _httpClient;
@@ -41,7 +41,8 @@ namespace TelexBloggerAgent.Services
             }
 
             try
-            {
+            {                               
+                
                 // Format the blog prompt based on user input and settings
                 var request = await _requestService.ProcessUserInputAsync(blogPrompt);
                 
@@ -57,7 +58,7 @@ namespace TelexBloggerAgent.Services
                 // Append the identifier to the generated blog post
                 var signedResponse = $"{aiResponse}\n\n{identifier}";
 
-                return signedResponse;
+                  return signedResponse;
                 //// Send the generated blog post to Telex
                 //var suceeded = await SendBlogAsync(signedResponse, blogPrompt.Settings);
 
@@ -85,6 +86,8 @@ namespace TelexBloggerAgent.Services
                 Parts = { new Part { Text = message } }
             };
 
+            conversations.Add(userMessage);
+
             // Create the request body for the Gemini API call
             var requestBody = new GeminiRequest
             {
@@ -92,11 +95,8 @@ namespace TelexBloggerAgent.Services
                 {
                     Parts = { Text = systemMessage } 
                 },
-                Contents =
-                {
-                   
-                    userMessage
-                }
+                Contents = conversations
+               
             };
             // Serialize the request body to JSON
             var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
@@ -112,7 +112,7 @@ namespace TelexBloggerAgent.Services
                 throw new Exception($"An error occured : {response}");
             }
 
-            list.Add(userMessage);
+           
 
             var responseString = await response.Content.ReadAsStringAsync();
             // Deserialize the response from the Gemini API
@@ -147,9 +147,7 @@ namespace TelexBloggerAgent.Services
                 Parts = { new Part { Text = generatedResponse } }
             };
 
-            requestBody.Contents.Add(modelResponse);
-
-            list.Add(modelResponse);
+            conversations.Add(modelResponse);
 
             // Return the generated response
             return generatedResponse;
@@ -157,13 +155,12 @@ namespace TelexBloggerAgent.Services
 
         public async Task<bool> SendBlogAsync(string blogPost, List<Setting> settings)
         {
-            var signedBlogPost = $"{blogPost}\n\n{identifier}";
 
             // Define the payload for the telex channel
             var payload = new
             {
                 event_name = "Blog AI",
-                message = signedBlogPost,
+                message = blogPost,
                 status = "success",
                 username = "Blogger Agent"
             };

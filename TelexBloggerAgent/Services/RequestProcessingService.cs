@@ -11,12 +11,22 @@ namespace TelexBloggerAgent.Services
         { "create", "generate", "write", "blog", "article", "post", "compose" };
 
         private static readonly HashSet<string> TopicKeywords = new()
-        { "suggest", "give", "need", "topic", "idea", "recommend" };
+        { "suggest", "give", "need", "blog", "topic", "idea", "recommend" };
 
+        private readonly CompanyService _companyService;
 
+        public RequestProcessingService()
+        {
+        }
+
+        private string GetSettingValue(List<Setting> settings, string key)
+        {
+            return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
+        }
 
         public async Task<Request> ProcessUserInputAsync(GenerateBlogDto blogDto)
         {
+            
             var userInput = blogDto.Message;
 
             // Step 1: Classify request (e.g., fetch blog, summarize, generate, etc.)
@@ -29,13 +39,8 @@ namespace TelexBloggerAgent.Services
             if (classification == RequestType.BlogRequest)
             {
                 prompt = GenerateBlogPrompt(userInput, blogDto.Settings);
-                systemMessage = "You name is Mike. You are an AI writing assistant designed for blogging and content generation.";
             }
-            //else if (classification == RequestType.TopicRequest)
-            //{
-
-            //}
-
+           
             // Step 4: Return structured response
             return new Request
             {
@@ -44,10 +49,6 @@ namespace TelexBloggerAgent.Services
             };
         }
 
-        private string GetSettingValue(List<Setting> settings, string key)
-        {
-            return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
-        }
 
 
         private string GenerateBlogPrompt(string userPrompt, List<Setting> settings)
@@ -66,7 +67,7 @@ namespace TelexBloggerAgent.Services
             // Adjust tone dynamically
             prompt += tone switch
             {
-                "Professional" => "Use a formal and authoritative tone suitable for industry professionals.",
+                "Professional" => " Use a formal and authoritative tone suitable for industry professionals.",
                 "Casual" => " Use a conversational and friendly tone to keep the content engaging.",
                 "Persuasive" => " Craft the content in a marketing-focused way, encouraging action and conversions.",
                 "Informative" => " Keep the content objective, educational, and easy to understand.",
@@ -74,9 +75,14 @@ namespace TelexBloggerAgent.Services
             };
 
             // Incorporate company branding if provided
-            if (!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(companyOverview))
+            if (!string.IsNullOrWhiteSpace(companyName))
             {
-                prompt += $" Align the content with the company, {companyName}; {companyOverview}.";
+                prompt += $" Align the content with the company, {companyName}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(companyOverview))
+            {
+                prompt += $" Align the content with the company {companyOverview}.";
             }
 
             // Adjust content length
@@ -112,28 +118,12 @@ namespace TelexBloggerAgent.Services
 
         private string GenerateSystemMessage(RequestType requestType, List<Setting> settings)
         {
-            string systemMessage = "Your name is Mike. You are an AI writing assistant designed for blogging and content generation.";
-
-            string companyName = GetSettingValue(settings, "company_name");
-            string companyOverview = GetSettingValue(settings, "company_overview");
-            string tone = GetSettingValue(settings, "tone");
-
-            if (!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(companyOverview))
-            {
-                systemMessage += $" The content should align with {companyName}'s brand: {companyOverview}.";
-            }
-
-            systemMessage += tone switch
-            {
-                "Professional" => " Maintain a professional and authoritative tone.",
-                "Casual" => " Use a conversational and friendly tone.",
-                "Persuasive" => " Craft persuasive, marketing-focused content.",
-                "Informative" => " Keep the content clear, educational, and factual.",
-                _ => ""
-            };
-
-
-            systemMessage += " Use ALL CAPS for important words, and use ✅ for bullet points.";
+            string systemMessage = "Your name is Mike. You are an AI writing assistant designed for blogging and content generation." +
+                "If the user asks for you to generate or write or blog post, ensure the response is a well-structured, engaging, and informative article." +
+                "The responses should align with company's brand" +
+                "Only Introduce yourself when getting acquainted with the user for the first time" +
+                "Use ALL CAPS for important words, and use ✅ for bullet points.";
+          
 
             return systemMessage;
         }
@@ -156,6 +146,14 @@ namespace TelexBloggerAgent.Services
                 return RequestType.TopicRequest;
 
             return RequestType.Uncertain;
+        }
+
+        public string GetBlogIntervalOption(GenerateBlogDto blogDto)
+        {
+            // Retrieve settings dynamically
+            string blogInterval = GetSettingValue(blogDto.Settings, "blog_generation_interval");
+
+            return blogInterval;
         }
     }
 }
