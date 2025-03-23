@@ -1,55 +1,57 @@
-# Telex Blogger Agent V1.1
+
+# Telex Blogger Agent MVP Version
 
 ## Overview
-The **Telex Blogger** Agent is an AI-driven assistant that leverages the **Gemini API** to generate high-quality blog posts. Designed for seamless integration with Telex, it enables users to automate their **blog content** creation effortlessly.
+The **Telex Blogger Agent** is an AI-powered assistant designed to streamline **blog content creation** within Telex. Leveraging the **Gemini API**, this agent allows users to interactively **chat** with AI to generate blog posts, making content creation more dynamic and intuitive.
 
-## What's New in V1.1
-✅ **Personalized Content Generation**: Users can now apply **custom personalization settings** to enhance blog content.
-✅ **Company Website for CTA**: The AI now automatically includes a **call-to-action (CTA)** linking to the user’s company website in the blog post conclusion.
-✅ **Enhanced API Flexibility**: The agent dynamically retrieves settings based on labels, making it more reusable and adaptable.
-✅ **Refactored Codebase**: Improved structure for better scalability and maintainability.
+## What's New in the MVP Version
+✅ **Conversational AI for Blogging**: Users can now chat with the AI to refine blog topics, adjust tone, and request modifications before finalizing content.
+✅ **Dynamic Webhook Retrieval**: The AI now fetches the webhook URL dynamically based on **channel ID**, making integration seamless.
+✅ **Improved User Interaction**: Instead of a single request, users can refine blog content through an interactive chat session.
+✅ **Refactored Codebase**: Optimized structure for enhanced maintainability and scalability.
 
 ## 1. Setting Up the Blogger Agent in Telex
-To begin using the **Blogger Agent** in Telex, follow these steps:
+To start using the **Blogger Agent**, follow these steps:
 
 ### Step 1: Activate the Integration
 1. **Log in** to your **Telex Organization**.
 2. Navigate to the **Integrations** section.
-3. Use the deployed URL of the integration JSON file below to **add the integration** to your organization:
+3. Use the deployed URL below to **add the integration** to your organization:
    
    👉 **Integration URL:**
    ```
    https://telex-blogger-agent-qdp4.onrender.com/api/v1/telex-integration
    ```
 4. Locate **Telex Blogger Agent** in the integration list and **Activate** it.
-5. **Enter your channel’s webhook URL** and **input the personalization options** provided in the settings field. These options help tailor the AI-generated blog posts according to your preferences.
+5. **Enter personalization settings** (e.g., preferred tone, format, company name) to customize blog generation.
 6. Click **Save** to complete the setup.
 
-### Step 2: Generating Blog Content in Telex
-Once the integration is active, you can use the **Blogger Agent** inside any **Telex channel**.
+### Step 2: Chat-Based Blog Generation in Telex
+Once activated, the **Blogger Agent** can be triggered via chat within any **Telex channel**.
 
-#### Triggering the Agent
-You can generate a blog post by sending a message in Telex:
+#### Interactive Chat Mode
+The AI engages in a **conversation** to refine blog content before finalizing it.
 
 👉 **Example Usage:**
 ```
-"Generate a blog post on The Future of AI in Blogging"
+User: Generate a blog post on The Future of AI in Blogging.
+AI: Would you like a professional or casual tone?
+User: Casual.
+AI: Should I include a CTA to your website?
+User: Yes.
+AI: Here’s a draft introduction... Does this align with your vision?
 ```
 
-The agent will **automatically send a structured blog post** to the webhook URL you provided during integration setup in the format of title, introduction, body, and conclusion.
+This chat-based interactivity ensures that users get precisely the content they need before submission.
 
 ## 2. API Endpoints For Testing
-The Blogger Agent provides two API endpoints:
-
----
 
 ### 1️⃣ Generate Blog Post (POST)
-Generates a blog post based on user input with **personalization settings**.
+Generates a blog post based on **user input** with personalization settings.
 
 👉 **Endpoint URL:**
 ```
 POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate-blog
-```
 
 👉 **Request Body (JSON):**
 ```json
@@ -111,16 +113,12 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate
 }
 ```
 
-Note that you can choose only the settings you wish to include but the webhook_url, company__name and company__overview should be included.
+👉 **Key Changes:**
+- **`channel_id`**: Telex now sends a channel ID, which the agent uses to dynamically retrieve the webhook URL.
+- The AI engages users in a **chat-style interaction** before sending the final blog post.
 
 👉 **Response:**
-The response is a plain string containing the message you sent. The blog request is processed in the background.
-
-```
-Generate a blog post on The Impact of AI on Content Writing
-```
-
-Once the blog is generated, it will be **automatically sent** to the channel with the webhook URL you provided. The AI will also **append a call-to-action** at the end linking to your company website (if provided).
+Once finalized, the blog post is sent **automatically** to the webhook URL associated with the provided **channel ID**.
 
 ---
 
@@ -219,21 +217,20 @@ The app will be available at:
 http://localhost:8080
 ```
 
-## 6. Testing the Integration
-To test if the **Blogger Agent** is working as expected:
+
+## 6. Testing the Chat-Based Integration
 
 1️⃣ **Send a Blog Generation Request**
 ```sh
 curl -X POST "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate-blog" \
      -H "Content-Type: application/json" \
-     -d '{ "message": "Generate a blog post on How AI is Changing Blogging" }'
+     -d '{ "message": "Generate a blog post on How AI is Changing Blogging", "channel_id": "123456789" }'
 ```
 
-2️⃣ **Check Response**
-Ensure the output contains the generated blog content.
+2️⃣ **Chat with AI**
+Wait for AI’s response and refine the blog in the chat session.
 
 3️⃣ **Verify in Telex**
-Check your Telex channel to see if the generated blog post was sent to the **channel webhook URL** you provided.
+The finalized blog post will be sent to the **webhook URL** associated with the **channel ID**.
 
-🚀 **Upgrade to V1.1 and take your blog automation to the next level!** 🚀
-
+🚀 **Upgrade to the MVP version and experience AI-powered blog interactivity!** 🚀
