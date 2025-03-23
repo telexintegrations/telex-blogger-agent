@@ -152,6 +152,14 @@ namespace TelexBloggerAgent.Services
 
             return RequestType.Uncertain;
         }
+
+        public string GetBlogIntervalOption(GenerateBlogDto blogDto)
+        {
+            // Retrieve settings dynamically
+            string blogInterval = GetSettingValue(blogDto.Settings, "blog_generation_interval");
+
+            return blogInterval;
+        }
     }
 }
 

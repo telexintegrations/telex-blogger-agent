@@ -6,5 +6,6 @@ namespace TelexBloggerAgent.IServices
     public interface IRequestProcessingService
     {
         Task<Request> ProcessUserInputAsync(GenerateBlogDto blogDto);
+        string GetBlogIntervalOption(GenerateBlogDto blogDto);
     }
 }
