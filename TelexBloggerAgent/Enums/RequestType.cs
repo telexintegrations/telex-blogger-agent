@@ -4,6 +4,7 @@
     {
         TopicRequest,
         BlogRequest,
-        Uncertain
+        Uncertain,
+        RefinementRequest
     }
 }

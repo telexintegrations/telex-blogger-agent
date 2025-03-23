@@ -7,5 +7,6 @@ namespace TelexBloggerAgent.IServices
     {
         Task<Request> ProcessUserInputAsync(GenerateBlogDto blogDto);
         string GetBlogIntervalOption(GenerateBlogDto blogDto);
+        Task<Request> ProcessRefinementRequestAsync(RefineBlogDto blogDto);
     }
 }
