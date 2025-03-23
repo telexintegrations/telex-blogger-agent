@@ -58,15 +58,15 @@ namespace TelexBloggerAgent.Services
                 // Append the identifier to the generated blog post
                 var signedResponse = $"{aiResponse}\n\n{identifier}";
 
-                  return signedResponse;
-                //// Send the generated blog post to Telex
-                //var suceeded = await SendBlogAsync(signedResponse, blogPrompt.Settings);
+                // Send the generated blog post to Telex
+                var suceeded = await SendBlogAsync(signedResponse, blogPrompt.Settings);
 
-                //// Throw an exception if sending the blog post failed
-                //if (!suceeded)
-                //{
-                //    throw new Exception("Failed to send blog post to Telex");
-                //}
+                // Throw an exception if sending the blog post failed
+                if (!suceeded)
+                {
+                    throw new Exception("Failed to send blog post to Telex");
+                }
+                return signedResponse;
 
             }
             catch (Exception ex)
