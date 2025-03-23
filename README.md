@@ -57,13 +57,8 @@ POST https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate
 ```json
 {
   "message": "Generate a blog post on The Impact of AI on Content Writing",
+  "channel_id": "0195bebf-a5e2-7b26-8eb5-a585a61d8188"
   "settings": [
-    {
-      "label": "webhook_url",
-      "type": "text",
-      "required": true,
-      "default": "https://your-webhook-url"
-    },
     {
       "label": "company_name",
       "type": "text",

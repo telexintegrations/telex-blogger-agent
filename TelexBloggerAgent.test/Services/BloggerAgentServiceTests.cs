@@ -108,7 +108,7 @@ namespace TelexBloggerAgent.test.Services
         {
             var settings = new List<Setting> { new Setting { Label = "some_other_setting", Default = "value" } };
 
-            await Assert.ThrowsAsync<Exception>(() => _blogAgentService.SendBlogAsync("Generated Blog", settings));
+            await Assert.ThrowsAsync<Exception>(() => _blogAgentService.SendResponseAsync("Generated Blog", settings));
         }
 
 
@@ -121,7 +121,7 @@ namespace TelexBloggerAgent.test.Services
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.Accepted });
 
-            await _blogAgentService.SendBlogAsync("Generated Blog", settings);
+            await _blogAgentService.SendResponseAsync("Generated Blog", settings);
 
             _loggerMock.Verify(logger =>
                 logger.Log(

@@ -28,13 +28,6 @@
     },
     "settings": [
       {
-        "label": "webhook_url",
-        "type": "text",
-        "description": "Provide your telex channel webhook url.",
-        "default": "",
-        "required": true
-      },
-      {
         "label": "company_name",
         "type": "text",
         "description": "Provide the name of the company/brand that the blog content should align with",

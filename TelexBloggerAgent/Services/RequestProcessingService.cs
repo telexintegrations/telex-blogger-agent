@@ -11,7 +11,7 @@ namespace TelexBloggerAgent.Services
         { "create", "generate", "write", "blog", "article", "post", "compose" };
 
         private static readonly HashSet<string> TopicKeywords = new()
-        { "suggest", "give", "need", "blog", "topic", "idea", "recommend" };
+        { "suggest", "give", "need", "blog", "topic", "topics", "idea", "recommend" };
 
         private readonly CompanyService _companyService;
 
@@ -88,8 +88,8 @@ namespace TelexBloggerAgent.Services
             // Adjust content length
             prompt += blogLength switch
             {
-                "short" => " Keep the article concise, around 300 words, focusing on key points.",
-                "medium" => " Provide a balanced article, around 600 words, with in-depth insights.",
+                "short" => " Keep the article concise, around 400 words, focusing on key points.",
+                "medium" => " Provide a balanced article, around 800 words, with in-depth insights.",
                 "long" => " Create a comprehensive article, around 1000+ words, with detailed analysis.",
                 _ => ""
             };
@@ -122,7 +122,8 @@ namespace TelexBloggerAgent.Services
                 "If the user asks for you to generate or write or blog post, ensure the response is a well-structured, engaging, and informative article." +
                 "The responses should align with company's brand" +
                 "Only Introduce yourself when getting acquainted with the user for the first time" +
-                "Use ALL CAPS for important words, and use ✅ for bullet points.";
+                "Use ALL CAPS for important words, and use ✅ for bullet points." +
+                "Return response without markdown formatting";
           
 
             return systemMessage;
@@ -139,11 +140,8 @@ namespace TelexBloggerAgent.Services
             int blogScore = words.Count(word => BlogKeywords.Contains(word));
             int topicScore = words.Count(word => TopicKeywords.Contains(word));
 
-            if (blogScore > topicScore)
+            if (blogScore > topicScore && blogScore > 2)
                 return RequestType.BlogRequest;
-
-            if (topicScore > blogScore)
-                return RequestType.TopicRequest;
 
             return RequestType.Uncertain;
         }
