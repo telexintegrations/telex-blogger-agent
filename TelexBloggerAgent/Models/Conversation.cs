@@ -9,9 +9,6 @@ namespace TelexBloggerAgent.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = Guid.NewGuid().ToString();
-
-        public string? CompanyId { get; set; } = null; // Links the conversation to a company
-
         public string UserId { get; set; } = null!; // Who started the conversation
 
         public List<Message> Messages { get; set; } = null!;

@@ -57,7 +57,7 @@ namespace TelexBloggerAgent.Services
                 // Append the identifier to the generated blog post
                 var signedResponse = $"{aiResponse}\n\n{identifier}";
 
-                return signedResponse;
+                  return signedResponse;
                 //// Send the generated blog post to Telex
                 //var suceeded = await SendBlogAsync(signedResponse, blogPrompt.Settings);
 
@@ -93,8 +93,7 @@ namespace TelexBloggerAgent.Services
                     Parts = { Text = systemMessage } 
                 },
                 Contents =
-                {
-                   
+                {                   
                     userMessage
                 }
             };
