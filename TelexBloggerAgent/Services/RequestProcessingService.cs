@@ -15,8 +15,9 @@ namespace TelexBloggerAgent.Services
 
         private readonly CompanyService _companyService;
 
-        public RequestProcessingService()
+        public RequestProcessingService(CompanyService companyService)
         {
+            _companyService = companyService;
         }
 
         private string GetSettingValue(List<Setting> settings, string key)
@@ -118,7 +119,7 @@ namespace TelexBloggerAgent.Services
 
         private string GenerateSystemMessage(RequestType requestType, List<Setting> settings)
         {
-            string systemMessage = "Your name is Mike. You are an AI writing assistant designed for blogging and content generation." +
+            string systemMessage = "Your name is Mike. You are a blgger agent designed for blogging and content generation." +
                 "If the user asks for you to generate or write or blog post, ensure the response is a well-structured, engaging, and informative article." +
                 "The responses should align with company's brand" +
                 "Only Introduce yourself when getting acquainted with the user for the first time" +

@@ -6,13 +6,13 @@ using TelexBloggerAgent.IServices;
 using TelexBloggerAgent.Dtos;
 using TelexBloggerAgent.Dtos.GeminiDto;
 using System.Threading.Channels;
+using System.Collections.Concurrent;
 
 namespace TelexBloggerAgent.Services
 {
     public class BlogAgentService : IBlogAgentService
     {
-        private static readonly Dictionary<string, List<ChatMessage>> conversations = new(); // Group messages by channelId
-        private static readonly List<ChatMessage> tconversations = new();
+        private static readonly ConcurrentDictionary<string, List<ChatMessage>> conversations = new(); // Group messages by channelId
 
         const string identifier = "📝 #TelexBlog"; // Identifier
         private readonly HttpClient _httpClient;
@@ -45,27 +45,26 @@ namespace TelexBloggerAgent.Services
             }
 
             try
-            {                               
+            {                              
                 
                 // Format the blog prompt based on user input and settings
                 var request = await _requestService.ProcessUserInputAsync(blogPrompt);
                 
-                // Generate the blog post using the formatted message
+                // Generate the response using the formatted message
                 var aiResponse = await GenerateResponse(request.UserPrompt, request.SystemMessage, blogPrompt.ChannelId);
 
-                // Throw an exception if the blog post generation failed
                 if (string.IsNullOrEmpty(aiResponse))
                 {
                     throw new Exception("Failed to generate response");
                 }
 
-                // Append the identifier to the generated blog post
+                // Append the identifier to the generated agent response
                 var signedResponse = $"{aiResponse}\n\n{identifier}";
 
                 // Send the generated blog post to Telex
                 var suceeded = await SendResponseAsync(signedResponse, blogPrompt.Settings, blogPrompt.ChannelId);
 
-                // Throw an exception if sending the blog post failed
+                
                 if (!suceeded)
                 {
                     throw new Exception("Failed to send blog post to Telex");
@@ -176,9 +175,14 @@ namespace TelexBloggerAgent.Services
             var jsonPayload = JsonSerializer.Serialize(payload);
             using var telexContent = new StringContent(jsonPayload, new UTF8Encoding(false), "application/json");
 
-            var telexWebhookUrl = settings
-                .FirstOrDefault(s => s.Label == "webhook_url")?.Default
-                .ToString();
+            var telexWebhookUrl = $"{_webhookUrl}/{channelId}";
+
+            if (telexWebhookUrl == null)
+            {
+                telexWebhookUrl = settings
+                    .FirstOrDefault(s => s.Label == "webhook_url")?.Default
+                    .ToString();
+            }
 
             // Throw an error if telex webhook url is empty
             if (string.IsNullOrEmpty(telexWebhookUrl))
@@ -194,8 +198,9 @@ namespace TelexBloggerAgent.Services
                 _logger.LogInformation("Failed to send response to telex");
                 return false;
             }
-                string responseContent = await telexResponse.Content.ReadAsStringAsync();
-                _logger.LogInformation("Response successfully sent to telex");
+
+            string responseContent = await telexResponse.Content.ReadAsStringAsync();
+            _logger.LogInformation("Response successfully sent to telex");
 
             return true;
         }

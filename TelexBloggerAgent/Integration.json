@@ -31,7 +31,7 @@
         "label": "webhook_url",
         "type": "text",
         "required": true,
-        "default": "https://your-webhook-url"
+        "default": ""
       },
       {
         "label": "company_name",
@@ -58,14 +58,14 @@
         "label": "industry",
         "type": "text",
         "description": "Provide the company’s industry.",
-        "default": "https://www.technology-innovators.com",
+        "default": "",
         "required": false
       },
       {
         "label": "target_audience",
         "type": "text",
         "description": "Provide the company’s target audience.",
-        "default": "https://www.technology-innovators.com",
+        "default": "",
         "required": false
       },
       {
