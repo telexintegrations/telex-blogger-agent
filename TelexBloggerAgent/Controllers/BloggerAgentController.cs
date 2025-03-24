@@ -29,9 +29,24 @@ namespace TelexBloggerAgent.Controllers
             {
                 return BadRequest("Message and settings are required");
             }
+
+            // Get the request origin (where the request is coming from)
+            string referer = HttpContext.Request.Headers["Referer"].ToString();
+            string origin = HttpContext.Request.Headers["Origin"].ToString();
+
+            if (!string.IsNullOrEmpty(referer))
+            {
+                _logger.LogInformation($"Telex Referer URL: {referer}");
+            }
+            else if (!string.IsNullOrEmpty(origin))
+            {
+                _logger.LogInformation($"Telex Origin URL: {origin}");
+            }
+
+            var channelId = referer.Split('/').LastOrDefault();
+
             if (string.IsNullOrEmpty(blogDto.ChannelId))
             {
-                var channelId = HttpContext.Request.Path.Value.Split('/').Last();
                 blogDto.ChannelId = channelId;
                 _logger.LogInformation("Channel url is null, extracted from URL: " + channelId);
             }
