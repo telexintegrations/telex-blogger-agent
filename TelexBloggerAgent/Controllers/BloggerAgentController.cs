@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using TelexBloggerAgent.Dtos;
 using TelexBloggerAgent.IServices;
 
@@ -33,7 +34,7 @@ namespace TelexBloggerAgent.Controllers
                 _logger.LogInformation("Channel url is null");                
             }
 
-            _logger.LogInformation($"Request received: {blogDto}");
+            _logger.LogInformation($"Request received: {JsonSerializer.Serialize(blogDto)}");
 
             Task.Run(() => _blogService.HandleAsync(blogDto));
 
