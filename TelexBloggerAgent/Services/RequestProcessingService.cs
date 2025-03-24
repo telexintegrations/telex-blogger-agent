@@ -13,12 +13,12 @@ namespace TelexBloggerAgent.Services
         private static readonly HashSet<string> TopicKeywords = new()
         { "suggest", "give", "need", "blog", "topic", "topics", "idea", "recommend" };
 
-        private readonly CompanyService _companyService;
+        //private readonly CompanyService _companyService;
 
-        public RequestProcessingService(CompanyService companyService)
-        {
-            _companyService = companyService;
-        }
+        //public RequestProcessingService(CompanyService companyService)
+        //{
+        //    _companyService = companyService;
+        //}
 
         private string GetSettingValue(List<Setting> settings, string key)
         {
