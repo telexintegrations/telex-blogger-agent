@@ -31,14 +31,15 @@ namespace TelexBloggerAgent.Controllers
             }
             if (string.IsNullOrEmpty(blogDto.ChannelId))
             {
-                _logger.LogInformation("Channel url is null");                
+                var channelId = HttpContext.Request.Path.Value.Split('/').Last();
+                blogDto.ChannelId = channelId;
+                _logger.LogInformation("Channel url is null, extracted from URL: " + channelId);
             }
 
             _logger.LogInformation($"Request received: {JsonSerializer.Serialize(blogDto)}");
 
             Task.Run(() => _blogService.HandleAsync(blogDto));
 
-            //return Ok(blogDto.Message);
             return Ok(blogDto.Message);
         }
       
