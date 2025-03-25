@@ -45,8 +45,16 @@ namespace TelexBloggerAgent.Services
             }
 
             try
-            {                              
-                
+            {
+                var telexWebhookUrl = blogPrompt.Settings
+                    .FirstOrDefault(s => s.Label == "webhook_url")?.Default
+                    .ToString();    
+
+                if (string.IsNullOrEmpty(blogPrompt.ChannelId) && !string.IsNullOrEmpty(telexWebhookUrl))
+                {
+                    blogPrompt.ChannelId = telexWebhookUrl.Split('/').LastOrDefault();
+                }
+
                 // Format the blog prompt based on user input and settings
                 var request = await _requestService.ProcessUserInputAsync(blogPrompt);
                 
@@ -62,7 +70,7 @@ namespace TelexBloggerAgent.Services
                 var signedResponse = $"{aiResponse}\n\n{identifier}";
 
                 // Send the generated blog post to Telex
-                var suceeded = await SendResponseAsync(signedResponse, blogPrompt.Settings, blogPrompt.ChannelId);
+                var suceeded = await SendResponseAsync(signedResponse, telexWebhookUrl, blogPrompt.ChannelId);
 
                 
                 if (!suceeded)
@@ -82,7 +90,8 @@ namespace TelexBloggerAgent.Services
 
         public async Task<string> GenerateResponse(string message, string systemMessage, string channelId)
         {
-            if (channelId == null)
+
+            if (string.IsNullOrEmpty(channelId))
             {
                 throw new Exception("Channel ID is null");
             }
@@ -162,7 +171,7 @@ namespace TelexBloggerAgent.Services
             return generatedResponse;
         }
 
-        public async Task<bool> SendResponseAsync(string blogPost, List<Setting> settings, string channelId)
+        public async Task<bool> SendResponseAsync(string blogPost, string webhookUrl, string channelId)
         {
 
             // Define the payload for the telex channel
@@ -181,11 +190,9 @@ namespace TelexBloggerAgent.Services
 
             var telexWebhookUrl = $"{_webhookUrl}/{channelId}";
 
-            if (telexWebhookUrl == null)
+            if (string.IsNullOrEmpty(channelId))
             {
-                telexWebhookUrl = settings
-                    .FirstOrDefault(s => s.Label == "webhook_url")?.Default
-                    .ToString();
+                telexWebhookUrl = webhookUrl;
             }
 
             // Throw an error if telex webhook url is empty
@@ -197,7 +204,7 @@ namespace TelexBloggerAgent.Services
             // Send the response to telex
             var telexResponse = await _httpClient.PostAsync(telexWebhookUrl, telexContent);
 
-            if ((int)telexResponse.StatusCode != StatusCodes.Status202Accepted)
+            if ((int)telexResponse.StatusCode != StatusCodes.Status202Accepted && telexResponse.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Failed to send response to telex");
                 return false;
