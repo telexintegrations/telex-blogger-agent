@@ -6,9 +6,9 @@
     },
     "descriptions": {
       "app_description": "AI-powered Blogging Assistant for Telex. This integration helps users generate high-quality blog content effortlessly using AI, providing structure, creativity, and SEO optimization.",
-      "app_logo": "https://example.com/blogger-agent-logo.png",
+      "app_logo": "https://res.cloudinary.com/dlu45noef/image/upload/e_gen_remove:prompt_(background);multiple_true/v1742882213/blogger-agent_lbfdiz.jpg",
       "app_name": "AI Blogger Agent",
-      "app_url": "https://example.com/ai-blogger-agent",
+      "app_url": "https://telex-blogger-agent-docs.onrender.com",
       "background_color": "#2ecc71"
     },
     "integration_category": "AI & Machine Learning",
