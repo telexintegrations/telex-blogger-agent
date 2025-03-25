@@ -43,6 +43,15 @@ namespace TelexBloggerAgent.Controllers
             string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
             string fullUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
 
+            string[] pathSegments = HttpContext.Request.Path.Value.Split('/');
+            string lastSegment = pathSegments.LastOrDefault();
+            string channelIdQuery = HttpContext.Request.Query["channelId"];
+            string channelIdHeader = HttpContext.Request.Headers["X-Channel-Id"];
+
+            _logger.LogInformation($"Extracted Channel ID from URL Path: {lastSegment}");
+            _logger.LogInformation($"Extracted Channel ID from Query Params: {channelIdQuery}");
+            _logger.LogInformation($"Extracted Channel ID from Headers: {channelIdHeader}");
+
             _logger.LogInformation($"Telex Host: {host}");
             _logger.LogInformation($"Telex X-Forwarded-For: {forwardedFor}");
             _logger.LogInformation($"Telex IP Address: {ipAddress}");
