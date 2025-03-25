@@ -47,7 +47,14 @@ namespace TelexBloggerAgent.Controllers
             string lastSegment = pathSegments.LastOrDefault();
             string channelIdQuery = HttpContext.Request.Query["channelId"];
             string channelIdHeader = HttpContext.Request.Headers["X-Channel-Id"];
+            string originalUrl = HttpContext.Request.Headers["X-Original-URL"];
 
+            foreach (var header in HttpContext.Request.Headers)
+            {
+                _logger.LogInformation($"Header: {header.Key} = {header.Value}");
+            }
+
+            _logger.LogInformation($"Original URL: {originalUrl}");
             _logger.LogInformation($"Extracted Channel ID from URL Path: {lastSegment}");
             _logger.LogInformation($"Extracted Channel ID from Query Params: {channelIdQuery}");
             _logger.LogInformation($"Extracted Channel ID from Headers: {channelIdHeader}");
