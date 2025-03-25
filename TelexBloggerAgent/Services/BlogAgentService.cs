@@ -82,6 +82,10 @@ namespace TelexBloggerAgent.Services
 
         public async Task<string> GenerateResponse(string message, string systemMessage, string channelId)
         {
+            if (channelId == null)
+            {
+                throw new Exception("Channel ID is null");
+            }
             // Ensure channelId exists in the dictionary
             if (!conversations.ContainsKey(channelId))
             {
