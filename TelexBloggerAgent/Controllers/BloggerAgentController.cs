@@ -22,7 +22,7 @@ namespace TelexBloggerAgent.Controllers
         /// Enter text
         /// </summary>
         [HttpPost("generate-blog")]
-        [ProducesResponseType(typeof(GenerateBlogDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
         {
             if (string.IsNullOrEmpty(blogDto.Message) || !blogDto.Settings.Any())
@@ -34,19 +34,24 @@ namespace TelexBloggerAgent.Controllers
             string referer = HttpContext.Request.Headers["Referer"].ToString();
             string origin = HttpContext.Request.Headers["Origin"].ToString();
 
-            if (!string.IsNullOrEmpty(referer))
-            {
-                _logger.LogInformation($"Telex Referer URL: {referer}");
-            }
-            else if (!string.IsNullOrEmpty(origin))
-            {
-                _logger.LogInformation($"Telex Origin URL: {origin}");
-            }
+            _logger.LogInformation($"Telex Referer URL: {referer}");
+      
+            _logger.LogInformation($"Telex Origin URL: {origin}");
+            
+            string host = HttpContext.Request.Headers["Host"].ToString();
+            string forwardedFor = HttpContext.Request.Headers["X-Forwarded-For"].ToString();
+            string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            string fullUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}{HttpContext.Request.Path}{HttpContext.Request.QueryString}";
 
-            var channelId = referer.Split('/').LastOrDefault();
+            _logger.LogInformation($"Telex Host: {host}");
+            _logger.LogInformation($"Telex X-Forwarded-For: {forwardedFor}");
+            _logger.LogInformation($"Telex IP Address: {ipAddress}");
+            _logger.LogInformation($"Full Request URL: {fullUrl}");
 
-            if (string.IsNullOrEmpty(blogDto.ChannelId))
+            if (string.IsNullOrEmpty(blogDto.ChannelId) && referer != null)
             {
+
+                var channelId = referer.Split('/').LastOrDefault();
                 blogDto.ChannelId = channelId;
                 _logger.LogInformation("Channel url is null, extracted from URL: " + channelId);
             }
