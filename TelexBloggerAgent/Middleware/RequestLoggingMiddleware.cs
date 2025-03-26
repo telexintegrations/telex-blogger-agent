@@ -54,7 +54,7 @@ namespace TelexBloggerAgent.Middleware
                 _logger.LogInformation($"🔍 Incoming Request: {request.Method} {request.Path}");
                 _logger.LogInformation($"📌 Headers: {headers}");
                 _logger.LogInformation($"📌 Query Parameters: {queryParams}");
-                //_logger.LogInformation($"📌 Body: {body}");
+                _logger.LogInformation($"📌 Body: {body}");
 
                 await _next(context);
             }
