@@ -14,28 +14,55 @@ namespace TelexBloggerAgent.Middleware
         }
         public async Task Invoke(HttpContext context)
         {
-            context.Request.EnableBuffering();
-
-            var request = context.Request;
-            var headers = JsonSerializer.Serialize(request.Headers.ToDictionary(headers => headers.Key, headers => headers.Value.ToString()));
-            var queryParams = JsonSerializer.Serialize(request.Query.ToDictionary(query => query.Key, query => query.Value.ToString()));
-            
-            string body = "";
-            if (request.Body.CanRead)
+            try
             {
-                using (var reader = new StreamReader(request.Body, Encoding.UTF8, leaveOpen: true))
+
+                context.Request.EnableBuffering();
+
+                var request = context.Request;
+                var headers = JsonSerializer.Serialize(request.Headers.ToDictionary(headers => headers.Key, headers => headers.Value.ToString()));
+                var queryParams = JsonSerializer.Serialize(request.Query.ToDictionary(query => query.Key, query => query.Value.ToString()));
+            
+                string body = "";
+                if (request.Body.CanRead)
                 {
-                    body = await reader.ReadToEndAsync();
-                    context.Request.Body.Position = 0; // Reset the stream for next middleware
+                    using (var reader = new StreamReader(request.Body, Encoding.UTF8, leaveOpen: true))
+                    {
+                        body = await reader.ReadToEndAsync();
+                        context.Request.Body.Position = 0; // Reset the stream for next middleware
+                    }
                 }
+
+                string formattedBody = body;
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(body))
+                    {
+                        using var jsonDoc = JsonDocument.Parse(body);
+                        formattedBody = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError(ex, "❌ JSON Parsing Error - Malformed request body. Logging raw body.");
+                }
+
+                // Log the raw body (before JSON parsing)
+                _logger.LogInformation("📝 Raw Request Body: {RawBody}", body);
+
+
+                _logger.LogInformation($"🔍 Incoming Request: {request.Method} {request.Path}");
+                _logger.LogInformation($"📌 Headers: {headers}");
+                _logger.LogInformation($"📌 Query Parameters: {queryParams}");
+                //_logger.LogInformation($"📌 Body: {body}");
+
+                await _next(context);
             }
-
-            _logger.LogInformation($"🔍 Incoming Request: {request.Method} {request.Path}");
-            _logger.LogInformation($"📌 Headers: {headers}");
-            _logger.LogInformation($"📌 Query Parameters: {queryParams}");
-            _logger.LogInformation($"📌 Body: {body}");
-
-            await _next(context);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Exception in RequestLoggingMiddleware");
+                throw;
+            }           
         }
     }
 }
