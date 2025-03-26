@@ -2,6 +2,7 @@ using TelexBloggerAgent.Data;
 using TelexBloggerAgent.Helpers;
 using TelexBloggerAgent.IRepositories;
 using TelexBloggerAgent.IServices;
+using TelexBloggerAgent.Middleware;
 using TelexBloggerAgent.Repositories;
 using TelexBloggerAgent.Services;
 
@@ -55,6 +56,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 app.UseCors("AllowAnyOrigin");
+
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.UseHttpsRedirection();
 
