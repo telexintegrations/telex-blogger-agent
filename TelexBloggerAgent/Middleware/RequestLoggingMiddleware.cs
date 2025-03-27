@@ -20,8 +20,8 @@ namespace TelexBloggerAgent.Middleware
                 context.Request.EnableBuffering();
 
                 var request = context.Request;
-                var headers = JsonSerializer.Serialize(request.Headers.ToDictionary(headers => headers.Key, headers => headers.Value.ToString()));
-                var queryParams = JsonSerializer.Serialize(request.Query.ToDictionary(query => query.Key, query => query.Value.ToString()));
+                var headers = JsonSerializer.Serialize(request.Headers.ToDictionary(headers => headers.Key, headers => headers.Value.ToString()), new JsonSerializerOptions { WriteIndented = true });
+                var queryParams = JsonSerializer.Serialize(request.Query.ToDictionary(query => query.Key, query => query.Value.ToString()), new JsonSerializerOptions { WriteIndented = true });
             
                 string body = "";
                 if (request.Body.CanRead)
@@ -47,14 +47,10 @@ namespace TelexBloggerAgent.Middleware
                     _logger.LogError(ex, "❌ JSON Parsing Error - Malformed request body. Logging raw body.");
                 }
 
-                // Log the raw body (before JSON parsing)
-                _logger.LogInformation("📝 Raw Request Body: {RawBody}", body);
-
-
                 _logger.LogInformation($"🔍 Incoming Request: {request.Method} {request.Path}");
                 _logger.LogInformation($"📌 Headers: {headers}");
                 _logger.LogInformation($"📌 Query Parameters: {queryParams}");
-                _logger.LogInformation($"📌 Body: {body}");
+                _logger.LogInformation($"📌 Body: {formattedBody}");
 
                 await _next(context);
             }

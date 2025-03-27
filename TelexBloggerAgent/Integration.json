@@ -29,12 +29,6 @@
     },
     "settings": [
       {
-        "label": "webhook_url",
-        "type": "text",
-        "required": true,
-        "default": ""
-      },
-      {
         "label": "company_name",
         "type": "text",
         "description": "Provide the name of the company/brand that the blog content should align with",

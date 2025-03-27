@@ -34,9 +34,10 @@ namespace TelexBloggerAgent.Controllers
             {
                                
                 _logger.LogInformation("Channel ID is null");
+                throw new ArgumentNullException(nameof(blogDto.ChannelId));
             }
 
-            _logger.LogInformation($"Request received: {JsonSerializer.Serialize(blogDto)}");
+            _logger.LogInformation($"Request received: {JsonSerializer.Serialize(blogDto, new JsonSerializerOptions { WriteIndented = true })}");
 
             Task.Run(() => _blogService.HandleAsync(blogDto));
 
