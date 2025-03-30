@@ -25,29 +25,7 @@ namespace TelexBloggerAgent.IRepositories
 
             _collection = dbContext.GetCollection<T>(collectionName);
 
-            // Ensure index is created for Id
-            var indexKeys = Builders<T>.IndexKeys.Ascending(e => e.Id);
-            var indexOptions = new CreateIndexOptions { Unique = true };
-            _collection.Indexes.CreateOne(new CreateIndexModel<T>(indexKeys, indexOptions));
-
-            // Create indexes for Conversation collection
-            if (typeof(T) == typeof(Conversation))
-            {
-                var indexModels = new List<CreateIndexModel<T>>
-                {
-                    // Index for CompanyId
-                    new CreateIndexModel<T>(Builders<T>.IndexKeys.Ascending("CompanyId")),
             
-                    // Index for UserId
-                    new CreateIndexModel<T>(Builders<T>.IndexKeys.Ascending("UserId")),
-            
-                    // Index for sorting conversations by time
-                    new CreateIndexModel<T>(Builders<T>.IndexKeys.Descending("CreatedAt"))
-                };
-
-                _collection.Indexes.CreateMany(indexModels);
-
-            }
         }
 
         // Create a new document
@@ -59,7 +37,7 @@ namespace TelexBloggerAgent.IRepositories
         // Get document by ID
         public async Task<T?> GetByIdAsync(string id)
         {
-            return await _collection.Find(e => e.Id == id).FirstOrDefaultAsync();
+            return await _collection.Find(e => e.Id == id).FirstOrDefaultAsync();  
         }
 
         // Get all documents

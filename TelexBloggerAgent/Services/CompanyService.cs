@@ -1,44 +1,75 @@
-﻿using TelexBloggerAgent.IRepositories;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using System.Data;
+using TelexBloggerAgent.IRepositories;
+using TelexBloggerAgent.IServices;
 using TelexBloggerAgent.Models;
 
 namespace TelexBloggerAgent.Services
 {
-    public class CompanyService
+    public class CompanyService : ICompanyService
     {
         private readonly IMongoRepository<Company> _companyRepository;
-        private readonly UserService _userService;
+        private readonly IMongoRepository<User> _userRepository;
+        private readonly IUserService _userService;
 
-        public CompanyService(IMongoRepository<Company> companyRepository, UserService userService)
+        public CompanyService(IMongoRepository<Company> companyRepository, IMongoRepository<User> userRepository, IUserService userService)
         {
             _companyRepository = companyRepository;
             _userService = userService;
+            _userRepository = userRepository;
         }
 
-        // Register a company and its channel (first request)
-        public async Task<Company> RegisterCompanyAsync(string companyId, string channelId, string companyName)
+
+        public async Task<Company> AddCompanyAsync(string companyId, string channelId, Company company)
         {
-            var existingCompany = await _companyRepository.GetByIdAsync(companyId);
-            if (existingCompany != null)
-                return existingCompany; // Company already exists
+            if (companyId == null)
+                throw new ArgumentNullException();
 
             var newCompany = new Company
             {
                 Id = companyId,
-                Name = companyName,
-                CreatedAt = DateTime.UtcNow
+                Name = company.Name,
+                Tone = company.Tone,
+                TargetAudience = company.TargetAudience,
+                Overview = company.Overview,
+                Industry = company.Industry,                
             };
 
-            await _companyRepository.CreateAsync(newCompany);
+            var user = await _userService.GetUserAsync(channelId);
 
-            // Register the company’s communication channel as a user
-            await _userService.RegisterUserAsync(channelId, companyId, companyName, null, true);
+            if (user != null)
+            {
+                throw new DuplicateNameException();
+            }
+
+            var newUser = await _userService.AddUserAsync(channelId, newCompany.Id);
+
+            newCompany.Users.Add(newUser);
+
+
+            try
+            {
+                // Register the company’s communication channel as a user
+                await _companyRepository.CreateAsync(newCompany);
+            }
+            catch (Exception)
+            {
+                // Rollback: Delete the company if user creation fails
+                await _userRepository.DeleteAsync(newUser.Id);
+                throw;
+            }
 
             return newCompany;
         }
 
-        // Get company by ID
         public async Task<Company?> GetCompanyByIdAsync(string companyId)
         {
+            if (string.IsNullOrEmpty(companyId))
+            {
+                throw new ArgumentNullException(nameof(companyId));
+            }
+
             return await _companyRepository.GetByIdAsync(companyId);
         }
     }

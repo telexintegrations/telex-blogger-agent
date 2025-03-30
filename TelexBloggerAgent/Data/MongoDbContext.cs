@@ -13,6 +13,6 @@ namespace TelexBloggerAgent.Data
             Database = client.GetDatabase(config.Value.DatabaseName);
         }
 
-        public IMongoCollection<T> GetCollection<T>(string name) => Database.GetCollection<T>(name);
+        public IMongoCollection<T> GetCollection<T>(in string name) => Database.GetCollection<T>(name);
     }
 }

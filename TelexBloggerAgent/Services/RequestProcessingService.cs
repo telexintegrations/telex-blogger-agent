@@ -2,6 +2,7 @@
 using TelexBloggerAgent.Enums;
 using TelexBloggerAgent.Helpers;
 using TelexBloggerAgent.IServices;
+using TelexBloggerAgent.Models;
 
 namespace TelexBloggerAgent.Services
 {
@@ -13,12 +14,14 @@ namespace TelexBloggerAgent.Services
         private static readonly HashSet<string> TopicKeywords = new()
         { "suggest", "give", "need", "blog", "topic", "topics", "idea", "recommend" };
 
-        //private readonly CompanyService _companyService;
+        private readonly ICompanyService _companyService;
+        private readonly IUserService _userService;
 
-        //public RequestProcessingService(CompanyService companyService)
-        //{
-        //    _companyService = companyService;
-        //}
+        public RequestProcessingService(ICompanyService companyService, IUserService userService)
+        {
+            _companyService = companyService;
+            _userService = userService;
+        }
 
         private string GetSettingValue(List<Setting> settings, string key)
         {
@@ -27,21 +30,38 @@ namespace TelexBloggerAgent.Services
 
         public async Task<Request> ProcessUserInputAsync(GenerateBlogDto blogDto)
         {
-            
+            string companyId = blogDto.OrganizationId;
+            string userId = blogDto.ChannelId;
+           
+            var company = await _companyService.GetCompanyByIdAsync(companyId);
+
+            if (company == null)
+            {
+                var companyDetails = ExtractCompanyDetails(blogDto);
+                company = await _companyService.AddCompanyAsync(companyId, userId, companyDetails);
+            }
+
+            var user = await _userService.GetUserAsync(userId);
+
+            if (user == null)
+            {
+                user = await _userService.AddUserAsync(userId, companyId);
+            }
+
             var userInput = blogDto.Message;
 
-            // Step 1: Classify request (e.g., fetch blog, summarize, generate, etc.)
+            // Classify request (e.g., fetch blog, summarize, generate, etc.)
             var classification = ClassifyRequest(userInput);
 
             var prompt = userInput;
             var systemMessage = GenerateSystemMessage(classification, blogDto.Settings);
 
-            // Step 2: Generate appropriate prompt based on classification
+            // Generate appropriate prompt based on classification
             if (classification == RequestType.BlogRequest)
             {
-                prompt = GenerateBlogPrompt(userInput, blogDto.Settings);
+                prompt = GenerateBlogPrompt(userInput, blogDto.Settings, company);
             }
-           
+
             // Step 4: Return structured response
             return new Request
             {
@@ -50,15 +70,39 @@ namespace TelexBloggerAgent.Services
             };
         }
 
+        private Company ExtractCompanyDetails(GenerateBlogDto blogDto)
+        {
 
 
-        private string GenerateBlogPrompt(string userPrompt, List<Setting> settings)
+            // Retrieve settings dynamically
+            string companyName = GetSettingValue(blogDto.Settings, "company_name");
+            string companyOverview = GetSettingValue(blogDto.Settings, "company_overview");
+            string companyWebsite = GetSettingValue(blogDto.Settings, "company_website");
+            string tone = GetSettingValue(blogDto.Settings, "tone");
+            string blogLength = GetSettingValue(blogDto.Settings, "blog_length");
+            string format = GetSettingValue(blogDto.Settings, "format");
+            string targetAudience = GetSettingValue(blogDto.Settings, "target_audience");
+            string industry = GetSettingValue(blogDto.Settings, "industry");
+
+            return new Company
+            {
+                Name = companyName,
+                Industry = industry,
+                Tone = tone,
+                Overview = companyOverview,
+                Website = companyWebsite,
+                TargetAudience = targetAudience
+            };
+
+        }
+
+        private string GenerateBlogPrompt(string userPrompt, List<Setting> settings, Company company)
         {
             // Retrieve settings dynamically
-            string companyName = GetSettingValue(settings, "company_name");
-            string companyOverview = GetSettingValue(settings, "company_overview");
-            string companyWebsite = GetSettingValue(settings, "company_website");
-            string tone = GetSettingValue(settings, "tone");
+            string companyName = company.Name ?? GetSettingValue(settings, "company_name");
+            string companyOverview = company.Overview ?? GetSettingValue(settings, "company_overview");
+            string companyWebsite = company.Website ?? GetSettingValue(settings, "company_website");
+            string tone = company.Tone ?? GetSettingValue(settings, "tone");
             string blogLength = GetSettingValue(settings, "blog_length");
             string format = GetSettingValue(settings, "format");
 
@@ -122,7 +166,7 @@ namespace TelexBloggerAgent.Services
             string systemMessage = "Your name is Mike. You are a blogger agent designed to help companies and its users with blogging and content generation." +
                 "If the user asks for you to generate or write or blog post, ensure the response is a well-structured, engaging, and informative article." +
                 "The responses should align with company's brand." +
-                "If the user asks for topics or ideas, ensure to include trending keywords too." +
+                "If the user asks for topics or ideas, ensure it is structured and include trending keywords too." +
                 "Only Introduce yourself when getting acquainted with the user for the first time" +
                 "Use ALL CAPS for important words, and use ✅ for bullet points." +
                 "Return response without markdown formatting";          
@@ -155,16 +199,15 @@ namespace TelexBloggerAgent.Services
             return blogInterval;
         }
 
-
         public async Task<Request> ProcessRefinementRequestAsync(RefineBlogDto blogDto)
         {
             var userInput = blogDto.Message;
 
-            // Step 1: Generate refinement prompt
+            // Generate refinement prompt
             var prompt = GenerateRefinementPrompt(userInput, blogDto.Settings);
             var systemMessage = GenerateSystemMessage(RequestType.RefinementRequest, blogDto.Settings);
 
-            // Step 2: Return structured response
+            
             return new Request
             {
                 SystemMessage = systemMessage,

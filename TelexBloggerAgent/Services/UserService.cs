@@ -1,11 +1,12 @@
 ﻿using MongoDB.Driver;
 using TelexBloggerAgent.Data;
 using TelexBloggerAgent.IRepositories;
+using TelexBloggerAgent.IServices;
 using TelexBloggerAgent.Models;
 
 namespace TelexBloggerAgent.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IMongoRepository<User> _userRepository;
 
@@ -14,23 +15,24 @@ namespace TelexBloggerAgent.Services
             _userRepository = userRepository;
         }
 
-        public async Task<User> RegisterUserAsync(string userId, string companyId, string? name = null, string? email = null, bool isChannel = false)
+        public async Task<User> AddUserAsync(string userId, string companyId, bool isChannel)
         {
-            var existingUser = await _userRepository.GetByIdAsync(userId);
-            if (existingUser != null)
-                return existingUser; // User already exists
+            if (userId == null || companyId == null)
+                throw new ArgumentNullException();
 
             var newUser = new User
             {
                 Id = userId,  // Telex user/channel ID
                 CompanyId = companyId,
-                Name = name,
-                Email = email,
             };
 
             await _userRepository.CreateAsync(newUser);
             return newUser;
         }
 
+        public async Task<User> GetUserAsync(string userId)
+        {
+            return await _userRepository.GetByIdAsync(userId);
+        }
     }
 }

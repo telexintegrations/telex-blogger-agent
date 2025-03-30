@@ -6,6 +6,6 @@ namespace TelexBloggerAgent.IServices
     {
         Task<string> GenerateResponse(string message, string systemMessage, string channelId);
         Task<string> HandleAsync(GenerateBlogDto blogPrompt);
-        Task<bool> SendResponseAsync(string blogPost, string webhookUrl, string channelId);
+        Task<bool> SendResponseAsync(string blogPost, string channelId);
     }
 }
