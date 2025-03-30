@@ -26,12 +26,15 @@ builder.Services.AddSingleton<MongoDbContext>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<IBlogAgentService, BlogAgentService>();
-builder.Services.AddTransient<IBlogPostIntervalService, BlogPostIntervalService>();
+builder.Services.AddTransient<IBlogPostIntervalService, BlogPostIntervalService>(); 
 
+builder.Services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
 builder.Services.AddScoped<ITelexIntegrationService, TelexIntegrationService>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 builder.Services.AddScoped<IRequestProcessingService, RequestProcessingService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 
 
@@ -44,7 +47,6 @@ builder.Services.AddCors(options =>
                .AllowAnyMethod();
     });
 });
-
 
 var app = builder.Build();
 

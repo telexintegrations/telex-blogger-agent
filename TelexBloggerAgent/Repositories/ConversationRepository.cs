@@ -16,9 +16,9 @@ namespace TelexBloggerAgent.Repositories
             _conversations = dbContext.GetCollection<Conversation>(CollectionType.Convesation);
         }
 
-        public async Task<List<Conversation>> GetConversationsByUserAsync(string userId)
+        public async Task<Conversation> GetConversationsByUserAsync(string userId)
         {
-            return await _conversations.Find(c => c.UserId == userId).ToListAsync();
+            return await _conversations.Find(c => c.UserId == userId).FirstOrDefaultAsync();
         }
 
         public async Task AddMessageAsync(string conversationId, Message message)

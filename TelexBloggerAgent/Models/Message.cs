@@ -8,7 +8,8 @@ namespace TelexBloggerAgent.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = Guid.NewGuid().ToString();  // Unique per message
+        public string Id { get; set; } // Unique per message
+        public string senderId { get; set; }    
         public string ConversationId { get; set; }  // Format: "{CompanyId}_{UserId}"
         public string Role { get; set; } = null!; // "user" or "ai"
         public string Content { get; set; } = null;
