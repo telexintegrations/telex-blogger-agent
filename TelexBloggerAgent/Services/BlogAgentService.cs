@@ -223,9 +223,15 @@ namespace TelexBloggerAgent.Services
                     throw new ArgumentException("Refinement instructions are required.");
                 }
 
+                // Load settings from Integration.json
+                var integrationSettings = LoadIntegrationSettings();
+
                 // Prepare the refinement prompt for Gemini
                 var refinementPrompt = $"Refine the following blog content based on the user's request: {blogPrompt.Message}. " +
                                       $"Make the following changes: {blogPrompt.RefinementInstructions}. " +
+                                      $"Tone: {integrationSettings.Tone}. " +
+                                      $"Blog Length: {integrationSettings.BlogLength}. " +
+                                      $"Format: {integrationSettings.Format}. " +
                                       "Return the refined content as plain text without markdown formatting.";
 
                 // Create the request body for Gemini
@@ -281,6 +287,21 @@ namespace TelexBloggerAgent.Services
                 throw;
             }
         }
+
+        private dynamic LoadIntegrationSettings()
+        {
+            var json = File.ReadAllText("Integration.json");
+            var doc = JsonDocument.Parse(json);
+            var settings = doc.RootElement.GetProperty("data").GetProperty("settings");
+
+            return new
+            {
+                Tone = settings.EnumerateArray().First(s => s.GetProperty("label").GetString() == "tone").GetProperty("default").GetString(),
+                BlogLength = settings.EnumerateArray().First(s => s.GetProperty("label").GetString() == "blog_length").GetProperty("default").GetString(),
+                Format = settings.EnumerateArray().First(s => s.GetProperty("label").GetString() == "format").GetProperty("default").GetString()
+            };
+        }
+
 
         public async Task SuggestTopicsAsync(GenerateBlogDto blogPrompt)
         {
