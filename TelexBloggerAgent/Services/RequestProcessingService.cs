@@ -162,11 +162,6 @@ namespace TelexBloggerAgent.Services
                 prompt += $" Add a call to action in the conclusion of the article. Use the raw link to the company website: {companyWebsite}";
             }
 
-
-            // Formatting preferences
-            prompt += " Use ALL CAPS for section headers and important words, and use ✅ for bullet points.";
-            prompt += " Return the content as plain text without markdown formatting.";
-
             return prompt;
         }
 
