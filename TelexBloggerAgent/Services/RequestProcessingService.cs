@@ -168,7 +168,8 @@ namespace TelexBloggerAgent.Services
 
             // Formatting preferences
             systemMessage += " Use ALL CAPS for important words, and use ✅ for bullet points." +
-                             " Return responses WITHOUT markdown formatting.";
+                             " Return responses WITHOUT markdown formatting." +
+                             "Only introduce yourself when the user says 'hi' or 'hello' and there is no previous conversation history.";
 
             return systemMessage;
         }
