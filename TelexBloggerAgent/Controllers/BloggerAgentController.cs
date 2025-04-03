@@ -25,16 +25,21 @@ namespace TelexBloggerAgent.Controllers
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
         {
-            if (string.IsNullOrEmpty(blogDto.Message) || !blogDto.Settings.Any())
+            if (string.IsNullOrEmpty(blogDto.Message))
             {
-                return BadRequest("Message and settings are required");
+                return BadRequest("Message is required");
             }           
 
             if (string.IsNullOrEmpty(blogDto.ChannelId))
-            {
-                               
+            {                               
                 _logger.LogInformation("Channel ID is null");
-                throw new ArgumentNullException(nameof(blogDto.ChannelId));
+                return BadRequest("Channel ID is required");
+            }
+            
+            if (string.IsNullOrEmpty(blogDto.OrganizationId))
+            {                               
+                _logger.LogInformation("Organization ID is null");
+                return BadRequest("Organization ID is required");
             }
 
             _logger.LogInformation($"Request received: {JsonSerializer.Serialize(blogDto, new JsonSerializerOptions { WriteIndented = true })}");
