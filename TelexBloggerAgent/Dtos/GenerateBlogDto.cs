@@ -18,6 +18,6 @@ namespace TelexBloggerAgent.Dtos
         public string OrganizationId { get; set; }
 
         [JsonPropertyName("settings")]
-        public List<Setting>? Settings { get; set; }
+        public List<Setting>? Settings { get; set; } = new();
     }
 }

@@ -80,14 +80,6 @@
         "required": true
       },
       {
-        "label": "format",
-        "type": "dropdown",
-        "description": "Choose the format for the blog output.",
-        "options": [ "Full Article", "Outline", "Summary" ],
-        "default": "Full Article",
-        "required": false
-      },
-      {
         "label": "blog_generation_interval",
         "type": "dropdown",
         "description": "Select the preferred blog ideas recommendation interval",
@@ -96,6 +88,7 @@
         "required": true
       }
     ],
+    "bot": true,
     "target_url": "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent/generate-blog"
   }
 }
