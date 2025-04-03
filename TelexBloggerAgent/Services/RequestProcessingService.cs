@@ -9,10 +9,14 @@ namespace TelexBloggerAgent.Services
     public class RequestProcessingService : IRequestProcessingService
     {
         private static readonly HashSet<string> BlogKeywords = new()
-        { "create", "generate", "write", "blog", "article", "post", "compose" };
+        { "create", "generate", "write", "blog", "article", "post", "compose", "piece", "draft" };
 
         private static readonly HashSet<string> TopicKeywords = new()
-        { "suggest", "give", "need", "blog", "topic", "topics", "idea", "recommend" };
+        { "suggest", "give", "need", "blog", "topic", "topics", "idea", "recommend", "blog ideas", "article ideas", "content ideas" };
+
+        private static readonly HashSet<string> RefineKeywords = new()
+        { "edit", "refine", "improve", "enhance", "polish", "revise", "rewrite", "update", "restructure", "modify", "optimize", "adjust", "tweak", "fix", "correct", "proofread", "streamline", "better", "make better", "more concise", "shorten", "expand" };
+
 
         private readonly ICompanyService _companyService;
         private readonly IUserService _userService;
@@ -61,7 +65,12 @@ namespace TelexBloggerAgent.Services
             {
                 prompt = GenerateBlogPrompt(userInput, blogDto.Settings, company);
             }
+            else if (classification == RequestType.RefinementRequest) 
+            {
+                prompt = GenerateRefinementPrompt(userInput, blogDto.Settings);
+            }
 
+           
             // Step 4: Return structured response
             return new Request
             {
@@ -163,13 +172,47 @@ namespace TelexBloggerAgent.Services
 
         private string GenerateSystemMessage(RequestType requestType, List<Setting> settings)
         {
-            string systemMessage = "Your name is Mike. You are a blogger agent designed to help companies and its users with blogging and content generation." +
-                "If the user asks for you to generate or write or blog post, ensure the response is a well-structured, engaging, and informative article." +
-                "The responses should align with company's brand." +
-                "If the user asks for topics or ideas, ensure it is structured and include trending keywords too." +
-                "Only Introduce yourself when getting acquainted with the user for the first time" +
-                "Use ALL CAPS for important words, and use ✅ for bullet points." +
-                "Return response without markdown formatting";          
+            string systemMessage = "Your name is Mike. You are a blogging AI assistant.";
+
+            // Retrieve settings dynamically
+            string companyName = GetSettingValue(settings, "company_name");
+            string companyOverview = GetSettingValue(settings, "company_overview");
+            string tone = GetSettingValue(settings, "tone");
+
+            // Base system message with company details
+            systemMessage += $" You are assisting {companyName}. {companyOverview}.";
+
+
+            switch (requestType)
+            {
+                case RequestType.BlogRequest:
+                    systemMessage += " You generate well-structured, engaging, and informative blog posts." +
+                                     " Your responses should be professional and insightful." +
+                                     " Ensure the content is SEO-friendly and follows a " + tone + " tone.";
+                    break;
+
+                case RequestType.RefinementRequest:
+                    systemMessage += " You help improve existing blog posts by making them more engaging, polished, and optimized." +
+                                     " You focus on clarity, conciseness, and structure while preserving the original tone." +
+                                     " Correct any grammatical errors, enhance readability, and apply SEO best practices." +
+                                     " Use a " + tone + " tone as per the company's branding.";
+                    break;
+
+                case RequestType.TopicRequest:
+                    systemMessage += " You provide creative and trending blog topic ideas." +
+                                     " Offer unique angles that will attract readers and generate engagement." +
+                                     " If the user specifies a niche, tailor suggestions accordingly." +
+                                      " Ensure the topics align with " + companyName + "'s industry and audience preferences.";
+                    break;
+
+                default:
+                    systemMessage += " If the request is unclear, ask the user for clarification before proceeding.";
+                    break;
+            }
+
+            // Formatting preferences
+            systemMessage += " Use ALL CAPS for important words, and use ✅ for bullet points." +
+                             " Return responses WITHOUT markdown formatting.";
 
             return systemMessage;
         }
@@ -177,19 +220,34 @@ namespace TelexBloggerAgent.Services
         public static RequestType ClassifyRequest(string message)
         {
             if (string.IsNullOrWhiteSpace(message))
+            {
                 return RequestType.Uncertain;
+            }
 
             // Normalize input: convert to lowercase and split into words
-            var words = message.ToLower().Split(new[] { ' ', '.', ',', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+            var words = message.ToLower().Split(new[] { ' ', '.', ',', '!', '?', '-', ';', ':' }, StringSplitOptions.RemoveEmptyEntries);
 
             int blogScore = words.Count(word => BlogKeywords.Contains(word));
             int topicScore = words.Count(word => TopicKeywords.Contains(word));
+            int refineScore = words.Count(word => RefineKeywords.Contains(word));
 
-            if (blogScore > topicScore && blogScore > 2)
+            // Determine classification based on highest score
+            if (refineScore > blogScore && refineScore > topicScore)
+            {
+                return RequestType.RefinementRequest;
+            }
+            else if (blogScore >= topicScore && blogScore > 1)
+            {
                 return RequestType.BlogRequest;
+            }
+            else if (topicScore > blogScore)
+            {
+                return RequestType.TopicRequest;
+            }
 
             return RequestType.Uncertain;
         }
+
 
         public string GetBlogIntervalOption(GenerateBlogDto blogDto)
         {
