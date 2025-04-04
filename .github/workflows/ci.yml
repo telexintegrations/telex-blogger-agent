@@ -1,0 +1,34 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - dev  # Run tests only on PRs to the "dev" branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4  # Latest stable version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20  # Ensure compatibility with Newman
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run Postman Tests
+        run: |
+          newman run postman/collection.json \
+          --reporters cli,junit \
+          --reporter-junit-export test-results.xml
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-test-results
+          path: test-results.xml
