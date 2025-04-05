@@ -18,17 +18,18 @@ jobs:
         with:
           node-version: 20  # Ensure compatibility with Newman
 
-      - name: Install Newman
-        run: npm install -g newman
+      - name: Install Newman and HTML Reporter
+        run: |
+          npm install -g newman newman-reporter-htmlextra
 
-      - name: Run Postman Tests
+      - name: Run Postman Tests (Generate HTML Report)
         run: |
           newman run postman/collection.json \
-          --reporters cli,junit \
-          --reporter-junit-export test-results.xml
+          --reporters cli,htmlextra \
+          --reporter-htmlextra-export test-report.html
 
-      - name: Upload Test Results
+      - name: Upload HTML Test Report
         uses: actions/upload-artifact@v4
         with:
-          name: postman-test-results
-          path: test-results.xml
+          name: postman-test-report
+          path: test-report.html
