@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using TelexBloggerAgent.Models;
 
 namespace TelexBloggerAgent.Dtos
 {

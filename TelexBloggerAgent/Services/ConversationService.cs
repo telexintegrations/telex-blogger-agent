@@ -13,45 +13,47 @@ namespace TelexBloggerAgent.Services
             _conversationRepository = conversationRepository;
         }
 
-        public async Task<Conversation> StartConversationAsync(string userId, string role, string initialMessage)
-        {
-            var conversation = new Conversation
-            {
-                UserId = userId,
-                Messages = new List<Message>()
+        //public async Task<Conversation> StartConversationAsync(string userId, string role, string initialMessage)
+        //{
+           
 
-            };
+        //    var message = new Message 
+        //    { 
+        //        ConversationId = threadId ?? userId, 
+        //        SourceId = userId, 
+        //        Content = initialMessage, 
+        //        Role = role, 
+        //        Timestamp = DateTime.UtcNow 
+        //    };             
 
-            var message = new Message { ConversationId = conversation.Id, Content = initialMessage, Role = role, Timestamp = DateTime.UtcNow };             
+            
 
-            conversation.Messages.Add(message);
+        //    await _conversationRepository.CreateAsync(message);
+        //    return message;
+        //}
 
-            await _conversationRepository.CreateAsync(conversation);
-            return conversation;
-        }
+        //public async Task<Conversation?> GetConversationAsync(string conversationId)
+        //{
+        //    return await _conversationRepository.GetByIdAsync(conversationId);
+        //}
 
-        public async Task<Conversation?> GetConversationAsync(string conversationId)
-        {
-            return await _conversationRepository.GetByIdAsync(conversationId);
-        }
+        //public async Task<Conversation> GetUserConversationsAsync(string userId)
+        //{
+        //    return await _conversationRepository.GetConversationsByUserAsync(userId);
+        //}
 
-        public async Task<Conversation> GetUserConversationsAsync(string userId)
-        {
-            return await _conversationRepository.GetConversationsByUserAsync(userId);
-        }
+        //public async Task AddMessageAsync(string conversationId, string messageText, string role)
+        //{
+        //    var message = new Message
+        //    {
+        //        ConversationId = conversationId,
+        //        Content = messageText,
+        //        Role = role,
+        //        Timestamp = DateTime.UtcNow
+        //    };
 
-        public async Task AddMessageAsync(string conversationId, string messageText, string role)
-        {
-            var message = new Message
-            {
-                ConversationId = conversationId,
-                Content = messageText,
-                Role = role,
-                Timestamp = DateTime.UtcNow
-            };
-
-            await _conversationRepository.AddMessageAsync(conversationId, message);
-        }
+        //    await _conversationRepository.AddMessageAsync(conversationId, message);
+        //}
     }
 
 }

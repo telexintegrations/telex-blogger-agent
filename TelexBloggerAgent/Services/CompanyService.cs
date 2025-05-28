@@ -21,20 +21,29 @@ namespace TelexBloggerAgent.Services
         }
 
 
-        public async Task<Company> AddCompanyAsync(string companyId, string channelId, Company company)
+        public async Task<Company> AddCompanyAsync(Company company)
         {
-            if (companyId == null)
+            if (company.Id == null)
                 throw new ArgumentNullException();
+
+            var existingCompany = await _companyRepository.GetByIdAsync(company.Id);
+
+            if (existingCompany != null)
+            {
+                throw new Exception("Company already exists");
+            }
 
             var newCompany = new Company
             {
-                Id = companyId,
+                Id = company.Id,
                 Name = company.Name,
                 Tone = company.Tone,
                 TargetAudience = company.TargetAudience,
                 Overview = company.Overview,
-                Industry = company.Industry,                
+                Industry = company.Industry,   
             };
+
+            /*var channelId = company.Users.FirstOrDefault().Id;
 
             var user = await _userService.GetUserAsync(channelId);
 
@@ -42,35 +51,63 @@ namespace TelexBloggerAgent.Services
             {
                 throw new DuplicateNameException();
             }
-
-            var newUser = await _userService.AddUserAsync(channelId, newCompany.Id);
+            var newUser = new User { Id = channelId };
 
             newCompany.Users.Add(newUser);
 
-
             try
             {
-                // Register the company’s communication channel as a user
-                await _companyRepository.CreateAsync(newCompany);
             }
             catch (Exception)
             {
                 // Rollback: Delete the company if user creation fails
                 await _userRepository.DeleteAsync(newUser.Id);
                 throw;
-            }
+            }*/
+                
+            // Register the company’s communication channel as a user
+            await _companyRepository.CreateAsync(newCompany);
 
             return newCompany;
         }
 
-        public async Task<Company?> GetCompanyByIdAsync(string companyId)
+        public async Task<Company> UpdateCompanyAsync(Company company)
         {
-            if (string.IsNullOrEmpty(companyId))
+            if (company.Id == null)
+                throw new ArgumentNullException();
+
+            var companyDoc = await _companyRepository.GetByIdAsync(company.Id);
+
+            if (companyDoc == null)
             {
-                throw new ArgumentNullException(nameof(companyId));
+                throw new Exception("Company not found exists");
             }
 
-            return await _companyRepository.GetByIdAsync(companyId);
+            var existingCompany = companyDoc.Data;
+
+            existingCompany.Id = company.Id ?? existingCompany.Id;
+            existingCompany.Name = company.Name ?? existingCompany.Name;
+            existingCompany.Tone = company.Tone ?? existingCompany.Tone;
+            existingCompany.TargetAudience = company.TargetAudience ?? existingCompany.TargetAudience;
+            existingCompany.Overview = company.Overview ?? existingCompany.Overview;
+            existingCompany.Industry = company.Industry ?? existingCompany.Industry;
+
+
+
+            // Register the company’s communication channel as a user
+            await _companyRepository.UpdateAsync("", existingCompany);
+
+            return existingCompany;
         }
+
+        //public async Task<Company?> GetCompanyByIdAsync(string companyId)
+        //{
+        //    if (string.IsNullOrEmpty(companyId))
+        //    {
+        //        throw new ArgumentNullException(nameof(companyId));
+        //    }
+
+        //    return await _companyRepository.FilterAsync(companyId);
+        //}
     }
 }

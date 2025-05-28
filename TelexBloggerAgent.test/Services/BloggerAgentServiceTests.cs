@@ -6,6 +6,8 @@ using Moq;
 using Moq.Protected;
 using TelexBloggerAgent.Dtos;
 using TelexBloggerAgent.Helpers;
+using TelexBloggerAgent.IServices;
+using TelexBloggerAgent.Models;
 using TelexBloggerAgent.Services;
 
 namespace TelexBloggerAgent.test.Services
@@ -19,6 +21,9 @@ namespace TelexBloggerAgent.test.Services
         private readonly Mock<ILogger<BlogAgentService>> _loggerMock;
         private readonly Mock<IOptions<GeminiSetting>> _geminiSettingsMock;
         private readonly BlogAgentService _blogAgentService;
+        private readonly Mock<IOptions<TelexSetting>> _telexSettingsMock;
+        private readonly Mock<IRequestProcessingService> _requestServiceMock;
+        private readonly Mock<IConversationService> _conversationServiceMock;
 
         private const string Identifier = "📝 #TelexBlog";
         private const string MockGeminiUrl = "https://mock-gemini.com";
@@ -26,21 +31,26 @@ namespace TelexBloggerAgent.test.Services
 
         public BlogAgentServiceTests()
         {
-            _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
-
-            _httpClient = new HttpClient(_httpMessageHandlerMock.Object)
-            {
-                BaseAddress = new Uri(MockGeminiUrl)
+            _httpClient = new HttpClient(_httpMessageHandlerMock.Object) 
+            { 
+                BaseAddress = new Uri(MockGeminiUrl) 
             };
 
+            _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
             _httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(_httpClient);
-
             _loggerMock = new Mock<ILogger<BlogAgentService>>();
             _geminiSettingsMock = new Mock<IOptions<GeminiSetting>>();
             _geminiSettingsMock.Setup(gs => gs.Value).Returns(new GeminiSetting { ApiKey = MockApiKey, GeminiUrl = MockGeminiUrl });
 
-            _blogAgentService = new BlogAgentService(_httpClientFactoryMock.Object, _geminiSettingsMock.Object, _loggerMock.Object);
+            _blogAgentService = new BlogAgentService(
+                _httpClientFactoryMock.Object,
+                _geminiSettingsMock.Object,
+                _telexSettingsMock.Object,
+                _loggerMock.Object,
+                _requestServiceMock.Object,
+                _conversationServiceMock.Object
+            );
         }
 
 
@@ -106,22 +116,25 @@ namespace TelexBloggerAgent.test.Services
         [Fact]
         public async Task SendBlogAsync_ShouldThrowExceptionWhenWebhookUrlIsMissing()
         {
+            var channelId = "";
+
             var settings = new List<Setting> { new Setting { Label = "some_other_setting", Default = "value" } };
 
-            await Assert.ThrowsAsync<Exception>(() => _blogAgentService.SendResponseAsync("Generated Blog", settings));
+            await Assert.ThrowsAsync<Exception>(() => _blogAgentService.SendResponseAsync("Generated Blog", channelId));
         }
 
 
         [Fact]
         public async Task SendBlogAsync_ShouldCallTelexWebhook()
         {
+            var channelId = "";
             var settings = new List<Setting> { new Setting { Label = "webhook_url", Default = "https://telex.com/webhook" } };
 
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.Accepted });
 
-            await _blogAgentService.SendResponseAsync("Generated Blog", settings);
+            await _blogAgentService.SendResponseAsync("Generated Blog", channelId);
 
             _loggerMock.Verify(logger =>
                 logger.Log(

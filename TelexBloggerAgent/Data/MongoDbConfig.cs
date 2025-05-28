@@ -7,7 +7,9 @@ namespace TelexBloggerAgent.Data
     {
         public string ConnectionString { get; set; } = null!;
         public string DatabaseName { get; set; }
-        
+        public string BaseUrl { get; set; }
+        public string ApiKey { get; set; }
+
     }
 
 }

@@ -5,15 +5,13 @@ using TelexBloggerAgent.IRepositories;
 namespace TelexBloggerAgent.Models
 {
     public class Conversation : IEntity
-    {
-        [BsonId]
-        [BsonRepresentation(BsonType.String)]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string UserId { get; set; } = null!; // Who started the conversation
+    {        
+        public string Id { get; set; }
+        public string UserId { get; set; }// Who started the conversation
 
-        public List<Message> Messages { get; set; } = null!;
+        public List<Message> Messages { get; set; } 
 
-        public string? ParentId { get; set; } // If it's a reply, it links to a parent conversation
+        public string? ThreadId { get; set; } // If it's a reply, it links to a parent conversation
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

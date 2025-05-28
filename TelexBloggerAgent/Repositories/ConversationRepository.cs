@@ -13,7 +13,7 @@ namespace TelexBloggerAgent.Repositories
 
         public ConversationRepository(MongoDbContext dbContext) : base(dbContext)
         {
-            _conversations = dbContext.GetCollection<Conversation>(CollectionType.Convesation);
+            //_conversations = dbContext.GetCollection<Conversation>(CollectionType.Convesation);
         }
 
         public async Task<Conversation> GetConversationsByUserAsync(string userId)
@@ -25,7 +25,7 @@ namespace TelexBloggerAgent.Repositories
         {
             var filter = Builders<Conversation>.Filter.Eq(c => c.Id, conversationId);
             var update = Builders<Conversation>.Update.Push(c => c.Messages, message);
-            await UpdateAsync(conversationId, update);
+            await UpdateAsync(conversationId, new Conversation());
         }
     }
 }

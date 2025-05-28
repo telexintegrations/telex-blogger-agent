@@ -1,4 +1,6 @@
-﻿namespace TelexBloggerAgent.Dtos
+﻿using TelexBloggerAgent.Models;
+
+namespace TelexBloggerAgent.Dtos
 {
     public class RefineBlogDto
     {

@@ -22,7 +22,9 @@ builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("Gemi
 builder.Services.Configure<TelexSetting>(builder.Configuration.GetSection("TelexSetting"));
 
 builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("MongoDbSettings"));
-builder.Services.AddSingleton<MongoDbContext>();
+builder.Services.AddScoped<MongoDbContext>();
+builder.Services.AddScoped<HttpHelper>();
+
 
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<IBlogAgentService, BlogAgentService>();
