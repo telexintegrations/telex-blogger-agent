@@ -1,14 +1,15 @@
 ﻿using MongoDB.Driver;
+using TelexBloggerAgent.Models;
 
 namespace TelexBloggerAgent.IRepositories
 {
     public interface IMongoRepository<T> where T : IEntity
     {
-        Task CreateAsync(T entity);
-        Task DeleteAsync(string id);
-        Task<List<T>> GetAllAsync();
-        IQueryable<T> AsQueryable();
-        Task<T?> GetByIdAsync(string id);
-        Task UpdateAsync(string id, UpdateDefinition<T> updateDefinition);
+        Task<bool> CreateAsync(T document);
+        Task<bool> DeleteAsync(string id);
+        Task<List<Document<T?>>> GetAllAsync(object filter);
+        Task<Document<T?>> GetByIdAsync(string id);
+        Task<bool> UpdateAsync(string id, T document);
+        Task<List<Document<T?>>> FilterAsync(object filter);
     }
 }

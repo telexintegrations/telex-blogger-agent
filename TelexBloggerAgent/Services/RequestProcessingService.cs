@@ -1,6 +1,7 @@
 ﻿using TelexBloggerAgent.Dtos;
 using TelexBloggerAgent.Enums;
 using TelexBloggerAgent.Helpers;
+using TelexBloggerAgent.IRepositories;
 using TelexBloggerAgent.IServices;
 using TelexBloggerAgent.Models;
 
@@ -20,11 +21,13 @@ namespace TelexBloggerAgent.Services
 
         private readonly ICompanyService _companyService;
         private readonly IUserService _userService;
+        private readonly IMongoRepository<Company> _companyRepository;
 
-        public RequestProcessingService(ICompanyService companyService, IUserService userService)
+        public RequestProcessingService(ICompanyService companyService, IUserService userService, IMongoRepository<Company> companyRepository)
         {
             _companyService = companyService;
             _userService = userService;
+            _companyRepository = companyRepository;
         }
 
         private string GetSettingValue(List<Setting> settings, string key)
@@ -36,21 +39,30 @@ namespace TelexBloggerAgent.Services
         {
             string companyId = blogDto.OrganizationId;
             string userId = blogDto.ChannelId;
-           
-            var company = await _companyService.GetCompanyByIdAsync(companyId);
 
-            if (company == null)
-            {
-                var companyDetails = ExtractCompanyDetails(blogDto);
-                company = await _companyService.AddCompanyAsync(companyId, userId, companyDetails);
-            }
+            //var companies = await _companyRepository.FilterAsync(new
+            //{
+            //    tag = "company",
+            //    organisation_id = companyId
+            //});
 
-            var user = await _userService.GetUserAsync(userId);
+            var company = new Document<Company>(){ Data = new Company()};
 
-            if (user == null)
-            {
-                user = await _userService.AddUserAsync(userId, companyId);
-            }
+            //if ( !companies.Any() || companies.Count == 0 || companies == null)
+            // company = companies.FirstOrDefault();
+
+            ////var company = companies.FirstOrDefault(c => c.OrganizationId == companyId);
+
+            //if (company == null)
+            //{
+            //    //var companyDetails = ExtractCompanyDetails(blogDto);
+            //    var newCompany = new Company()
+            //    {
+            //        Id = companyId,
+            //    };
+
+            //    await _companyService.AddCompanyAsync(newCompany);
+            //}
 
             var userInput = blogDto.Message;
 
@@ -63,7 +75,7 @@ namespace TelexBloggerAgent.Services
             // Generate appropriate prompt based on classification
             if (classification == RequestType.BlogRequest)
             {
-                prompt = GenerateBlogPrompt(userInput, blogDto.Settings, company);
+                prompt = GenerateBlogPrompt(userInput, blogDto.Settings, company.Data);
             }
             else if (classification == RequestType.RefinementRequest) 
             {
@@ -81,7 +93,6 @@ namespace TelexBloggerAgent.Services
 
         private Company ExtractCompanyDetails(GenerateBlogDto blogDto)
         {
-
 
             // Retrieve settings dynamically
             string companyName = GetSettingValue(blogDto.Settings, "company_name");
@@ -167,7 +178,7 @@ namespace TelexBloggerAgent.Services
 
         private string GenerateSystemMessage(RequestType requestType, List<Setting> settings)
         {
-            string systemMessage = "Your name is Mike. You are a blogging AI assistant.";
+            string systemMessage = "Your name is Mike. You are a blogging agent who specializes in creating insightful and engaging blog content.";
 
             // Retrieve settings dynamically
             string companyName = GetSettingValue(settings, "company_name");
@@ -243,7 +254,6 @@ namespace TelexBloggerAgent.Services
 
             return RequestType.Uncertain;
         }
-
 
         public string GetBlogIntervalOption(GenerateBlogDto blogDto)
         {

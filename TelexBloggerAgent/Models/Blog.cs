@@ -5,14 +5,10 @@ using TelexBloggerAgent.IRepositories;
 namespace TelexBloggerAgent.Models
 {
     public class Blog : IEntity
-    {
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
+    {        
         public string Id { get; set; } = null;
 
         public string UserId { get; set; } = null; // Reference to the user who created the blog
-
-        public string CompanyId { get; set; } = null; // Reference to the company
 
         public string Title { get; set; } = null;
 

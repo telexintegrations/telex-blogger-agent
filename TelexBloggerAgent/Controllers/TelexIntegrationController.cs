@@ -20,7 +20,8 @@ namespace TelexBloggerAgent.Controllers
         public IActionResult GetIntegrationConfig()
         {
 
-            var integrationJson = _integrationService.LoadIntegration();
+            var integrationJson = Agent_A2A.GetAgentA2A();
+            //var integrationJson = _integrationService.LoadIntegration();
 
             if (integrationJson == null)
             {

@@ -23,7 +23,6 @@ namespace TelexBloggerAgent.Services
             var newUser = new User
             {
                 Id = userId,  // Telex user/channel ID
-                CompanyId = companyId,
             };
 
             await _userRepository.CreateAsync(newUser);
@@ -32,7 +31,8 @@ namespace TelexBloggerAgent.Services
 
         public async Task<User> GetUserAsync(string userId)
         {
-            return await _userRepository.GetByIdAsync(userId);
+            //return await _userRepository.GetByIdAsync(userId);
+            return null;
         }
     }
 }

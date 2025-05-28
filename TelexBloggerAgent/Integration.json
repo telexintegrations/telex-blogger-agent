@@ -46,7 +46,7 @@
         "label": "company_website",
         "type": "text",
         "description": "Provide the company’s website URL to be included in the blog post conclusion.",
-        "default": "https://www.technology-innovators.com",
+        "default": "",
         "required": false
       },
       {
@@ -68,7 +68,7 @@
         "type": "dropdown",
         "description": "Choose the tone for the blog content.",
         "options": [ "Professional", "Casual", "Persuasive", "Informative" ],
-        "default": "Informative",
+        "default": "",
         "required": true
       },
       {
@@ -78,6 +78,14 @@
         "options": [ "short", "medium", "long" ],
         "default": "medium",
         "required": true
+      },
+      {
+        "label": "format",
+        "type": "dropdown",
+        "description": "Choose the format for the blog output.",
+        "options": [ "Full Article", "Outline", "Summary" ],
+        "default": "Full Article",
+        "required": false
       },
       {
         "label": "blog_generation_interval",

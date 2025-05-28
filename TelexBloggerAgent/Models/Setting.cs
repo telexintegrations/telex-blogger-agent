@@ -1,4 +1,4 @@
-﻿namespace TelexBloggerAgent.Dtos
+﻿namespace TelexBloggerAgent.Models
 {
     public class Setting
     {
