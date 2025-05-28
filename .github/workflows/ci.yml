@@ -1,0 +1,35 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - dev  # Run tests only on PRs to the "dev" branch
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4  # Latest stable version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20  # Ensure compatibility with Newman
+
+      - name: Install Newman and HTML Reporter
+        run: |
+          npm install -g newman newman-reporter-htmlextra
+
+      - name: Run Postman Tests (Generate HTML Report)
+        run: |
+          newman run postman/collection.json \
+          --reporters cli,htmlextra \
+          --reporter-htmlextra-export test-report.html
+
+      - name: Upload HTML Test Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: postman-test-report
+          path: test-report.html

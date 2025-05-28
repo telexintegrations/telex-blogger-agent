@@ -4,161 +4,176 @@ using System.Text;
 using TelexBloggerAgent.Helpers;
 using TelexBloggerAgent.IServices;
 using TelexBloggerAgent.Dtos;
+using TelexBloggerAgent.Dtos.GeminiDto;
+using System.Threading.Channels;
+using System.Collections.Concurrent;
+using TelexBloggerAgent.Models;
 
 namespace TelexBloggerAgent.Services
 {
     public class BlogAgentService : IBlogAgentService
     {
+        //private static readonly ConcurrentDictionary<string, List<ChatMessage>> conversations = new(); // Group messages by channelId
+
         const string identifier = "📝 #TelexBlog"; // Identifier
         private readonly HttpClient _httpClient;
+        private ILogger<BlogAgentService> _logger;
+        private string _webhookUrl;
         private readonly string _apiKey;
         private readonly string _geminiUrl;
-        private ILogger<BlogAgentService> _logger;
+        private readonly IRequestProcessingService _requestService;
+        private readonly IConversationService _conversationService;
 
-        public BlogAgentService(IHttpClientFactory httpClientFactory, IOptions<GeminiSetting> geminiSettings, ILogger<BlogAgentService> logger)
+
+        public BlogAgentService(
+            IHttpClientFactory httpClientFactory, 
+            IOptions<GeminiSetting> geminiSettings, 
+            IOptions<TelexSetting> telexSettings, 
+            ILogger<BlogAgentService> logger, 
+            IRequestProcessingService requestService,
+            IConversationService conversationService)
         {
             _httpClient = httpClientFactory.CreateClient();
             _apiKey = geminiSettings.Value.ApiKey;
             _geminiUrl = geminiSettings.Value.GeminiUrl;
+            _webhookUrl = telexSettings.Value.WebhookUrl;
+            _requestService = requestService;
             _logger = logger;
+            _conversationService = conversationService;
         }
 
-        private string GetSettingValue(List<Setting> settings, string key)
+       
+
+        public async Task<string> HandleAsync(GenerateBlogDto blogPrompt)
         {
-            return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
-        }
-
-        private string FormatBlogPrompt(string userPrompt, List<Setting> settings)
-        {
-            // Retrieve settings dynamically
-            string companyName = GetSettingValue(settings, "company_name");
-            string companyOverview = GetSettingValue(settings, "company_overview");
-            string companyWebsite = GetSettingValue(settings, "company_website");
-            string tone = GetSettingValue(settings, "tone");
-            string blogLength = GetSettingValue(settings, "blog_length");
-            string format = GetSettingValue(settings, "format");
-
-            // Base prompt structure
-            string prompt = $"{userPrompt}. Ensure the response is a well-structured, engaging, and informative article.";
-
-            // Adjust tone dynamically
-            prompt += tone switch
-            {
-                "Professional" => " Use a formal and authoritative tone suitable for industry professionals.",
-                "Casual" => " Use a conversational and friendly tone to keep the content engaging.",
-                "Persuasive" => " Craft the content in a marketing-focused way, encouraging action and conversions.",
-                "Informative" => " Keep the content objective, educational, and easy to understand.",
-                _ => ""
-            };
-
-            // Incorporate company branding if provided
-            if (!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(companyOverview))
-            {
-                prompt += $" Align the content with the company, {companyName}; {companyOverview}.";
-            }
-
-            // Adjust content length
-            prompt += blogLength switch
-            {
-                "short" => " Keep the article concise, around 300 words, focusing on key points.",
-                "medium" => " Provide a balanced article, around 600 words, with in-depth insights.",
-                "long" => " Create a comprehensive article, around 1000+ words, with detailed analysis.",
-                _ => ""
-            };
-
-            // Format preference
-            prompt += format switch
-            {
-                "Outline" => " Return the response as a structured outline with key points.",
-                "Summary" => " Summarize the content concisely, highlighting key takeaways.",
-                "Full Article" => " Structure the response with a title, introduction, body, and conclusion, but do not explicitly categorize them.",
-                _ => ""
-            };
-
-            if (!string.IsNullOrWhiteSpace(companyWebsite))
-            {
-                prompt += $" Add a call to action in the conclusion of the article. Use the raw link to the company website: {companyWebsite}";
-            }
-
-
-            // Formatting preferences
-            prompt += " Use ALL CAPS for section headers and important words, and use ✅ for bullet points.";
-            prompt += " Return the content as plain text without markdown formatting.";
-
-            return prompt;
-        }
-
-
-        public async Task GenerateBlogAsync(GenerateBlogDto blogPrompt)
-        {
+            // Check if the message contains the identifier to prevent a loop
             if (blogPrompt.Message.Contains(identifier))
             {
-                _logger.LogInformation("Telex message contains identifier. Skipping API call to prevent loop.");
-                return;
+                _logger.LogInformation("Identifier detected. Skipping API call to prevent loop.");
+                return null;
             }
 
             try
-            {
-                // Request body for Gemini api call
-                var requestBody = new
+            {                
+                // Format the blog prompt based on user input and settings
+                var request = await _requestService.ProcessUserInputAsync(blogPrompt);
+                
+                // Generate the response using the formatted message
+                var aiResponse = await GenerateResponse(request.UserPrompt, request.SystemMessage, blogPrompt.ChannelId);
+
+                if (string.IsNullOrEmpty(aiResponse))
                 {
-                    contents = new[]
-                    {
-                        new 
-                        { 
-                            role = "user", 
-                            parts = new[] 
-                            { 
-                                new 
-                                { 
-                                    text = FormatBlogPrompt(blogPrompt.Message, blogPrompt.Settings)
-                                } 
-                            } 
-                        }
-                    }
-                };
-
-                var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-
-                _logger.LogInformation("Generating blog post.....");
-
-                var response = await _httpClient.PostAsync($"{_geminiUrl}?key={_apiKey}", content);
-                var responseString = await response.Content.ReadAsStringAsync();
-
-                var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
-
-                var blogPost = responseJson.GetProperty("candidates")[0]
-                    .GetProperty("content")
-                    .GetProperty("parts")[0]
-                    .GetProperty("text")
-                    .GetString();
-
-                if (blogPost == null)
-                {
-                    throw new Exception("Failed to generate blog post");
+                    throw new Exception("Failed to generate response");
                 }
 
-                _logger.LogInformation("Blog post generated successfully");
+                // Append the identifier to the generated agent response
+                var signedResponse = $"{aiResponse}\n\n{identifier}";
 
-                await SendBlogAsync(blogPost, blogPrompt.Settings);
+                // Send the generated blog post to Telex
+                var suceeded = await SendResponseAsync(signedResponse, blogPrompt.ChannelId);
+
+                
+                if (!suceeded)
+                {
+                    throw new Exception("Failed to send blog post to Telex");
+                }
+                return signedResponse;
+
             }
             catch (Exception ex)
             {
+                // Log the error and rethrow the exception
                 _logger.LogError(ex, "Failed to generate blog post");
                 throw;
             }
         }
 
-        public async Task SendBlogAsync(string blogPost, List<Setting> settings)
+        public async Task<string> GenerateResponse(string message, string systemMessage, string channelId)
         {
-            var signedBlogPost = $"{blogPost}\n\n{identifier}";
-           
+            var conversation = await _conversationService.GetUserConversationsAsync(channelId);
+            
+            // Create a new conversation and add the message
+            if (conversation == null)
+            {
+               conversation = await _conversationService.StartConversationAsync(channelId, "user", message);
+            }
+            else
+            {
+                // Add the message
+                await _conversationService.AddMessageAsync(conversation.Id, message, "user");
+
+                conversation.Messages.Add(new Message() { Role = "user", Content = message });
+            }                  
+
+            // Prepare the AI request body
+            var requestBody = new GeminiRequest
+            {
+                SystemInstruction = new SystemMessage
+                {
+                    Parts = { Text = systemMessage }
+                },
+                //Contents = conversations[channelId] // Send only messages for this channel
+                Contents = conversation.Messages.Select(c => new ChatMessage()
+                {
+                    Role = c.Role,
+                    Parts = { new Part { Text = c.Content } }
+                }).ToList() // Send only messages for this channel
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+            _logger.LogInformation("Sending message to AI for channel {channelId}...", channelId);
+
+            var response = await _httpClient.PostAsync($"{_geminiUrl}?key={_apiKey}", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("Failed to send message to AI for channel {channelId}.", channelId);
+                throw new Exception("Error communicating with AI");
+            }
+        
+                       
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            // Deserialize the response from the Gemini API
+            var responseJson = JsonSerializer.Deserialize<JsonElement>(responseString);
+
+            // Check if the response contains candidates
+            if (!responseJson.TryGetProperty("candidates", out var candidates) && candidates.GetArrayLength() > 0)
+            {
+                _logger.LogWarning("No candidates found in the response.");
+                throw new Exception("Invalid API response: No candidates.");
+            }
+
+            // Extract the generated response from the first candidate
+            var generatedResponse = candidates[0]
+                .GetProperty("content")
+                .GetProperty("parts")[0]
+                .GetProperty("text")
+                .GetString();
+
+            // Check if the generated response is null
+            if (string.IsNullOrEmpty(generatedResponse))
+            {
+                throw new Exception("Failed to generate response");
+            }
+
+            _logger.LogInformation("Message successfully generated by the AI for channel {channelId}.", channelId);
+
+            await _conversationService.AddMessageAsync(conversation.Id, generatedResponse, "model");
+
+            // Return the generated response
+            return generatedResponse;
+        }
+
+        public async Task<bool> SendResponseAsync(string blogPost, string channelId)
+        {
+
             // Define the payload for the telex channel
             var payload = new
             {
                 event_name = "Blog AI",
-                message = signedBlogPost,
-                status = "success",
+                message = blogPost,
+                status = "success", 
                 username = "Blogger Agent"
             };
 
@@ -166,22 +181,29 @@ namespace TelexBloggerAgent.Services
             var jsonPayload = JsonSerializer.Serialize(payload);
             using var telexContent = new StringContent(jsonPayload, new UTF8Encoding(false), "application/json");
 
-            var telexWebhookUrl = settings                
-                .FirstOrDefault(s => s.Label == "webhook_url")?.Default
-                .ToString();
 
-            if (string.IsNullOrEmpty(telexWebhookUrl))
+            if (string.IsNullOrEmpty(channelId))
             {
-                throw new Exception("Telex Webhook Url is null");
+                throw new Exception("Channel ID is null");
             }
 
+            var telexWebhookUrl = $"{_webhookUrl}/{channelId}";
+
+           
+            // Send the response to telex
             var telexResponse = await _httpClient.PostAsync(telexWebhookUrl, telexContent);
 
-            if ((int)telexResponse.StatusCode == StatusCodes.Status202Accepted)
+            if ((int)telexResponse.StatusCode != StatusCodes.Status202Accepted || !telexResponse.IsSuccessStatusCode)
             {
-                string responseContent = await telexResponse.Content.ReadAsStringAsync();
-                _logger.LogInformation("Blog post successfully sent to telex");
+                _logger.LogInformation("Failed to send response to telex");
+                return false;
             }
+
+            string responseContent = await telexResponse.Content.ReadAsStringAsync();
+
+            _logger.LogInformation("Response successfully sent to telex");
+
+            return true;
         }
     }
 }

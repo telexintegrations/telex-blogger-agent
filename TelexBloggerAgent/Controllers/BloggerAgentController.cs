@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using TelexBloggerAgent.Dtos;
 using TelexBloggerAgent.IServices;
 
@@ -21,20 +22,32 @@ namespace TelexBloggerAgent.Controllers
         /// Enter text
         /// </summary>
         [HttpPost("generate-blog")]
-        [ProducesResponseType(typeof(GenerateBlogDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
         {
-            if (string.IsNullOrEmpty(blogDto.Message) || blogDto.Settings == null)
+            if (string.IsNullOrEmpty(blogDto.Message))
             {
-                return BadRequest("Message or Settings cannot be null");
+                return BadRequest("Message is required");
+            }           
+
+            if (string.IsNullOrEmpty(blogDto.ChannelId))
+            {                               
+                _logger.LogInformation("Channel ID is null");
+                return BadRequest("Channel ID is required");
+            }
+            
+            if (string.IsNullOrEmpty(blogDto.OrganizationId))
+            {                               
+                _logger.LogInformation("Organization ID is null");
+                return BadRequest("Organization ID is required");
             }
 
-            _logger.LogInformation($"{blogDto}");
+            _logger.LogInformation($"Request received: {JsonSerializer.Serialize(blogDto, new JsonSerializerOptions { WriteIndented = true })}");
 
-            Task.Run(() => _blogService.GenerateBlogAsync(blogDto));
+            Task.Run(() => _blogService.HandleAsync(blogDto));
 
             return Ok(blogDto.Message);
         }
-                        
+      
     }
 }

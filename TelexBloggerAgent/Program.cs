@@ -1,5 +1,9 @@
+using TelexBloggerAgent.Data;
 using TelexBloggerAgent.Helpers;
+using TelexBloggerAgent.IRepositories;
 using TelexBloggerAgent.IServices;
+using TelexBloggerAgent.Middleware;
+using TelexBloggerAgent.Repositories;
 using TelexBloggerAgent.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,14 +14,29 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// Bind MongoDB settings
 
-builder.Services.AddHttpClient();
-builder.Services.AddTransient<IBlogAgentService, BlogAgentService>();
-
-builder.Services.AddScoped<ITelexIntegrationService, TelexIntegrationService>();
+builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("MongoDbConfig"));
 
 builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("GeminiSetting"));
 builder.Services.Configure<TelexSetting>(builder.Configuration.GetSection("TelexSetting"));
+
+builder.Services.Configure<MongoDbConfig>(builder.Configuration.GetSection("MongoDbSettings"));
+builder.Services.AddSingleton<MongoDbContext>();
+
+builder.Services.AddHttpClient();
+builder.Services.AddTransient<IBlogAgentService, BlogAgentService>();
+builder.Services.AddTransient<IBlogPostIntervalService, BlogPostIntervalService>(); 
+
+builder.Services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
+builder.Services.AddScoped<ITelexIntegrationService, TelexIntegrationService>();
+builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IRequestProcessingService, RequestProcessingService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
+
 
 builder.Services.AddCors(options =>
 {
@@ -29,7 +48,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -40,6 +58,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 app.UseCors("AllowAnyOrigin");
+
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.UseHttpsRedirection();
 
