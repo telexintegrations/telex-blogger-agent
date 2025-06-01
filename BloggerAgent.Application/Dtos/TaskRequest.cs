@@ -25,7 +25,7 @@ namespace BloggerAgent.Application.Dtos
                 {
                     Id = "0195c514-2292-71e2-9378-21d11be2ad8c",
                     SessionId = "0195c514-2292-71e2-9378-21d11be2ad8c",
-                    Message = new Message
+                    Message = new TaskMessage
                     {
                         Role = "user",
                         Parts = new List<MessagePart>
@@ -53,14 +53,14 @@ namespace BloggerAgent.Application.Dtos
     {
         public string Id { get; set; }           // task id
         public string SessionId { get; set; }    // session id (same as id here)
-        public Message Message { get; set; }
+        public TaskMessage Message { get; set; }
         public List<string>? AcceptedOutputModes { get; set; }  // can be null
         public bool? PushNotification { get; set; }
         public int? HistoryLength { get; set; }
         public Dictionary<string, object>? Metadata { get; set; }
     }
 
-    public class Message
+    public class TaskMessage
     {
         public string Role { get; set; }  // e.g., "user"
         public List<MessagePart> Parts { get; set; }

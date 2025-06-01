@@ -26,7 +26,7 @@ namespace BloggerAgent.Application.Dtos
                     Status = new Status
                     {
                         State = "completed",
-                        Message = new Message
+                        Message = new TaskMessage
                         {
                             Role = "agent",
                             Parts = new List<MessagePart>
@@ -95,14 +95,14 @@ namespace BloggerAgent.Application.Dtos
         public string SessionId { get; set; }
         public Status Status { get; set; }
         public List<Artifact> Artifacts { get; set; }
-        public List<Message>? History { get; set; }
+        public List<TaskMessage>? History { get; set; }
         public Dictionary<string, object>? Metadata { get; set; }
     }
 
     public class Status
     {
         public string State { get; set; }          // e.g., "completed"
-        public Message Message { get; set; }
+        public TaskMessage Message { get; set; }
         public DateTime Timestamp { get; set; }
     }
 
