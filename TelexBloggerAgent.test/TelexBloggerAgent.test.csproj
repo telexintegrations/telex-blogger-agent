@@ -18,7 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TelexBloggerAgent\TelexBloggerAgent.csproj" />
+    <ProjectReference Include="..\BloggerAgent.Application\BloggerAgent.Application.csproj" />
+    <ProjectReference Include="..\TelexBloggerAgent\BloggerAgent.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

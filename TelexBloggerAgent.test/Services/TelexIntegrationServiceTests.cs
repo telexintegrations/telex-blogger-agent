@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TelexBloggerAgent.test.Services
+namespace BloggerAgent.test.Services
 {
     public class TelexIntegrationService
     {

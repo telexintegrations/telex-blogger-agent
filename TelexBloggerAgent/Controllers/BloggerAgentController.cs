@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BloggerAgent.Application.Dtos;
+using BloggerAgent.Application.IServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using TelexBloggerAgent.Dtos;
-using TelexBloggerAgent.IServices;
-
-namespace TelexBloggerAgent.Controllers
+namespace BloggerAgent.Api.Controller
 {
     [Route("api/v1/blogger-agent")]
     [ApiController]
@@ -21,7 +20,7 @@ namespace TelexBloggerAgent.Controllers
         /// <summary>
         /// Enter text
         /// </summary>
-        [HttpPost("generate-blog")]
+        [HttpPost]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
         {
@@ -44,9 +43,9 @@ namespace TelexBloggerAgent.Controllers
 
             _logger.LogInformation($"Request received: {JsonSerializer.Serialize(blogDto, new JsonSerializerOptions { WriteIndented = true })}");
 
-            Task.Run(() => _blogService.HandleAsync(blogDto));
+            string response = await _blogService.HandleAsync(blogDto);
 
-            return Ok(blogDto.Message);
+            return Ok(response);
         }
       
     }

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TelexBloggerAgent.IServices;
+using BloggerAgent.Application.IServices;
+using BloggerAgent.Domain.Commons;
 
-namespace TelexBloggerAgent.Controllers
+namespace BloggerAgent.Api.Controllers
 {
-    [Route("api/v1/telex-integration")]
+    [Route("api/v1")]
     [ApiController]
     public class TelexIntegrationController : ControllerBase
     {
@@ -16,12 +17,11 @@ namespace TelexBloggerAgent.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet(".well-known/agent.json")]
         public IActionResult GetIntegrationConfig()
         {
 
-            var integrationJson = Agent_A2A.GetAgentA2A();
-            //var integrationJson = _integrationService.LoadIntegration();
+            var integrationJson = AgentSpec.GetAgentCard();
 
             if (integrationJson == null)
             {
