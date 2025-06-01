@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelexBloggerAgent", "TelexBloggerAgent\TelexBloggerAgent.csproj", "{DFD6AB28-E242-4A52-979A-03874E9CAB05}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloggerAgent.Api", "TelexBloggerAgent\BloggerAgent.Api.csproj", "{DFD6AB28-E242-4A52-979A-03874E9CAB05}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{464104A8-DB23-45DC-99C4-191841B756B7}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,6 +12,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelexBloggerAgent.test", "TelexBloggerAgent.test\TelexBloggerAgent.test.csproj", "{F0646AB1-4135-4BD8-A8A3-DBB557AF8206}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloggerAgent.Application", "BloggerAgent.Application\BloggerAgent.Application.csproj", "{7DE169DD-95C6-4710-AF9E-E5D712A064FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloggerAgent.Infrastructure", "BloggerAgent.Infrastructure\BloggerAgent.Infrastructure.csproj", "{D1671D00-D28D-4DEB-8C1F-EEE7572F688A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BloggerAgent.Domain", "BloggerAgent.Domain\BloggerAgent.Domain.csproj", "{E80277A9-E73C-40D2-A07A-0F29D6EAA186}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,8 +33,23 @@ Global
 		{F0646AB1-4135-4BD8-A8A3-DBB557AF8206}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0646AB1-4135-4BD8-A8A3-DBB557AF8206}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0646AB1-4135-4BD8-A8A3-DBB557AF8206}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DE169DD-95C6-4710-AF9E-E5D712A064FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DE169DD-95C6-4710-AF9E-E5D712A064FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DE169DD-95C6-4710-AF9E-E5D712A064FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DE169DD-95C6-4710-AF9E-E5D712A064FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1671D00-D28D-4DEB-8C1F-EEE7572F688A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1671D00-D28D-4DEB-8C1F-EEE7572F688A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1671D00-D28D-4DEB-8C1F-EEE7572F688A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1671D00-D28D-4DEB-8C1F-EEE7572F688A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E80277A9-E73C-40D2-A07A-0F29D6EAA186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E80277A9-E73C-40D2-A07A-0F29D6EAA186}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E80277A9-E73C-40D2-A07A-0F29D6EAA186}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E80277A9-E73C-40D2-A07A-0F29D6EAA186}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {97AAB40B-E12A-4AFF-8023-BA927E53401A}
 	EndGlobalSection
 EndGlobal

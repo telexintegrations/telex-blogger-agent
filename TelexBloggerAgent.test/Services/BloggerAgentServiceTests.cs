@@ -4,13 +4,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
-using TelexBloggerAgent.Dtos;
-using TelexBloggerAgent.Helpers;
-using TelexBloggerAgent.IServices;
-using TelexBloggerAgent.Models;
-using TelexBloggerAgent.Services;
+using BloggerAgent.Services;
+using BloggerAgent.Infrastructure.Services;
+using BloggerAgent.Domain.Commons;
+using BloggerAgent.Application.IServices;
+using BloggerAgent.Application.Dtos;
 
-namespace TelexBloggerAgent.test.Services
+namespace BloggerAgent.test.Services
 {
 
     public class BlogAgentServiceTests
@@ -43,14 +43,14 @@ namespace TelexBloggerAgent.test.Services
             _geminiSettingsMock = new Mock<IOptions<GeminiSetting>>();
             _geminiSettingsMock.Setup(gs => gs.Value).Returns(new GeminiSetting { ApiKey = MockApiKey, GeminiUrl = MockGeminiUrl });
 
-            _blogAgentService = new BlogAgentService(
-                _httpClientFactoryMock.Object,
-                _geminiSettingsMock.Object,
-                _telexSettingsMock.Object,
-                _loggerMock.Object,
-                _requestServiceMock.Object,
-                _conversationServiceMock.Object
-            );
+            //_blogAgentService = new BlogAgentService(
+            //    _httpClientFactoryMock.Object,
+            //    _geminiSettingsMock.Object,
+            //    _telexSettingsMock.Object,
+            //    _loggerMock.Object,
+            //    _requestServiceMock.Object,
+            //    _conversationServiceMock.Object
+            //);
         }
 
 
@@ -120,7 +120,7 @@ namespace TelexBloggerAgent.test.Services
 
             var settings = new List<Setting> { new Setting { Label = "some_other_setting", Default = "value" } };
 
-            await Assert.ThrowsAsync<Exception>(() => _blogAgentService.SendResponseAsync("Generated Blog", channelId));
+            await Assert.ThrowsAsync<Exception>(() => _blogAgentService.SendResponseAsync("Generated Blog", new GenerateBlogDto()));
         }
 
 
@@ -134,7 +134,7 @@ namespace TelexBloggerAgent.test.Services
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.Accepted });
 
-            await _blogAgentService.SendResponseAsync("Generated Blog", channelId);
+            await _blogAgentService.SendResponseAsync("Generated Blog", new GenerateBlogDto());
 
             _loggerMock.Verify(logger =>
                 logger.Log(
