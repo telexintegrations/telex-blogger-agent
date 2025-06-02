@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using BloggerAgent.Application.IServices;
-using BloggerAgent.Domain.Commons;
+using BloggerAgent.Application.Helpers;
 
 namespace BloggerAgent.Api.Controllers
 {

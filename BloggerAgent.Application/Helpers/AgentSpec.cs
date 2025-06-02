@@ -43,17 +43,7 @@ namespace BloggerAgent.Application.Helpers
                 {
                     Organization = "AI Blogger Services Org",
                     Url = "https://telex-blogger-agent-docs.onrender.com"
-                },   
-                //SecuritySchemes = new Dictionary<string, SecurityScheme>()
-                //{
-                //    ["bearerAuth"] = new HTTPAuthSecurityScheme()
-                //    {
-                //        Type = "openIdConnect",
-                //        Scheme = "openIdConnect",
-                //        BearerFormat = "JWT",
-
-                //    },
-                //},
+                },                   
                 Skills = new[]
                 {
                     new Skill
