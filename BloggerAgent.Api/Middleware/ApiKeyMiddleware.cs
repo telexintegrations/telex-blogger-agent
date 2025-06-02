@@ -21,8 +21,7 @@
             }
 
             await _next(context);
-        }
-    }
+        }    
 
     }
 }
