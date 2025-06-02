@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using BloggerAgent.Application.Commons;
+using System.Text.Json;
 using static System.Net.WebRequestMethods;
 
 namespace BloggerAgent.Application.Helpers
@@ -15,22 +16,12 @@ namespace BloggerAgent.Application.Helpers
         public string[] DefaultInputModes { get; set; }
         public string[] DefaultOutputModes { get; set; }
         public Skill[] Skills { get; set; }
+        public AgentProvider Provider { get; set; }
+        public List<Dictionary<string, List<string>>> Security { get; set; }
+        public Dictionary<string, SecurityScheme> SecuritySchemes { get; set; }
+        public bool SuppostsAuthenticatedExtendedCard { get; set; }
 
-        public class Capability
-        {
-            public bool Streaming { get; set; }
-            public bool PushNotifications { get; set; }
-        }
-
-        public class Skill
-        {
-            public string Id { get; set; }
-            public string Name { get; set; }
-            public string Description { get; set; }
-            public string[] Tags { get; set; }
-            public string[] Examples { get; set; }
-        }
-
+       
         public static string GetAgentCard()
         {
             var agentA2A = new AgentSpec()
@@ -48,6 +39,21 @@ namespace BloggerAgent.Application.Helpers
                 },
                 DefaultInputModes = new[] { "application/json" },
                 DefaultOutputModes = new[] { "application/json" },
+                Provider = new AgentProvider()
+                {
+                    Organization = "AI Blogger Services Org",
+                    Url = "https://telex-blogger-agent-docs.onrender.com"
+                },   
+                //SecuritySchemes = new Dictionary<string, SecurityScheme>()
+                //{
+                //    ["bearerAuth"] = new HTTPAuthSecurityScheme()
+                //    {
+                //        Type = "openIdConnect",
+                //        Scheme = "openIdConnect",
+                //        BearerFormat = "JWT",
+
+                //    },
+                //},
                 Skills = new[]
                 {
                     new Skill

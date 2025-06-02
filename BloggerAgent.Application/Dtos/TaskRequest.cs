@@ -40,7 +40,8 @@ namespace BloggerAgent.Application.Dtos
                         Metadata = null
                     },
                     AcceptedOutputModes = null,
-                    PushNotification = null,
+                    //PushNotification = null,
+                    Configuration = null,
                     HistoryLength = null,
                     Metadata = null
                 }
@@ -49,13 +50,31 @@ namespace BloggerAgent.Application.Dtos
         }
     }
 
+    public class Configuration
+    {
+        public PushNotificationConfig PushNotification { get; set; }
+    }
+
+    public class PushNotificationConfig
+    {
+        public string Url { get; set; }
+        public string Token { get; set; }
+        public Authentication Authentication { get; set; }
+
+    }
+
+    public class Authentication
+    {
+        public string[] Schemes { get; set; } 
+    }
+
     public class SendTaskParams
     {
         public string Id { get; set; }           // task id
         public string SessionId { get; set; }    // session id (same as id here)
         public TaskMessage Message { get; set; }
         public List<string>? AcceptedOutputModes { get; set; }  // can be null
-        public bool? PushNotification { get; set; }
+        public Configuration Configuration { get; set; }
         public int? HistoryLength { get; set; }
         public Dictionary<string, object>? Metadata { get; set; }
     }
