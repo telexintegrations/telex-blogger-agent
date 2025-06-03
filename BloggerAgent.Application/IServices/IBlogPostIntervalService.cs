@@ -1,9 +1,9 @@
-﻿using BloggerAgent.Application.Dtos;
+﻿using BloggerAgent.Application.Helpers;
 
 namespace BloggerAgent.Application.IServices
 {
     public interface IBlogPostIntervalService
     {
-        void ScheduleBlogPostGeneration(string option, GenerateBlogDto blogPrompt);
+        void ScheduleBlogPostGeneration(string option, GenerateBlogTask blogPrompt);
     }
 }

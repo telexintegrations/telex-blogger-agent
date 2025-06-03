@@ -22,31 +22,21 @@ namespace BloggerAgent.Api.Controller
         /// </summary>
         [HttpPost]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ProcessBlog([FromBody] GenerateBlogDto blogDto)
-        {
-            if (string.IsNullOrEmpty(blogDto.Message))
-            {
-                return BadRequest("Message is required");
-            }           
+        public async Task<IActionResult> ProcessBlog([FromBody] TaskRequest request)
+        {           
 
-            if (string.IsNullOrEmpty(blogDto.ChannelId))
-            {                               
-                _logger.LogInformation("Channel ID is null");
-                return BadRequest("Channel ID is required");
-            }
-            
-            if (string.IsNullOrEmpty(blogDto.OrganizationId))
-            {                               
-                _logger.LogInformation("Organization ID is null");
-                return BadRequest("Organization ID is required");
-            }
+            _logger.LogInformation($"Request received: {JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true })}");
 
-            _logger.LogInformation($"Request received: {JsonSerializer.Serialize(blogDto, new JsonSerializerOptions { WriteIndented = true })}");
-
-            string response = await _blogService.HandleAsync(blogDto);
+            var response = await _blogService.HandleAsync(request);
 
             return Ok(response);
         }
-      
+
+        [HttpPost("task/get{id}")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetTask([FromBody] string id)
+        {
+            return Ok();
+        }
     }
 }

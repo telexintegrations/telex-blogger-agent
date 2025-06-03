@@ -4,6 +4,7 @@ using BloggerAgent.Application.IServices;
 using BloggerAgent.Domain.Models;
 using BloggerAgent.Application.Dtos;
 using BloggerAgent.Domain.Commons;
+using BloggerAgent.Application.Helpers;
 
 namespace BloggerAgent.Services
 {
@@ -18,27 +19,18 @@ namespace BloggerAgent.Services
         private static readonly HashSet<string> RefineKeywords = new()
         { "edit", "refine", "improve", "enhance", "polish", "revise", "rewrite", "update", "restructure", "modify", "optimize", "adjust", "tweak", "fix", "correct", "proofread", "streamline", "better", "make better", "more concise", "shorten", "expand" };
 
-
-        private readonly ICompanyService _companyService;
-        private readonly IUserService _userService;
         private readonly IMongoRepository<Company> _companyRepository;
 
-        public RequestProcessingService(ICompanyService companyService, IUserService userService, IMongoRepository<Company> companyRepository)
+        public RequestProcessingService(IMongoRepository<Company> companyRepository)
         {
-            _companyService = companyService;
-            _userService = userService;
             _companyRepository = companyRepository;
         }
+       
 
-        private string GetSettingValue(List<Setting> settings, string key)
+        public async Task<Request> ProcessUserInputAsync(GenerateBlogTask blogDto)
         {
-            return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
-        }
-
-        public async Task<Request> ProcessUserInputAsync(GenerateBlogDto blogDto)
-        {
-            string companyId = blogDto.OrganizationId;
-            string userId = blogDto.ChannelId;
+            string companyId = blogDto.MessageId;
+            string userId = blogDto.ContextId;
                        
             var company = new Document<Company>(){ Data = new Company()};                 
 
@@ -68,41 +60,17 @@ namespace BloggerAgent.Services
                 UserPrompt = prompt
             };
         }
-
-        private Company ExtractCompanyDetails(GenerateBlogDto blogDto)
-        {
-
-            // Retrieve settings dynamically
-            string companyName = GetSettingValue(blogDto.Settings, "company_name");
-            string companyOverview = GetSettingValue(blogDto.Settings, "company_overview");
-            string companyWebsite = GetSettingValue(blogDto.Settings, "company_website");
-            string tone = GetSettingValue(blogDto.Settings, "tone");
-            string blogLength = GetSettingValue(blogDto.Settings, "blog_length");
-            string format = GetSettingValue(blogDto.Settings, "format");
-            string targetAudience = GetSettingValue(blogDto.Settings, "target_audience");
-            string industry = GetSettingValue(blogDto.Settings, "industry");
-
-            return new Company
-            {
-                Name = companyName,
-                Industry = industry,
-                Tone = tone,
-                Overview = companyOverview,
-                Website = companyWebsite,
-                TargetAudience = targetAudience
-            };
-
-        }
+               
 
         private string GenerateBlogPrompt(string userPrompt, List<Setting> settings, Company company)
         {
             // Retrieve settings dynamically
-            string companyName = company.Name ?? GetSettingValue(settings, "company_name");
-            string companyOverview = company.Overview ?? GetSettingValue(settings, "company_overview");
-            string companyWebsite = company.Website ?? GetSettingValue(settings, "company_website");
-            string tone = company.Tone ?? GetSettingValue(settings, "tone");
-            string blogLength = GetSettingValue(settings, "blog_length");
-            string format = GetSettingValue(settings, "format");
+            string companyName = company.Name ?? DataExtract.GetSettingValue(settings, "company_name");
+            string companyOverview = company.Overview ?? DataExtract.GetSettingValue(settings, "company_overview");
+            string companyWebsite = company.Website ?? DataExtract.GetSettingValue(settings, "company_website");
+            string tone = company.Tone ?? DataExtract.GetSettingValue(settings, "tone");
+            string blogLength = DataExtract.GetSettingValue(settings, "blog_length");
+            string format = DataExtract.GetSettingValue(settings, "format");
 
             // Base prompt structure
             string prompt = $"{userPrompt}.";
@@ -159,9 +127,9 @@ namespace BloggerAgent.Services
             string systemMessage = "Your name is Mike. You are a blogging agent who specializes in creating insightful and engaging blog content.";
 
             // Retrieve settings dynamically
-            string companyName = GetSettingValue(settings, "company_name");
-            string companyOverview = GetSettingValue(settings, "company_overview");
-            string tone = GetSettingValue(settings, "tone");
+            string companyName = DataExtract.GetSettingValue(settings, "company_name");
+            string companyOverview = DataExtract.GetSettingValue(settings, "company_overview");
+            string tone = DataExtract.GetSettingValue(settings, "tone");
 
             // Base system message with company details
             systemMessage += $" You are assisting {companyName}. {companyOverview}.";
@@ -233,10 +201,10 @@ namespace BloggerAgent.Services
             return RequestType.Uncertain;
         }
 
-        public string GetBlogIntervalOption(GenerateBlogDto blogDto)
+        public string GetBlogIntervalOption(GenerateBlogTask blogDto)
         {
             // Retrieve settings dynamically
-            string blogInterval = GetSettingValue(blogDto.Settings, "blog_generation_interval");
+            string blogInterval = DataExtract.GetSettingValue(blogDto.Settings, "blog_generation_interval");
 
             return blogInterval;
         }
@@ -260,12 +228,12 @@ namespace BloggerAgent.Services
         private string GenerateRefinementPrompt(string userPrompt, List<Setting> settings)
         {
             // Retrieve settings dynamically
-            string companyName = GetSettingValue(settings, "company_name");
-            string companyOverview = GetSettingValue(settings, "company_overview");
-            string companyWebsite = GetSettingValue(settings, "company_website");
-            string tone = GetSettingValue(settings, "tone");
-            string blogLength = GetSettingValue(settings, "blog_length");
-            string format = GetSettingValue(settings, "format");
+            string companyName = DataExtract.GetSettingValue(settings, "company_name");
+            string companyOverview = DataExtract.GetSettingValue(settings, "company_overview");
+            string companyWebsite = DataExtract.GetSettingValue(settings, "company_website");
+            string tone = DataExtract.GetSettingValue(settings, "tone");
+            string blogLength = DataExtract.GetSettingValue(settings, "blog_length");
+            string format = DataExtract.GetSettingValue(settings, "format");
 
             // Base prompt structure
             string prompt = $"Refine the following content based on the user's request: {userPrompt}. " +

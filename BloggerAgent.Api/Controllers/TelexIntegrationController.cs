@@ -8,14 +8,7 @@ namespace BloggerAgent.Api.Controllers
     [Route("api/v1")]
     [ApiController]
     public class TelexIntegrationController : ControllerBase
-    {
-
-        private readonly ITelexIntegrationService _integrationService;
-        public TelexIntegrationController(ITelexIntegrationService integrationService)
-        {
-            _integrationService = integrationService;
-        }
-
+    {       
 
         [HttpGet(".well-known/agent.json")]
         public IActionResult GetIntegrationConfig()

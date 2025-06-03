@@ -1,7 +1,7 @@
 ﻿using BloggerAgent.Application.IServices;
 using System.Timers;
 using Microsoft.Extensions.Logging;
-using BloggerAgent.Application.Dtos;
+using BloggerAgent.Application.Helpers;
 
 namespace BloggerAgent.Infrastructure.Services
 {
@@ -18,7 +18,7 @@ namespace BloggerAgent.Infrastructure.Services
             _logger = logger;
         }
 
-        public void ScheduleBlogPostGeneration(string option, GenerateBlogDto blogPrompt)
+        public void ScheduleBlogPostGeneration(string option, GenerateBlogTask blogPrompt)
         {
             double interval = ConvertOptionToInterval(option);
 
@@ -52,10 +52,9 @@ namespace BloggerAgent.Infrastructure.Services
             };
         }
 
-        private void GenerateBlogPost(GenerateBlogDto blogPrompt)
+        private void GenerateBlogPost(GenerateBlogTask blogPrompt)
         {
             _logger.LogInformation($"Blog post generated at {DateTime.Now}");
-            this.blogAgentService.HandleAsync(blogPrompt);
         }
     }
 }

@@ -59,7 +59,7 @@ namespace BloggerAgent.test.Services
         public async Task GenerateBlogAsync_ShouldThrowErrorOnFailure()
         {
 
-            var blogPrompt = new GenerateBlogDto { Message = "Write about C#" };
+            var blogPrompt = new GenerateBlogTask { Message = "Write about C#" };
 
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -72,7 +72,7 @@ namespace BloggerAgent.test.Services
         [Fact]
         public async Task GenerateBlogAsync_ShouldCallApiAndProcessResponse()
         {
-            var blogPrompt = new GenerateBlogDto 
+            var blogPrompt = new GenerateBlogTask 
             { 
                 Message = "Write about technology", 
                 Settings = new List<Setting>
@@ -104,7 +104,7 @@ namespace BloggerAgent.test.Services
         [Fact]
         public async Task GenerateBlogAsync_ShouldSkipIfMessageContainsIdentifier()
         {
-            var blogPrompt = new GenerateBlogDto { Message = "Some blog content " + Identifier };
+            var blogPrompt = new GenerateBlogTask { Message = "Some blog content " + Identifier };
 
             await _blogAgentService.HandleAsync(blogPrompt);
 
@@ -120,7 +120,7 @@ namespace BloggerAgent.test.Services
 
             var settings = new List<Setting> { new Setting { Label = "some_other_setting", Default = "value" } };
 
-            await Assert.ThrowsAsync<Exception>(() => _blogAgentService.SendResponseAsync("Generated Blog", new GenerateBlogDto()));
+            await Assert.ThrowsAsync<Exception>(() => _blogAgentService.SendResponseAsync("Generated Blog", new GenerateBlogTask()));
         }
 
 
@@ -134,7 +134,7 @@ namespace BloggerAgent.test.Services
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.Accepted });
 
-            await _blogAgentService.SendResponseAsync("Generated Blog", new GenerateBlogDto());
+            await _blogAgentService.SendResponseAsync("Generated Blog", new GenerateBlogTask());
 
             _loggerMock.Verify(logger =>
                 logger.Log(

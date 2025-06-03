@@ -7,10 +7,10 @@ namespace BloggerAgent.Domain.Models
     public class Message : IEntity
     {
         
-        public string Id { get; set; } // Unique per message
-        public string SourceId { get; set; }    
-        public string ConversationId { get; set; }  // Format: "{CompanyId}_{UserId}"
-        public string Role { get; set; } = null!; // "user" or "ai"
+        public string Id { get; set; } 
+        public string ContextId { get; set; }    
+        public string TaskId { get; set; } 
+        public string Role { get; set; } = null; 
         public string Content { get; set; } = null;
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
