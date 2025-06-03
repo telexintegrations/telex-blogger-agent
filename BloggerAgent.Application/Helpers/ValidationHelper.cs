@@ -1,0 +1,95 @@
+﻿using BloggerAgent.Application.Dtos;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BloggerAgent.Application.Helpers
+{
+    public class ValidationHelper
+    {
+        public static void ValidateRequest(TaskRequest request)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            if (request.Jsonrpc != "2.0")
+                throw new ArgumentException("Invalid JSON-RPC version");
+
+            if (string.IsNullOrWhiteSpace(request.Id))
+                throw new ArgumentException("Id is required");
+
+            if (request.Method?.ToLower() != "message/send")
+                throw new ArgumentException("Invalid method");
+
+            var message = request.Params?.Message;
+            if (message == null)
+                throw new ArgumentException("Message params are required");
+
+            if (message.Role?.ToLower() != "user")
+                throw new ArgumentException("Role must be 'user'");
+
+            if (message.Parts == null || !message.Parts.Any())
+                throw new ArgumentException("Message parts cannot be empty");
+
+            foreach (var part in message.Parts)
+            {
+                if (part.Type != "text")
+                    throw new ArgumentException("Only 'text' type supported in message parts");
+
+                if (string.IsNullOrWhiteSpace(part.Text))
+                    throw new ArgumentException("Text cannot be empty");
+            }
+
+            // Validate IDs are GUIDs (optional but recommended)
+            if (!Guid.TryParse(message.ContextId, out _))
+                throw new ArgumentException("Invalid ContextId format");
+
+            if (message.TaskId != null && !Guid.TryParse(message.TaskId, out _))
+                throw new ArgumentException("Invalid TaskId format");
+
+            if (!Guid.TryParse(message.MessageId, out _))
+                throw new ArgumentException("Invalid MessageId format");
+
+            // Optional: Validate push notification config if present
+            var config = request.Params.Configuration;
+            if (config?.PushNotification != null)
+            {
+                if (string.IsNullOrWhiteSpace(config.PushNotification.Url))
+                    throw new ArgumentException("PushNotification Url is required");
+
+                if (string.IsNullOrWhiteSpace(config.PushNotification.Token))
+                    throw new ArgumentException("PushNotification Token is required");
+            }
+        }
+
+        public static MessageResponse ConstructResponse(TaskRequest request, string response)
+        {
+            return new MessageResponse
+            {
+                Jsonrpc = "2.0",
+                Id = request.Id,
+                Result = new TaskMessage()
+                {
+                    Role = "agent",
+                    Kind = "message",
+                    MessageId = Guid.NewGuid().ToString(),
+                    TaskId = request.Params.Message.TaskId,
+                    ContextId = request.Params.Message.ContextId,
+                    Parts = new List<MessagePart>
+                    {
+                        new MessagePart
+                        {
+                            Type = "text",
+                            Text = response // ?? "Hi! Mike here, your blogger agent. I'm here to assist you with anyblogrelatedcontent.",
+                        }
+                    },
+                    Metadata = null
+                   
+                }                
+            };
+        }
+    }
+}
+

@@ -1,15 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BloggerAgent.Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using MongoDB.Bson.IO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Security.Authentication;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace BloggerAgent.Api.Middleware
 {
@@ -41,12 +34,10 @@ namespace BloggerAgent.Api.Middleware
                 context.Response.StatusCode = status;
                 context.Response.ContentType = "application/json";
 
-                var response = JsonSerializer.Serialize(new ProblemDetails
+                var response = JsonSerializer.Serialize(new TaskErrorResponse
                 {
-                    Status = status,
-                    Title = $"{ex?.Message ?? "An error occurred"}",
-                    Detail = ex?.InnerException?.Message ?? ex?.Message,
-                    Instance = context.Request.Path, 
+                    Code = status,
+                    Message = $"{ex?.Message ?? "An error occurred"}",
                 });
 
                 await context.Response.WriteAsync(response);
