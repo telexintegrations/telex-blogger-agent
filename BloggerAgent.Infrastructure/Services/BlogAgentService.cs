@@ -122,13 +122,14 @@ namespace BloggerAgent.Infrastructure.Services
             _logger.LogInformation("Sending message to AI");
 
             var response = await _httpHelper.SendRequestAsync(apiRequest);
+            var responseString = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("Failed to communicate with the AI agent");
-                throw new Exception("Error communicating with AI agent");
+                var errorResponse = JsonSerializer.Deserialize<TaskErrorResponse>(responseString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true});
+                _logger.LogError($"Failed to communicate with the AI agent: {errorResponse.Message}");
+                return $"An unexpected error occured while communicating with the AI. Please try again later";
             }
 
-            var responseString = await response.Content.ReadAsStringAsync();
             string? generatedResponse = DataExtract.ExtractAiResponseData(responseString);
 
             if (string.IsNullOrEmpty(generatedResponse))
