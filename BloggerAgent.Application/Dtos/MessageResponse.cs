@@ -10,6 +10,6 @@ namespace BloggerAgent.Application.Dtos
     {
         public string Jsonrpc { get; set; }
         public string Id { get; set; }
-        public TaskMessage Result { get; set; }
+        public ResponseMessage Result { get; set; }
     }
 }
