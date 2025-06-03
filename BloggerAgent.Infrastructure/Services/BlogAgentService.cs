@@ -69,7 +69,7 @@ namespace BloggerAgent.Infrastructure.Services
                     throw new Exception("Failed to generate response");
                 }
 
-                return ValidationHelper.ConstructResponse(taskRequest, aiResponse);
+                return DataExtract.ConstructResponse(taskRequest, aiResponse);
 
             }
             catch (Exception ex)

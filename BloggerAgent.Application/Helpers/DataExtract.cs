@@ -1,4 +1,5 @@
-﻿using BloggerAgent.Domain.Commons;
+﻿using BloggerAgent.Application.Dtos;
+using BloggerAgent.Domain.Commons;
 using BloggerAgent.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -58,6 +59,33 @@ namespace BloggerAgent.Application.Helpers
         public static string GetSettingValue(List<Setting> settings, string key)
         {
             return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
+        }
+
+        public static MessageResponse ConstructResponse(TaskRequest request, string response)
+        {
+            return new MessageResponse
+            {
+                Jsonrpc = "2.0",
+                Id = request.Id,
+                Result = new ResponseMessage()
+                {
+                    Role = "agent",
+                    Kind = "message",
+                    MessageId = Guid.NewGuid().ToString(),
+                    TaskId = request.Params.Message.TaskId,
+                    ContextId = request.Params.Message.ContextId,
+                    Parts = new List<MessageResponsePart>
+                    {
+                        new MessageResponsePart
+                        {
+                            Kind = "text",
+                            Text = response,
+                        }
+                    },
+                    Metadata = null
+
+                }
+            };
         }
     }
 }

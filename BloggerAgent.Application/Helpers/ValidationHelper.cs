@@ -64,32 +64,7 @@ namespace BloggerAgent.Application.Helpers
             }
         }
 
-        public static MessageResponse ConstructResponse(TaskRequest request, string response)
-        {
-            return new MessageResponse
-            {
-                Jsonrpc = "2.0",
-                Id = request.Id,
-                Result = new TaskMessage()
-                {
-                    Role = "agent",
-                    Kind = "message",
-                    MessageId = Guid.NewGuid().ToString(),
-                    TaskId = request.Params.Message.TaskId,
-                    ContextId = request.Params.Message.ContextId,
-                    Parts = new List<MessagePart>
-                    {
-                        new MessagePart
-                        {
-                            Type = "text",
-                            Text = response // ?? "Hi! Mike here, your blogger agent. I'm here to assist you with anyblogrelatedcontent.",
-                        }
-                    },
-                    Metadata = null
-                   
-                }                
-            };
-        }
+       
     }
 }
 

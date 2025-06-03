@@ -94,7 +94,26 @@ namespace BloggerAgent.Application.Dtos
         public string Kind { get; set; }
         public Status Status { get; set; }
         public Artifact Artifacts { get; set; }
-        public List<TaskMessage> History { get; set; }
+        public List<ResponseMessage> History { get; set; }
+        public Dictionary<string, object>? Metadata { get; set; }
+    }
+
+    public class ResponseMessage
+    {
+        public string? TaskId { get; set; }
+        public string MessageId { get; set; }
+        public string ContextId { get; set; }
+        public string Role { get; set; }
+        public string? Kind { get; set; }
+        public List<MessageResponsePart> Parts { get; set; }
+        public Dictionary<string, object>? Metadata { get; set; }
+
+    }
+
+    public class MessageResponsePart
+    {
+        public string Kind { get; set; }   // e.g., "text"
+        public string Text { get; set; }
         public Dictionary<string, object>? Metadata { get; set; }
     }
 
