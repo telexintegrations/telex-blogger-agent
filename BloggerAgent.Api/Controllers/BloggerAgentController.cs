@@ -25,9 +25,14 @@ namespace BloggerAgent.Api.Controller
         public async Task<IActionResult> ProcessBlog([FromBody] TaskRequest request)
         {           
 
-            _logger.LogInformation($"Request received: {JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true })}");
+            _logger.LogInformation($"Task request received: {JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true })}");
 
             var response = await _blogService.HandleAsync(request);
+
+            _logger.LogInformation($"Returning response: {JsonSerializer.Serialize(response, new JsonSerializerOptions 
+            { 
+                WriteIndented = true,
+            })}");
 
             return Ok(response);
         }

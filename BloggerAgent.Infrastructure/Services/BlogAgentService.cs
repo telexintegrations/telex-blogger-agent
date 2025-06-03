@@ -119,13 +119,13 @@ namespace BloggerAgent.Infrastructure.Services
                 Method = HttpMethod.Post,
             };
 
-            _logger.LogInformation("Sending message to AI for channel {channelId}...", blogDto.ContextId);
+            _logger.LogInformation("Sending message to AI");
 
             var response = await _httpHelper.SendRequestAsync(apiRequest);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("Failed to send message to AI");
-                throw new Exception("Error communicating with AI");
+                _logger.LogError("Failed to communicate with the AI agent");
+                throw new Exception("Error communicating with AI agent");
             }
 
             var responseString = await response.Content.ReadAsStringAsync();
@@ -133,10 +133,10 @@ namespace BloggerAgent.Infrastructure.Services
 
             if (string.IsNullOrEmpty(generatedResponse))
             {
-                throw new Exception("Failed to generate response");
+                throw new Exception("Failed to generate response from the AI");
             }
 
-            _logger.LogInformation("Message successfully generated");
+            _logger.LogInformation("Message successfully generated from the AI");
 
 
             bool isSuccess = await _messageRepository.CreateAsync(new Message()
