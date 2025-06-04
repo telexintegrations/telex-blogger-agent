@@ -16,7 +16,6 @@ namespace BloggerAgent.Infrastructure.Repositories
             _context = context;
         }
 
-        // Create a new document
         public async Task<bool> CreateAsync(T document)
         {
             var response = await _context.AddAsync<T>(document);
@@ -26,27 +25,22 @@ namespace BloggerAgent.Infrastructure.Repositories
         public async Task<Document<T>> GetByIdAsync(string id)
         {
             var result = await _context.GetSingle<T>(id);
-            return result.Status == "success" ? result.Data : default;
+            return result.Status == "success" ? result.Data : null;
         }
 
         public async Task<List<Document<T>>> GetAllAsync(object filter = null)
         {
             var result = await _context.GetAll<T>(filter);
 
-            if (result.Status == "error")
-            {
-                return null;
-            }
-            return result.Data;
+            return result.Status == "success" ? result.Data : null;
         }
-        
+
         public async Task<List<Document<T?>>> FilterAsync(object filter)
         {
             var result = await _context.GetAll<T>(filter);
-            return result.Status == "success" ? result.Data : new List<Document<T>>();
+            return result.Status == "success" ? result.Data : null;
         }
 
-        // Update a new document
         public async Task<bool> UpdateAsync(string id, T document)
         {
             var response = await _context.UpdateAsync<T>(id, document);

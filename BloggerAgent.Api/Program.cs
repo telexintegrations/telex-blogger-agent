@@ -35,6 +35,7 @@ builder.Services.AddTransient<IBlogPostIntervalService, BlogPostIntervalService>
 builder.Services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IRequestProcessingService, RequestProcessingService>();
+builder.Services.AddScoped<IAiService, AiService>();
 
 
 builder.Services.AddCors(options =>

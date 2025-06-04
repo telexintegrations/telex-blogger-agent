@@ -29,7 +29,7 @@ namespace BloggerAgent.Api.Controller
 
             var response = await _blogService.HandleAsync(request);
 
-            _logger.LogInformation($"Returning response: {JsonSerializer.Serialize(response, new JsonSerializerOptions 
+            _logger.LogInformation($"Returning task response: {JsonSerializer.Serialize(response, new JsonSerializerOptions 
             { 
                 WriteIndented = true,
             })}");

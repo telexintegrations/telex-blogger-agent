@@ -30,20 +30,20 @@ namespace BloggerAgent.Infrastructure.Repositories
         public async Task<List<ChatMessage>> GetMessagesAsync(string contextId)
         {
             var conversations = await _repository.FilterAsync(new { tag = CollectionType.Message });
-            if (conversations == null || conversations.Count == 0)
+            if (conversations == null)
             {
                 throw new Exception("Failed to retrieve messages");
             }
 
-            var conversation = conversations
+            return conversations
                 .Where(c => c.Data.ContextId == contextId)
                 .Select(c => new ChatMessage()
                 {
                     Role = c.Data.Role,
                     Parts = { new Part { Text = c.Data.Content } }
                 }).ToList();
-            return conversation;
         }
+             
 
         //public async Task<Company> AddCompanyAsync(Company company)
         //{
