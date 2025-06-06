@@ -17,10 +17,9 @@ namespace BloggerAgent.Domain.Data
         private readonly string _apiKey;
         private readonly HttpHelper _httphelper;
         private const string _collectionName = "test_collection";
-        private const string _header = "X-TELEX-API-KEY";
         private readonly string tagName;
 
-        public DbContext(IOptions<DatabaseConfig> options, HttpHelper httphelper)
+        public DbContext(IOptions<TelexApiSettings> options, HttpHelper httphelper)
         {
             _baseUrl = options.Value.BaseUrl;
             _apiKey = options.Value.ApiKey;
@@ -45,7 +44,7 @@ namespace BloggerAgent.Domain.Data
                },
                Headers = new Dictionary<string, string>()
                {
-                   {_header, _apiKey}
+                   {TelexApiSettings.Header, _apiKey}
                }
             };
 
@@ -74,7 +73,7 @@ namespace BloggerAgent.Domain.Data
                 },
                 Headers = new Dictionary<string, string>()
                 {
-                   {_header, _apiKey}
+                   {TelexApiSettings.Header, _apiKey}
                 }
             };                        
 
@@ -100,7 +99,7 @@ namespace BloggerAgent.Domain.Data
                 Url = $"{_baseUrl}/agent_db/collections/{_collectionName}/documents/{id}",               
                 Headers = new Dictionary<string, string>()
                 {
-                   {_header, _apiKey}
+                   {TelexApiSettings.Header, _apiKey}
                 }
             };
 
@@ -142,7 +141,7 @@ namespace BloggerAgent.Domain.Data
                 },
                 Headers = new Dictionary<string, string>()
                 {
-                   {_header, _apiKey}
+                   {TelexApiSettings.Header, _apiKey}
                 }
             };
 
@@ -171,7 +170,7 @@ namespace BloggerAgent.Domain.Data
                 },
                 Headers = new Dictionary<string, string>()
                 {
-                   {_header, _apiKey}
+                   {TelexApiSettings.Header, _apiKey}
                 }
             };
 
@@ -196,7 +195,7 @@ namespace BloggerAgent.Domain.Data
                 Url = $"{_baseUrl}/agent_db/collections/{_collectionName}/documents/{id}",
                 Headers = new Dictionary<string, string>()
                 {
-                   {_header, _apiKey}
+                   {TelexApiSettings.Header, _apiKey}
                 }
             };
 

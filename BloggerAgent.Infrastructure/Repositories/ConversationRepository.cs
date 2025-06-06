@@ -27,7 +27,7 @@ namespace BloggerAgent.Infrastructure.Repositories
             return await _repository.GetByIdAsync(userId);
         }
 
-        public async Task<List<ChatMessage>> GetMessagesAsync(string contextId)
+        public async Task<List<TelexChatMessage>> GetMessagesAsync(string contextId)
         {
             var conversations = await _repository.FilterAsync(new { tag = CollectionType.Message });
             if (conversations == null)
@@ -37,10 +37,10 @@ namespace BloggerAgent.Infrastructure.Repositories
 
             return conversations
                 .Where(c => c.Data.ContextId == contextId)
-                .Select(c => new ChatMessage()
+                .Select(c => new TelexChatMessage()
                 {
                     Role = c.Data.Role,
-                    Parts = { new Part { Text = c.Data.Content } }
+                    Content =  c.Data.Content 
                 }).ToList();
         }
              
