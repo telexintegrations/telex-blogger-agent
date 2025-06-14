@@ -51,7 +51,6 @@ namespace BloggerAgent.Services
             {
                 prompt = GenerateRefinementPrompt(userInput, blogDto.Settings);
             }
-
            
             // Step 4: Return structured response
             return new Request
@@ -114,9 +113,11 @@ namespace BloggerAgent.Services
                 _ => ""
             };
 
+            prompt += $" Add a call to action in the conclusion of the blog content.";
+
             if (!string.IsNullOrWhiteSpace(companyWebsite))
             {
-                prompt += $" Add a call to action in the conclusion of the article. Use the raw link to the company website: {companyWebsite}";
+                prompt += $"Use the link to the company website: {companyWebsite}";
             }
 
             return prompt;
@@ -132,7 +133,7 @@ namespace BloggerAgent.Services
             string tone = DataExtract.GetSettingValue(settings, "tone");
 
             // Base system message with company details
-            systemMessage += $" You are assisting {companyName}. {companyOverview}.";
+            systemMessage += $" You are assisting {companyName} company. {companyOverview}.";
 
 
             switch (requestType)
@@ -165,7 +166,7 @@ namespace BloggerAgent.Services
             // Formatting preferences
             systemMessage += " Use ALL CAPS for important words, and use ✅ for bullet points." +
                              " Return responses WITHOUT markdown formatting." +
-                             "Only introduce yourself when the user says 'hi' or 'hello' and there is no previous conversation history.";
+                             "Don't repeat your name after introducing yourself for the first time unless explicitly asked to";
 
             return systemMessage;
         }

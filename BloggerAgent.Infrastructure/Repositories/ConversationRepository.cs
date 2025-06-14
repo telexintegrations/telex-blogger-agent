@@ -27,23 +27,23 @@ namespace BloggerAgent.Infrastructure.Repositories
             return await _repository.GetByIdAsync(userId);
         }
 
-        public async Task<List<ChatMessage>> GetMessagesAsync(string contextId)
+        public async Task<List<TelexChatMessage>> GetMessagesAsync(string contextId)
         {
             var conversations = await _repository.FilterAsync(new { tag = CollectionType.Message });
-            if (conversations == null || conversations.Count == 0)
+            if (conversations == null)
             {
                 throw new Exception("Failed to retrieve messages");
             }
 
-            var conversation = conversations
+            return conversations
                 .Where(c => c.Data.ContextId == contextId)
-                .Select(c => new ChatMessage()
+                .Select(c => new TelexChatMessage()
                 {
                     Role = c.Data.Role,
-                    Parts = { new Part { Text = c.Data.Content } }
+                    Content =  c.Data.Content 
                 }).ToList();
-            return conversation;
         }
+             
 
         //public async Task<Company> AddCompanyAsync(Company company)
         //{

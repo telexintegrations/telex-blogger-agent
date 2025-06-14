@@ -35,14 +35,14 @@ namespace BloggerAgent.Application.Helpers
                 Capabilities = new Capability
                 {
                     Streaming = false,
-                    PushNotifications = false,
+                    PushNotifications = true,
                 },
                 DefaultInputModes = new[] { "application/json" },
                 DefaultOutputModes = new[] { "application/json" },
                 Provider = new AgentProvider()
                 {
                     Organization = "AI Blogger Services Org",
-                    Url = "https://telex-blogger-agent-docs.onrender.com"
+                    Url = "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent"
                 },                   
                 Skills = new[]
                 {

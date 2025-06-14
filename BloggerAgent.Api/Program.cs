@@ -18,12 +18,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // Bind MongoDB settings
 
-builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("MongoDbConfig"));
+builder.Services.Configure<TelexApiSettings>(builder.Configuration.GetSection("MongoDbConfig"));
 
 builder.Services.Configure<GeminiSetting>(builder.Configuration.GetSection("GeminiSetting"));
 builder.Services.Configure<TelexSetting>(builder.Configuration.GetSection("TelexSetting"));
 
-builder.Services.Configure<DatabaseConfig>(builder.Configuration.GetSection("MongoDbSettings"));
+builder.Services.Configure<TelexApiSettings>(builder.Configuration.GetSection("TelexApiSettings"));
 builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<HttpHelper>();
 
@@ -35,6 +35,7 @@ builder.Services.AddTransient<IBlogPostIntervalService, BlogPostIntervalService>
 builder.Services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IRequestProcessingService, RequestProcessingService>();
+builder.Services.AddScoped<IAiService, AiService>();
 
 
 builder.Services.AddCors(options =>
