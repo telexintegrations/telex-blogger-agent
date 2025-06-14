@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace BloggerAgent.Domain.Commons
 {
-    internal class Roles
+    public static class Roles
     {
+        public const string User = "user";
+        public const string Assistant = "assistant";
+        public const string System = "system";
     }
+
 }

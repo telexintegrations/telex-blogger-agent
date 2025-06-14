@@ -19,12 +19,7 @@ namespace BloggerAgent.Infrastructure.Services
         private readonly HttpHelper _httpHelper;
 
 
-        public AiService(
-            IOptions<TelexApiSettings> dataConfig,
-            IOptions<TelexSetting> telexSettings,
-            ILogger<BlogAgentService> logger,
-            IConversationRepository messageRepository,
-            HttpHelper httpHelper)
+        public AiService(IOptions<TelexApiSettings> dataConfig, IOptions<TelexSetting> telexSettings, ILogger<BlogAgentService> logger, IConversationRepository messageRepository, HttpHelper httpHelper)
         {
             _apiKey = dataConfig.Value.ApiKey;
             _baseUrl = dataConfig.Value.BaseUrl;
@@ -36,7 +31,7 @@ namespace BloggerAgent.Infrastructure.Services
         {
             var messages = new List<TelexChatMessage>()
             {
-                new TelexChatMessage() { Role = "system", Content = systemMessage }
+                new TelexChatMessage() { Role = Roles.System, Content = systemMessage }
             };
 
             var conversations = await _messageRepository.GetMessagesAsync(blogDto.ContextId);
@@ -51,10 +46,7 @@ namespace BloggerAgent.Infrastructure.Services
             var apiRequest = new ApiRequest()
             {
                 Url = $"{_baseUrl}/telexai/chat",
-                Body = new
-                {
-                    messages
-                },
+                Body = new { messages },
                 Method = HttpMethod.Post,
                 Headers = new Dictionary<string, string>
                 {
@@ -63,7 +55,7 @@ namespace BloggerAgent.Infrastructure.Services
                 }
             };
 
-            _logger.LogInformation("Sending message to AI");
+            _logger.LogInformation("Sending message to Telex AI");
 
             var response = await _httpHelper.SendRequestAsync(apiRequest);
             var responseString = await response.Content.ReadAsStringAsync();
@@ -72,10 +64,10 @@ namespace BloggerAgent.Infrastructure.Services
             {
                 var error = TelexApiResponse<TelexChatMessage>.ExtractResponse(responseString);
 
-                return $"An error occurred while communicating with the AI: {error.Message}";
+                return $"An error occurred while communicating with Telex AI: {error.Message}";
             }
 
-            _logger.LogInformation("Message successfully generated from the AI");
+            _logger.LogInformation("Message successfully generated from the Telex AI");
 
             var generatedData = TelexApiResponse<TelexChatResponse>.ExtractResponse(responseString);
 
@@ -90,8 +82,8 @@ namespace BloggerAgent.Infrastructure.Services
         {
             var newMessages = new List<Message>()
             {
-                new Message { Id = Guid.NewGuid().ToString(), Content = message, TaskId = blogDto.TaskId, ContextId = blogDto.ContextId, Role = "user" },
-                new Message() { Id = Guid.NewGuid().ToString(), Content = generatedResponse, TaskId = blogDto.TaskId, ContextId = blogDto.ContextId, Role = "assistant" }
+                new Message { Id = Guid.NewGuid().ToString(), Content = message, TaskId = blogDto.TaskId, ContextId = blogDto.ContextId, Role = Roles.User },
+                new Message() { Id = Guid.NewGuid().ToString(), Content = generatedResponse, TaskId = blogDto.TaskId, ContextId = blogDto.ContextId, Role = Roles.Assistant }
             };
 
             foreach (Message newMessage in newMessages)

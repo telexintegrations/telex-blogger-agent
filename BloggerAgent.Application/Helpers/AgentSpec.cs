@@ -35,7 +35,7 @@ namespace BloggerAgent.Application.Helpers
                 Capabilities = new Capability
                 {
                     Streaming = false,
-                    PushNotifications = false,
+                    PushNotifications = true,
                 },
                 DefaultInputModes = new[] { "application/json" },
                 DefaultOutputModes = new[] { "application/json" },
