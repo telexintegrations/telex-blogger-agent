@@ -1,4 +1,5 @@
 ﻿using BloggerAgent.Application.Dtos;
+using BloggerAgent.Application.Dtos.A2ATaskDtos;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Security.Authentication;

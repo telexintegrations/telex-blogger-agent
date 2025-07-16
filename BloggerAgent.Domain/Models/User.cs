@@ -4,7 +4,7 @@ using BloggerAgent.Domain.IRepositories;
 
 namespace BloggerAgent.Domain.Models
 {
-    public class User : IEntity
+    public class User 
     {
         [BsonId]
         [BsonRepresentation(BsonType.String)]

@@ -6,8 +6,8 @@ namespace BloggerAgent.Application.IServices
 {
     public interface IRequestProcessingService
     {
-        Task<Request> ProcessUserInputAsync(GenerateBlogTask blogDto);
-        string GetBlogIntervalOption(GenerateBlogTask blogDto);
+        Task<Request> ProcessUserInputAsync(TaskContext blogDto);
+        string GetBlogIntervalOption(TaskContext blogDto);
         Task<Request> ProcessRefinementRequestAsync(RefineBlogDto blogDto);
     }
 }

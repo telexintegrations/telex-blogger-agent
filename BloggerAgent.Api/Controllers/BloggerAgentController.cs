@@ -1,4 +1,4 @@
-﻿using BloggerAgent.Application.Dtos;
+﻿using BloggerAgent.Application.Dtos.A2ATaskDtos;
 using BloggerAgent.Application.IServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,14 +25,11 @@ namespace BloggerAgent.Api.Controller
         public async Task<IActionResult> ProcessBlog([FromBody] TaskRequest request)
         {           
 
-            _logger.LogInformation($"Task request received: {JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true })}");
+            _logger.LogInformation($"Task processing started for task {request.Id}");
 
-            var response = await _blogService.HandleAsync(request);
+            var response = await _blogService.HandleUserInput(request);
 
-            _logger.LogInformation($"Returning task response: {JsonSerializer.Serialize(response, new JsonSerializerOptions 
-            { 
-                WriteIndented = true,
-            })}");
+            _logger.LogInformation($"Task {request.Id} completed");
 
             return Ok(response);
         }

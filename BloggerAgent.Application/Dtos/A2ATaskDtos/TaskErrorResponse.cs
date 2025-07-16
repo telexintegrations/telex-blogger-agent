@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.Application.Dtos
+namespace BloggerAgent.Application.Dtos.A2ATaskDtos
 {
     public class TaskErrorResponse
     {

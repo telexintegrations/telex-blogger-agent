@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.Application.Dtos
+namespace BloggerAgent.Application.Dtos.A2ATaskDtos
 {
     public class MessageResponse
     {

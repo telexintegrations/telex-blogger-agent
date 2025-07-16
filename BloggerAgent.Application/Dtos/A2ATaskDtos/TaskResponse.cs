@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.Application.Dtos
+namespace BloggerAgent.Application.Dtos.A2ATaskDtos
 {
     public class TaskResponse
     {
@@ -35,7 +35,7 @@ namespace BloggerAgent.Application.Dtos
                            {
                                new MessagePart
                                {
-                                   Type = "text",
+                                   Kind = "text",
                                    Text = "Task completed with an artifact.",
                                    Metadata = null
                                }
@@ -98,25 +98,6 @@ namespace BloggerAgent.Application.Dtos
         public Dictionary<string, object>? Metadata { get; set; }
     }
 
-    public class ResponseMessage
-    {
-        public string? TaskId { get; set; }
-        public string MessageId { get; set; }
-        public string ContextId { get; set; }
-        public string Role { get; set; }
-        public string? Kind { get; set; }
-        public List<MessageResponsePart> Parts { get; set; }
-        public Dictionary<string, object>? Metadata { get; set; }
-
-    }
-
-    public class MessageResponsePart
-    {
-        public string Kind { get; set; }   // e.g., "text"
-        public string Text { get; set; }
-        public Dictionary<string, object>? Metadata { get; set; }
-    }
-
     public class Status
     {
         public string State { get; set; }    
@@ -142,5 +123,26 @@ namespace BloggerAgent.Application.Dtos
         public Dictionary<string, object>? Data { get; set; }
         public Dictionary<string, object>? Metadata { get; set; }
     }
+
+    public class ResponseMessage
+    {
+        public string? TaskId { get; set; }
+        public string MessageId { get; set; }
+        public string ContextId { get; set; }
+        public string Role { get; set; }
+        public string? Kind { get; set; }
+        public List<MessageResponsePart> Parts { get; set; }
+        public Dictionary<string, object>? Metadata { get; set; }
+
+    }
+
+    public class MessageResponsePart
+    {
+        public string Kind { get; set; }   // e.g., "text"
+        public string Text { get; set; }
+        public Dictionary<string, object>? Metadata { get; set; }
+    }
+
+
 
 }

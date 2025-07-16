@@ -6,9 +6,10 @@ namespace BloggerAgent.Domain.IRepositories
     {
         Task<bool> CreateAsync(T document);
         Task<bool> DeleteAsync(string id);
-        Task<List<Document<T?>>> GetAllAsync(object filter);
-        Task<Document<T?>> GetByIdAsync(string id);
+        Task<List<T?>> GetAllAsync(Dictionary<string, string> filter = null);
+        Task<T?> GetByIdAsync(string id);
         Task<bool> UpdateAsync(string id, T document);
-        Task<List<Document<T?>>> FilterAsync(object filter);
+        Task<List<T?>> FilterAsync(Dictionary<string, string> filter);
+        Task<List<T>> FilterByFieldAsync(string field, string value);
     }
 }
