@@ -1,4 +1,4 @@
 .vs/
 bin/
 obj/
-TelexBloggerAgent/appsettings.Development.json
+BloggerAgent.Api/appsettings.Development.json

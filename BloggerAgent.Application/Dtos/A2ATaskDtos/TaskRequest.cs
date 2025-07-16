@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.Application.Dtos
+namespace BloggerAgent.Application.Dtos.A2ATaskDtos
 {
     public class TaskRequest
     {
@@ -32,7 +32,7 @@ namespace BloggerAgent.Application.Dtos
                         {
                             new MessagePart
                             {
-                                Type = "text",
+                                Kind = "text",
                                 Text = "Hello",
                                 Metadata = null
                             }

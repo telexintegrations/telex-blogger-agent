@@ -1,23 +1,20 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using BloggerAgent.Domain.IRepositories;
+using System.Text.Json.Serialization;
+using MongoDB.Bson.Serialization;
+using BloggerAgent.Domain.DomainHelper;
 
 namespace BloggerAgent.Domain.Models
 {
-    public class Blog : IEntity
-    {        
-        public string Id { get; set; } = null;
+    public class Blog : BaseEntity, IEntity
+    {
 
-        public string UserId { get; set; } = null; // Reference to the user who created the blog
+        public string? Title { get; set; }
 
-        public string Title { get; set; } = null;
+        public string? Content { get; set; }
 
-        public string Content { get; set; } = null;
+        public List<string> Keywords { get; set; } = new();
 
-        public List<string> Keywords { get; set; } = new(); // Keywords for SEO or categorization
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public DateTime? UpdatedAt { get; set; }
     }
 }

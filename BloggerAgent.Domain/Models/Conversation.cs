@@ -4,7 +4,7 @@ using BloggerAgent.Domain.IRepositories;
 
 namespace BloggerAgent.Domain.Models
 {
-    public class Conversation : IEntity
+    public class Conversation 
     {        
         public string Id { get; set; }
         public string UserId { get; set; }// Who started the conversation

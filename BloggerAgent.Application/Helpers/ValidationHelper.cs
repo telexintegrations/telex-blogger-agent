@@ -1,4 +1,4 @@
-﻿using BloggerAgent.Application.Dtos;
+﻿using BloggerAgent.Application.Dtos.A2ATaskDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,7 +35,7 @@ namespace BloggerAgent.Application.Helpers
 
             foreach (var part in message.Parts)
             {
-                if (part.Type != "text")
+                if (part.Kind != "text")
                     throw new ArgumentException("Only 'text' type supported in message parts");
 
                 if (string.IsNullOrWhiteSpace(part.Text))
@@ -54,12 +54,12 @@ namespace BloggerAgent.Application.Helpers
 
             // Optional: Validate push notification config if present
             var config = request.Params.Configuration;
-            if (config?.PushNotification != null)
+            if (config?.PushNotificationConfig != null)
             {
-                if (string.IsNullOrWhiteSpace(config.PushNotification.Url))
+                if (string.IsNullOrWhiteSpace(config.PushNotificationConfig.Url))
                     throw new ArgumentException("PushNotification Url is required");
 
-                if (string.IsNullOrWhiteSpace(config.PushNotification.Token))
+                if (string.IsNullOrWhiteSpace(config.PushNotificationConfig.Token))
                     throw new ArgumentException("PushNotification Token is required");
             }
         }
@@ -67,4 +67,5 @@ namespace BloggerAgent.Application.Helpers
        
     }
 }
+
 

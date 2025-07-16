@@ -1,26 +1,23 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using BloggerAgent.Domain.IRepositories;
+using System.Text.Json.Serialization;
 
 namespace BloggerAgent.Domain.Models
 {
-    public class Company : IEntity
-    {
-        public string Id { get; set; } = null;
+    public class Company : BaseEntity, IEntity
+    {        
+        public string? Name { get; set; }
 
-        public string Name { get; set; } = null;
+        public string? Overview { get; set; }
 
-        public string Overview { get; set; } = null;
+        public string? Industry { get; set; }
 
-        public string Industry { get; set; } = null;
+        public string? Website { get; set; }
 
-        public string Website { get; set; } = null;
+        public string? Tone { get; set; }
 
-        public string Tone { get; set; } = null;
-        public string TargetAudience { get; set; } = null;
-
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public DateTime UpdatedAt { get; set; }
+        [JsonPropertyName("taget_audience")]
+        public string? TargetAudience { get; set; }
     }
 }

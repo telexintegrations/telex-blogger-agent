@@ -27,7 +27,7 @@ namespace BloggerAgent.Services
         }
        
 
-        public async Task<Request> ProcessUserInputAsync(GenerateBlogTask blogDto)
+        public async Task<Request> ProcessUserInputAsync(TaskContext blogDto)
         {
             string companyId = blogDto.MessageId;
             string userId = blogDto.ContextId;
@@ -92,7 +92,7 @@ namespace BloggerAgent.Services
 
             if (!string.IsNullOrWhiteSpace(companyOverview))
             {
-                prompt += $" Align the content with the company {companyOverview}.";
+                prompt += $"\nCompany Overview {companyOverview}.";
             }
 
             // Adjust content length
@@ -113,11 +113,9 @@ namespace BloggerAgent.Services
                 _ => ""
             };
 
-            prompt += $" Add a call to action in the conclusion of the blog content.";
-
             if (!string.IsNullOrWhiteSpace(companyWebsite))
             {
-                prompt += $"Use the link to the company website: {companyWebsite}";
+                prompt += $"Add a call to action in the conclusion of the blog content using the link to the company website: {companyWebsite}";
             }
 
             return prompt;
@@ -125,7 +123,7 @@ namespace BloggerAgent.Services
 
         private string GenerateSystemMessage(RequestType requestType, List<Setting> settings)
         {
-            string systemMessage = "Your name is Mike. You are a blogging agent who specializes in creating insightful and engaging blog content.";
+            string systemMessage = "You are a blogging agent who specializes in creating insightful and engaging blog content. Align the content with the company.";
 
             // Retrieve settings dynamically
             string companyName = DataExtract.GetSettingValue(settings, "company_name");
@@ -133,8 +131,12 @@ namespace BloggerAgent.Services
             string tone = DataExtract.GetSettingValue(settings, "tone");
 
             // Base system message with company details
-            systemMessage += $" You are assisting {companyName} company. {companyOverview}.";
+            systemMessage += $" You are assisting {companyName} company.";
 
+            if (string.IsNullOrWhiteSpace(companyOverview))
+            {
+                systemMessage += $"Here is an overview of the company: \n{companyOverview}";
+            }
 
             switch (requestType)
             {
@@ -202,7 +204,7 @@ namespace BloggerAgent.Services
             return RequestType.Uncertain;
         }
 
-        public string GetBlogIntervalOption(GenerateBlogTask blogDto)
+        public string GetBlogIntervalOption(TaskContext blogDto)
         {
             // Retrieve settings dynamically
             string blogInterval = DataExtract.GetSettingValue(blogDto.Settings, "blog_generation_interval");

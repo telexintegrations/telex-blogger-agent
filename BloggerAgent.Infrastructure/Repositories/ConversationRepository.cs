@@ -4,10 +4,11 @@ using BloggerAgent.Domain.Data;
 using BloggerAgent.Application.Helpers;
 using BloggerAgent.Domain.IRepositories;
 using BloggerAgent.Domain.Models;
-using BloggerAgent.Domain.IRepositories;
 using BloggerAgent.Application.Dtos;
 using BloggerAgent.Domain.Commons.Gemini;
 using BloggerAgent.Domain.Commons;
+using DnsClient.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace BloggerAgent.Infrastructure.Repositories
 {
@@ -15,35 +16,63 @@ namespace BloggerAgent.Infrastructure.Repositories
     {
         private readonly DbContext _context;
         private readonly IMongoRepository<Message> _repository;
+        private readonly ILogger<ConversationRepository> _logger;
 
-        public ConversationRepository(DbContext context, IMongoRepository<Message> repository) : base(context)
+        public ConversationRepository(DbContext context, ILogger<ConversationRepository> logger, IMongoRepository<Message> repository) : base(context)
         {
             _context = context;
             _repository = repository;
+            _logger = logger;
         }
 
-        public async Task<Document<Message>> GetConversationsByUserAsync(string userId)
+        public async Task<Message> GetConversationsByUserAsync(string userId)
         {
             return await _repository.GetByIdAsync(userId);
         }
 
         public async Task<List<TelexChatMessage>> GetMessagesAsync(string contextId)
         {
-            var conversations = await _repository.FilterAsync(new { tag = CollectionType.Message });
+            var conversations = await _repository.GetAllAsync();
             if (conversations == null)
             {
                 throw new Exception("Failed to retrieve messages");
             }
 
             return conversations
-                .Where(c => c.Data.ContextId == contextId)
+                .Where(c => c.ContextId == contextId)
+                .Take(10)
                 .Select(c => new TelexChatMessage()
                 {
-                    Role = c.Data.Role,
-                    Content =  c.Data.Content 
+                    Role = c.Role,
+                    Content =  c.Content 
                 }).ToList();
         }
-             
+
+        public async Task<bool> AddNewMessagesAsync(string message, TaskContext blogDto, string role)
+        {
+
+            var newMessage = new Message
+            {                
+                Content = message,
+                TaskId = blogDto.TaskId,
+                ContextId = blogDto.ContextId,
+                Role = role
+            };
+
+            bool isAdded = await _repository.CreateAsync(newMessage);
+
+            if (!isAdded)
+
+            {
+                _logger.LogInformation($"Failed to add {newMessage.Role} message to database");
+                return false;
+            }
+            _logger.LogInformation($"Message for {newMessage.Role} added successfully to database");
+
+            return true;
+
+        }
+
 
         //public async Task<Company> AddCompanyAsync(Company company)
         //{
