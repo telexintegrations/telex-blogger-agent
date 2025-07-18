@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using BloggerAgent.Application.Helpers;
 using BloggerAgent.Domain.Commons;
 
-namespace BloggerAgent.Infrastructure.Services
+namespace BloggerAgent.Infrastructure.Commons
 {
     public class BlogPostIntervalService : IBlogPostIntervalService
     {

@@ -21,6 +21,7 @@ namespace BloggerAgent.Domain.Commons
         [JsonPropertyName("status_code")]
         public int StatusCode { get; set; }
 
+
         public static TelexApiResponse<T> ExtractResponse(string jsonResponse)
         {
             var options = new JsonSerializerOptions
@@ -30,6 +31,7 @@ namespace BloggerAgent.Domain.Commons
 
             return JsonSerializer.Deserialize<TelexApiResponse<T>>(jsonResponse, options);
         }
+
 
         public static TelexApiResponse<T> ErrorResponse(string jsonResponse)
         {

@@ -1,5 +1,4 @@
-﻿using BloggerAgent.Application.Helpers;
-using BloggerAgent.Domain.Commons;
+﻿using BloggerAgent.Domain.Commons;
 using BloggerAgent.Domain.DomainHelper;
 using BloggerAgent.Domain.Models;
 using BloggerAgent.Application.IServices;
@@ -13,6 +12,10 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using BloggerAgent.Application.Configurations;
 using Microsoft.SemanticKernel;
+using BloggerAgent.Application.Dtos;
+using BloggerAgent.Domain.Commons.Options;
+using BloggerAgent.Domain.Commons.constants;
+using BloggerAgent.Domain.Commons.DataEntities;
 
 namespace BloggerAgent.Infrastructure.Services
 {
@@ -35,6 +38,8 @@ namespace BloggerAgent.Infrastructure.Services
             _httpHelper = httpHelper;
             _kernelProvider = kernelProvider;
         }
+
+
         public async Task<string> GenerateResponse(string message, string systemMessage, TaskContext blogDto)
         {
 
@@ -95,7 +100,7 @@ namespace BloggerAgent.Infrastructure.Services
         }
 
 
-        public async Task<string> ChatWithTools(TaskContext taskRequest)
+        public async Task<string> ChatWithTools(TaskContext taskRequest, string systemPrompt)
         {
             try
             {
@@ -103,22 +108,21 @@ namespace BloggerAgent.Infrastructure.Services
                 var chatService = _kernelProvider.ChatCompletionService;
 
                 // Save user message
-                //await _messageRepository.AddNewMessagesAsync(taskRequest.Message, taskRequest, Roles.User);
+                await _messageRepository.AddNewMessagesAsync(taskRequest.Message, taskRequest, Roles.User);
 
-                //var previousMessages = await _messageRepository.GetMessagesAsync(taskRequest.ContextId);
-                //var orderedMessages = previousMessages.OrderBy(m => m.Timestamp).ToList();
+                var previousMessages = await _messageRepository.GetMessagesAsync(taskRequest.ContextId);
 
                 var history = new ChatHistory();
 
                 // Add system message to guide the assistant
-                history.AddSystemMessage(BuildSystemMessage());
+                history.AddSystemMessage(systemPrompt);
 
                 // Add prior conversation messages
-                //history.AddRange(previousMessages.Select(m => new ChatMessageContent()
-                //{
-                //    Role = new AuthorRole(m.Role),
-                //    Content = m.Content
-                //}));
+                history.AddRange(previousMessages.Select(m => new ChatMessageContent()
+                {
+                    Role = new AuthorRole(m.Role),
+                    Content = m.Content
+                }));
                 history.AddUserMessage(taskRequest.Message);
 
                 // Enable Function Calling
@@ -134,13 +138,13 @@ namespace BloggerAgent.Infrastructure.Services
                 );
 
                 // Save AI reply (optional)
-                //await _messageRepository.AddNewMessagesAsync(result.Content, taskRequest, Roles.Assistant);
+                await _messageRepository.AddNewMessagesAsync(result.Content, taskRequest, Roles.Assistant);
 
                 return result.Content ?? "";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in Chat()");
+                _logger.LogError(ex, $"An Error occured during AI Chat with message: {ex.Message}");
                 return "Sorry, something went wrong.";
             }
         }

@@ -1,9 +1,10 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace BloggerAgent.Domain.Commons
+namespace BloggerAgent.Domain.Commons.DataEntities
 {
     public class Document<T>
     {
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("_id")]
         public string Id { get; set; }
 

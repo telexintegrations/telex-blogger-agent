@@ -15,6 +15,11 @@ using BloggerAgent.Domain.DomainHelper;
 using BloggerAgent.Application.Helpers;
 using BloggerAgent.Application.Dtos.A2ATaskDtos;
 using BloggerAgent.Infrastructure.Tooling;
+using BloggerAgent.Domain.Commons.Options;
+using BloggerAgent.Domain.Commons.constants;
+using BloggerAgent.Domain.Commons.DataEntities;
+using BloggerAgent.Infrastructure.Utilities;
+using BloggerAgent.Infrastructure.Commons.BloggerAgent.Infrastructure.Commons;
 
 namespace BloggerAgent.Infrastructure.Services
 {
@@ -26,9 +31,11 @@ namespace BloggerAgent.Infrastructure.Services
         private string _webhookUrl;
         private readonly IRequestProcessingService _requestService;
         private readonly IConversationRepository _messageRepository;
+        private readonly IOrganizationRepository _organizationRepository;
         private readonly IAIService _aiService;
         private readonly HttpHelper _httpHelper;
         private readonly ToolRouter _toolRouter;
+        private readonly TaskManager _taskManager;
 
         public BlogAgentService(
             IOptions<TelexSetting> telexSettings, 
@@ -37,7 +44,9 @@ namespace BloggerAgent.Infrastructure.Services
             IConversationRepository messageRepository,
             IAIService aiRepository,
             HttpHelper httpHelper,
-            ToolRouter toolRouter)
+            ToolRouter toolRouter, 
+            IOrganizationRepository organizationRepository,
+            TaskManager taskManager)
         {
             _webhookUrl = telexSettings.Value.WebhookUrl;
             _requestService = requestService;
@@ -46,6 +55,8 @@ namespace BloggerAgent.Infrastructure.Services
             _aiService = aiRepository;
             _httpHelper = httpHelper;
             _toolRouter = toolRouter;
+            _organizationRepository = organizationRepository;
+            _taskManager = taskManager;
         }       
 
         //public async Task<MessageResponse> HandleAsync(TaskRequest taskRequest)
@@ -122,11 +133,22 @@ namespace BloggerAgent.Infrastructure.Services
         {
             try
             {
-                var newTaskRequest = DataExtract.ExtractTaskData(taskRequest);
+                var newTaskContext = DataExtract.ExtractTaskData(taskRequest);
 
-                _logger.LogInformation("HandleUserInput: UserMessage={Message}", newTaskRequest.Message);
+                var organizations = await _organizationRepository.GetAllAsync();
 
-                var aiReply = await _aiService.ChatWithTools(newTaskRequest);
+                var organizationDetails = organizations.FirstOrDefault();
+
+                var blogTask = await _taskManager.ResolveAsync(newTaskContext.ContextId, newTaskContext.UserId);
+                newTaskContext.TaskId = blogTask?.Id;
+
+
+                var systemPrompt = PromptTemplate.BuildSystemMessage(null, null);
+
+
+                _logger.LogInformation("HandleUserInput: UserMessage={Message}", newTaskContext.Message);
+
+                var aiReply = await _aiService.ChatWithTools(newTaskContext, systemPrompt);
 
                 return DataExtract.ConstructResponse(taskRequest, aiReply);
             }

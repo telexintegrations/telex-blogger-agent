@@ -3,9 +3,7 @@ using BloggerAgent.Domain.IRepositories;
 using BloggerAgent.Application.IServices;
 using BloggerAgent.Api.Middleware;
 using BloggerAgent.Infrastructure.Repositories;
-using BloggerAgent.Services;
 using BloggerAgent.Infrastructure.Services;
-using BloggerAgent.Domain.Commons;
 using BloggerAgent.Domain.DomainHelper;
 using BloggerAgent.Infrastructure.Tooling;
 using BloggerAgent.Domain.Repositories;
@@ -16,6 +14,11 @@ using Serilog.Events;
 using OpenTelemetry.Trace;
 using BloggerAgent.Application.Configurations;
 using VigilAgent.Apm.Middleware;
+using BloggerAgent.Infrastructure.ToolFunctions;
+using BloggerAgent.Infrastructure.Commons;
+using BloggerAgent.Domain.Commons.Options;
+using BloggerAgent.Infrastructure.Commons.BloggerAgent.Infrastructure.Commons;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +45,7 @@ builder.Services.Configure<TelexSetting>(builder.Configuration.GetSection("Telex
 builder.Services.Configure<TelexApiSettings>(builder.Configuration.GetSection("TelexApiSettings"));
 builder.Services.AddScoped<DbContext>();
 builder.Services.AddScoped<HttpHelper>();
-builder.Services.AddTelemetryExporter(options => options.ApiKey = "te45tffee45566gfe33445gfd") ;
+builder.Services.AddTelemetryExporter(builder.Configuration) ;
 
 Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318");
 Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
@@ -66,17 +69,19 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<IBlogAgentService, BlogAgentService>();
 builder.Services.AddScoped<IBlogPostIntervalService, BlogPostIntervalService>(); 
 
-builder.Services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
+builder.Services.AddScoped(typeof(ITelexRepository<>), typeof(TelexRepository<>));
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
-builder.Services.AddScoped<IRequestProcessingService, RequestProcessingService>();
+builder.Services.AddScoped<IRequestProcessingService, RequestProcessor>();
 builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddScoped<ILlmTool, SaveOrganizationContextTool>();
 builder.Services.AddScoped<ILlmTool, GetOrganizationContextTool>();
 builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 builder.Services.AddScoped<ToolRouter>();
 builder.Services.AddScoped<TaskContextAccessor>();
-builder.Services.AddScoped<OrgApiKeyStore>();
 builder.Services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
+builder.Services.AddScoped<IMemoryCache, MemoryCache>();
+builder.Services.AddScoped<OrgApiKeyStore>();
+builder.Services.AddScoped<TaskManager>();
 
 builder.Services.AddMemoryCache();
 

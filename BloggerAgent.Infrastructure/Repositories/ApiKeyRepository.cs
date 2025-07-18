@@ -14,6 +14,7 @@ namespace BloggerAgent.Infrastructure.Repositories
     public class ApiKeyRepository : IApiKeyRepository
     {
         private readonly DbContext _db;
+        private static Dictionary<string, string> _keyCache = new();
 
         public ApiKeyRepository(DbContext db)
         {
@@ -29,8 +30,13 @@ namespace BloggerAgent.Infrastructure.Repositories
 
         public async Task<bool> SaveKeyAsync(string apiKey)
         {
+            if (_keyCache.TryGetValue(_db.TaskContext.OrgId, out var key))
+            {
+
+            }
+
             var filter = new { tag = "ApiKey" };
-            var result = await _db.AddAsync(new ApiKey { Key = apiKey});
+            var result = await _db.AddAsync(new ApiKey { Key = _db.TaskContext.OrgId});
 
             return result.Status == "success";
         }

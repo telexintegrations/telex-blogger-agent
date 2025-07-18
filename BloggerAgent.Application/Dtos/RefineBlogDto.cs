@@ -1,4 +1,4 @@
-﻿using BloggerAgent.Domain.Commons;
+﻿using BloggerAgent.Domain.Commons.DataEntities;
 
 namespace BloggerAgent.Application.Dtos
 {

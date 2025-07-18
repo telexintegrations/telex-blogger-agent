@@ -11,6 +11,6 @@ namespace BloggerAgent.Application.IServices
     public interface IAIService
     {
         Task<string> GenerateResponse(string message, string systemMessage, TaskContext blogDto);
-        Task<string> ChatWithTools(TaskContext taskRequest);
+        Task<string> ChatWithTools(TaskContext taskRequest, string systemPrompt);
     }
 }

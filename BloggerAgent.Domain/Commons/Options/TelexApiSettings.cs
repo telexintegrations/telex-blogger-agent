@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace BloggerAgent.Domain.Commons
+namespace BloggerAgent.Domain.Commons.Options
 {
     public class TelexApiSettings
     {

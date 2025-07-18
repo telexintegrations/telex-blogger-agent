@@ -5,10 +5,11 @@ using BloggerAgent.Domain.Models;
 using BloggerAgent.Application.Dtos;
 using BloggerAgent.Domain.Commons;
 using BloggerAgent.Application.Helpers;
+using BloggerAgent.Domain.Commons.DataEntities;
 
-namespace BloggerAgent.Services
+namespace BloggerAgent.Infrastructure.Commons
 {
-    public class RequestProcessingService : IRequestProcessingService
+    public class RequestProcessor : IRequestProcessingService
     {
         private static readonly HashSet<string> BlogKeywords = new()
         { "create", "generate", "write", "blog", "article", "post", "compose", "piece", "draft" };
@@ -19,9 +20,9 @@ namespace BloggerAgent.Services
         private static readonly HashSet<string> RefineKeywords = new()
         { "edit", "refine", "improve", "enhance", "polish", "revise", "rewrite", "update", "restructure", "modify", "optimize", "adjust", "tweak", "fix", "correct", "proofread", "streamline", "better", "make better", "more concise", "shorten", "expand" };
 
-        private readonly IMongoRepository<Company> _companyRepository;
+        private readonly ITelexRepository<Company> _companyRepository;
 
-        public RequestProcessingService(IMongoRepository<Company> companyRepository)
+        public RequestProcessor(ITelexRepository<Company> companyRepository)
         {
             _companyRepository = companyRepository;
         }

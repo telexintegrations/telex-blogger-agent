@@ -2,7 +2,7 @@
 
 namespace BloggerAgent.Domain.IRepositories
 {
-    public interface IOrganizationRepository : IMongoRepository<Company>
+    public interface IOrganizationRepository : ITelexRepository<Company>
     {
         Task<bool> CreateCompanyAsync(Company company);
         Task<bool> UpdateCompanyAsync(Company company);

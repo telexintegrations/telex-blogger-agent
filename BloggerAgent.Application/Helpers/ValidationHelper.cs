@@ -20,8 +20,8 @@ namespace BloggerAgent.Application.Helpers
             if (string.IsNullOrWhiteSpace(request.Id))
                 throw new ArgumentException("Id is required");
 
-            if (request.Method?.ToLower() != "message/send")
-                throw new ArgumentException("Invalid method");
+            if (string.IsNullOrEmpty(request.Method))
+                throw new ArgumentException("Method required");
 
             var message = request.Params?.Message;
             if (message == null)
@@ -43,24 +43,28 @@ namespace BloggerAgent.Application.Helpers
             }
 
             // Validate IDs are GUIDs (optional but recommended)
-            if (!Guid.TryParse(message.ContextId, out _))
+            if (string.IsNullOrEmpty(message.ContextId))
                 throw new ArgumentException("Invalid ContextId format");
 
-            if (message.TaskId != null && !Guid.TryParse(message.TaskId, out _))
-                throw new ArgumentException("Invalid TaskId format");
+            //if (message.TaskId != null && !Guid.TryParse(message.TaskId, out _))
+            //    throw new ArgumentException("Invalid TaskId format");
 
-            if (!Guid.TryParse(message.MessageId, out _))
+            if (string.IsNullOrEmpty(message.MessageId))
                 throw new ArgumentException("Invalid MessageId format");
 
             // Optional: Validate push notification config if present
-            var config = request.Params.Configuration;
+            var config = request?.Params?.Configuration;
             if (config?.PushNotificationConfig != null)
             {
                 if (string.IsNullOrWhiteSpace(config.PushNotificationConfig.Url))
                     throw new ArgumentException("PushNotification Url is required");
 
-                if (string.IsNullOrWhiteSpace(config.PushNotificationConfig.Token))
-                    throw new ArgumentException("PushNotification Token is required");
+                Authentication auth = config.PushNotificationConfig.Authentication;
+                if (auth.Schemes.Count == 0 || !auth.Schemes.Contains("TelexApiKey"))
+                    throw new ArgumentException("Invalid auth scheme");
+                
+                if (string.IsNullOrWhiteSpace(auth.Credentials))
+                    throw new ArgumentException("Auth credentials is required");
             }
         }
 

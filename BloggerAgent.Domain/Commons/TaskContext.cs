@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BloggerAgent.Domain.Commons.DataEntities;
+using BloggerAgent.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,4 +29,6 @@ namespace BloggerAgent.Domain.Commons
         // Optional: Telex Channel ID (for routing or broadcasting)
         public string ChannelId { get; set; } = string.Empty;
     }
+
+   
 }

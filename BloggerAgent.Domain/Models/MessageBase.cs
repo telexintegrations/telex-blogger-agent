@@ -10,14 +10,16 @@ namespace BloggerAgent.Domain.Models
 {
     public class MessageBase
     {
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [JsonPropertyName("_id")]
-        public string Id { get; set; } = IdGenerator.GenerateObjectId();
+        public string? Id { get; set; }
 
-        [JsonPropertyName("organization_id")]
-        public string OrganizationId { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonPropertyName("organisation_id")]
+        public string? OrganizationId { get; set; }
 
-        [JsonPropertyName("tag_name")]
-        public string TagName { get; set; }
+        [JsonPropertyName("tag")]
+        public string Tag { get; set; }
         
         [JsonPropertyName("user_id")]
         public string UserId { get; set; }

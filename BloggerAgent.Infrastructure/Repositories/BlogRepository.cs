@@ -1,4 +1,4 @@
-﻿using BloggerAgent.Domain.Commons;
+﻿using BloggerAgent.Domain.Commons.constants;
 using BloggerAgent.Domain.Data;
 using BloggerAgent.Domain.IRepositories;
 using BloggerAgent.Domain.Models;
@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace BloggerAgent.Infrastructure.Repositories
 {
-    public class BlogRepository : MongoRepository<Blog>, IBlogRepository
+    public class BlogRepository : TelexRepository<Blog>, IBlogRepository
     {
 
-        private readonly IMongoRepository<Blog> _blogRepository;
+        private readonly ITelexRepository<Blog> _blogRepository;
 
-        public BlogRepository(IMongoRepository<Blog> blogRepository, DbContext context) : base(context)
+        public BlogRepository(ITelexRepository<Blog> blogRepository, DbContext context) : base(context)
         {
             _blogRepository = blogRepository;
         }

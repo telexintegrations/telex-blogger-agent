@@ -7,17 +7,16 @@ using BloggerAgent.Domain.DomainHelper;
 
 namespace BloggerAgent.Infrastructure.Repositories
 {
-    public class MongoRepository<T> : IMongoRepository<T> where T : IEntity
+    public class TelexRepository<T> : ITelexRepository<T> where T : IEntity
     {
         private readonly DbContext _context;
-        private readonly TaskContextAccessor contextAccessor;
-        public MongoRepository(DbContext context)
+        private readonly TaskContextAccessor _contextAccessor;
+        public TelexRepository(DbContext context)
         {
             _context = context;
         }
 
-        public string OrgId => 
-            contextAccessor.GetTaskContext().OrgId;
+        public string OrgId => _context.TaskContext.OrgId;
 
         public async Task<bool> CreateAsync(T document)
         {
@@ -31,7 +30,7 @@ namespace BloggerAgent.Infrastructure.Repositories
             return result.Status == "success" ? result.Data : default;
         }
 
-        public async Task<List<T>> GetAllAsync(Dictionary<string, string> filter = null)
+        public async Task<List<T>> GetAllAsync(Dictionary<string, object> filter = null)
         {
             var result = await _context.GetAll<T>(filter); 
             
@@ -42,7 +41,7 @@ namespace BloggerAgent.Infrastructure.Repositories
 
         }
 
-        public async Task<List<T?>> FilterAsync(Dictionary<string, string> filter)
+        public async Task<List<T?>> FilterAsync(Dictionary<string, object> filter)
         {
             var result = await _context.GetAll<T>(filter);
             return result.Status == "success" ? result.Data : new List<T?>();
@@ -53,8 +52,7 @@ namespace BloggerAgent.Infrastructure.Repositories
             var response = await _context.UpdateAsync<T>(id, document);
             return response.Status == "success";
         }
-
-        // Update a new document
+        
         public async Task<bool> DeleteAsync(string id)
         {
             var response = await _context.DeleteAsync<T>(id);
@@ -63,7 +61,7 @@ namespace BloggerAgent.Infrastructure.Repositories
 
         public async Task<List<T>> FilterByFieldAsync(string field, string value)
         {
-            var filter = new Dictionary<string, string> { [field] = value };
+            var filter = new Dictionary<string, object> { [field] = value };
             return await FilterAsync(filter);
         }
 

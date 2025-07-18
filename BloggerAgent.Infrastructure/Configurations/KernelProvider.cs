@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using BloggerAgent.Infrastructure.Services;
 using OpenTelemetry.Logs;
+using BloggerAgent.Infrastructure.ToolFunctions;
 
 namespace BloggerAgent.Application.Configurations
 {

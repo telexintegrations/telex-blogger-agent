@@ -1,4 +1,4 @@
-﻿namespace BloggerAgent.Domain.Commons
+﻿namespace BloggerAgent.Domain.Commons.DataEntities
 {
     public class Request
     {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.Domain.Commons
+namespace BloggerAgent.Domain.Commons.DataEntities
 {
     public class TelexChatMessage
     {

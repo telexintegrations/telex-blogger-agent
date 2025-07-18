@@ -9,16 +9,17 @@ using BloggerAgent.Domain.Commons.Gemini;
 using BloggerAgent.Domain.Commons;
 using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
+using BloggerAgent.Domain.Commons.DataEntities;
 
 namespace BloggerAgent.Infrastructure.Repositories
 {
-    public class ConversationRepository : MongoRepository<Message>, IConversationRepository
+    public class ConversationRepository : TelexRepository<Message>, IConversationRepository
     {
         private readonly DbContext _context;
-        private readonly IMongoRepository<Message> _repository;
+        private readonly ITelexRepository<Message> _repository;
         private readonly ILogger<ConversationRepository> _logger;
 
-        public ConversationRepository(DbContext context, ILogger<ConversationRepository> logger, IMongoRepository<Message> repository) : base(context)
+        public ConversationRepository(DbContext context, ILogger<ConversationRepository> logger, ITelexRepository<Message> repository) : base(context)
         {
             _context = context;
             _repository = repository;
@@ -41,6 +42,7 @@ namespace BloggerAgent.Infrastructure.Repositories
             return conversations
                 .Where(c => c.ContextId == contextId)
                 .Take(10)
+                .OrderBy(m => m.Timestamp)
                 .Select(c => new TelexChatMessage()
                 {
                     Role = c.Role,
@@ -52,7 +54,8 @@ namespace BloggerAgent.Infrastructure.Repositories
         {
 
             var newMessage = new Message
-            {                
+            {
+                UserId = blogDto.UserId,
                 Content = message,
                 TaskId = blogDto.TaskId,
                 ContextId = blogDto.ContextId,

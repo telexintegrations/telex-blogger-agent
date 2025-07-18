@@ -14,7 +14,7 @@ namespace BloggerAgent.Domain.Models
         public string? Id { get; set; }
 
         [JsonPropertyName("tag_name")]
-        public string TagName { get; set; }
+        public string Tag { get; set; }
 
         [JsonPropertyName("organization_id")]
         public string? OrganizationId { get; set; }

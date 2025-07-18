@@ -1,6 +1,7 @@
 ﻿using BloggerAgent.Application.Dtos;
 using BloggerAgent.Application.Helpers;
 using BloggerAgent.Domain.Commons;
+using BloggerAgent.Domain.Commons.DataEntities;
 
 namespace BloggerAgent.Application.IServices
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.Domain.Commons
+namespace BloggerAgent.Domain.Commons.constants
 {
     public static class Roles
     {

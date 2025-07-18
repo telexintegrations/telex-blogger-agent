@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.Application.Helpers
+namespace BloggerAgent.Infrastructure.Services
 {
-    public class AIResponseHelper
+    public class TopicAgent
     {
     }
 }

@@ -1,6 +1,6 @@
 ﻿using BloggerAgent.Domain.Models;
 
-namespace BloggerAgent.Domain.Commons
+namespace BloggerAgent.Domain.Commons.constants
 {
     public class CollectionType
     {
@@ -10,17 +10,18 @@ namespace BloggerAgent.Domain.Commons
         public const string Message = "Messages";
         public const string Blog = "Blogs";
         public const string ApiKey = "ApiKeys";
+        public const string BlogTask = "BlogTasks";
 
        public static string ResolveTagName<T>()
        {
            var type = typeof(T);
 
-           return type == typeof(Company) ? CollectionType.Company :
-                  type == typeof(Conversation) ? CollectionType.Convesation :
-                  type == typeof(Blog) ? CollectionType.Blog :
-                  type == typeof(Message) ? CollectionType.Message :
-                  type == typeof(User) ? CollectionType.User :
-                  type == typeof(ApiKey) ? CollectionType.ApiKey :
+           return type == typeof(Company) ? Company :
+                  type == typeof(Conversation) ? Convesation :
+                  type == typeof(Blog) ? Blog :
+                  type == typeof(Message) ? Message :
+                  type == typeof(User) ? User :
+                  type == typeof(ApiKey) ? ApiKey :
                   type.Name; // Fallback: use raw type name
        }
         

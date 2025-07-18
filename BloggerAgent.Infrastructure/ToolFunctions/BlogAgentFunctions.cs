@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.Infrastructure.Services
+namespace BloggerAgent.Infrastructure.ToolFunctions
 {
     public class BlogAgentFunctions
     {
@@ -30,6 +30,26 @@ namespace BloggerAgent.Infrastructure.Services
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
 
+            var orgs = await repo.GetAllAsync();
+
+            var existingOrg = orgs.FirstOrDefault();
+
+            if (existingOrg != null)
+            {
+                existingOrg.Website = website ?? existingOrg.Website;
+                existingOrg.Name = name ?? existingOrg.Name;
+                existingOrg.Tone = tone ?? existingOrg.Tone;
+                existingOrg.TargetAudience = targetAudience ?? existingOrg.TargetAudience;
+                existingOrg.Overview = overview ?? existingOrg.Overview;
+                existingOrg.UpdatedAt = DateTime.UtcNow;
+
+                var result = await repo.UpdateAsync(existingOrg.Id, existingOrg);
+
+                return result
+                ? $"✅ Organisation '{existingOrg.Name}' updated successfully."
+                : $"❌ Failed to update organization '{name}'.";
+            }
+
             var org = new Company
             {
                 Name = name,
@@ -43,7 +63,7 @@ namespace BloggerAgent.Infrastructure.Services
 
             var success = await repo.CreateCompanyAsync(org);
             return success
-                ? $"✅ Organization '{name}' saved successfully."
+                ? $"✅ Organization '{org.Name}' saved successfully."
                 : $"❌ Failed to save organization '{name}'.";
         }
 
@@ -60,43 +80,43 @@ namespace BloggerAgent.Infrastructure.Services
         //        : $"⚠️ Failed to update organization.";
         //}
 
-        [KernelFunction("get_organization_context")]
-        [Description("Retrieves an organization context to be used in the blog post generation")]
-        public async Task<string> GetOrganizationContextAsync()
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var repo = scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
+        //[KernelFunction("get_organization_context")]
+        //[Description("Retrieves an organization context to be used in the blog post generation")]
+        //public async Task<string> GetOrganizationContextAsync()
+        //{
+        //    using var scope = _scopeFactory.CreateScope();
+        //    var repo = scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
 
-            var orgs = await repo.GetAllAsync();
-            if (orgs.Count == 0)
-            {
-                return "No company information recorded yet";
-            }
-            return string.Join(",", orgs.FirstOrDefault());
+        //    var orgs = await repo.GetAllAsync();
+        //    if (orgs.Count == 0)
+        //    {
+        //        return "No company information recorded yet";
+        //    }
+        //    return string.Join(",", orgs.FirstOrDefault());
              
-        }
+        //}
 
-        [KernelFunction("save_blog_post")]
-        [Description("Saves a particular blog post at the behest of the user.")]
-        public async Task<string> SaveBlogPostAsync(string title, string content, string keywords = "")
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var repo = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
+        //[KernelFunction("save_blog_post")]
+        //[Description("Saves a particular blog post at the behest of the user.")]
+        //public async Task<string> SaveBlogPostAsync(string title, string content, string keywords = "")
+        //{
+        //    using var scope = _scopeFactory.CreateScope();
+        //    var repo = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
 
-            var blog = new Blog
-            {
-                Title = title,
-                Content = content,
-                Keywords = { keywords },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+        //    var blog = new Blog
+        //    {
+        //        Title = title,
+        //        Content = content,
+        //        Keywords = { keywords },
+        //        CreatedAt = DateTime.UtcNow,
+        //        UpdatedAt = DateTime.UtcNow
+        //    };
 
-            var success = await repo.AddBlogAsync(blog);
-            return success
-                ? $"📝 Blog post '{title}' saved successfully for org."
-                : $"⚠️ Failed to save blog post '{title}'.";
-        }
+        //    var success = await repo.AddBlogAsync(blog);
+        //    return success
+        //        ? $"📝 Blog post '{title}' saved successfully for org."
+        //        : $"⚠️ Failed to save blog post '{title}'.";
+        //}
 
         //[KernelFunction("update_blog_post")]
         //[Description("Updates a previously saved blog post using its ID.")]

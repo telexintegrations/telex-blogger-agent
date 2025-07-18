@@ -2,7 +2,7 @@
 using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
-using BloggerAgent.Domain.Commons;
+using BloggerAgent.Domain.Commons.DataEntities;
 using Microsoft.Extensions.Logging;
 
 namespace BloggerAgent.Domain.DomainHelper
@@ -57,9 +57,8 @@ namespace BloggerAgent.Domain.DomainHelper
 
                 _logger.LogInformation("[HttpHelper] Received {StatusCode} from {Url}", (int)response.StatusCode, request.Url);
                 _logger.LogInformation($"[HttpHelper] Response Headers:\n{headers}");
-                _logger.LogDebug("[HttpHelper] Response body:\n{Body}", responseBody);
-
-
+                _logger.LogInformation("[HttpHelper] Response body:\n{Body}", responseBody);
+              
                 return response;
             }           
             catch (Exception ex)

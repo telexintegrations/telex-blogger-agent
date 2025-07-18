@@ -1,5 +1,6 @@
 ﻿using BloggerAgent.Application.Dtos.A2ATaskDtos;
 using BloggerAgent.Domain.Commons;
+using BloggerAgent.Domain.Commons.DataEntities;
 using BloggerAgent.Domain.Models;
 using System;
 using System.Collections.Generic;
