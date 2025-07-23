@@ -87,7 +87,7 @@ namespace BloggerAgent.Infrastructure.Services
             }
 
             var responseJson = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<GroqChatResponse>(responseJson);
+            var result = JsonSerializer.Deserialize<GroqChatResponse>(responseJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
 
             return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
         }

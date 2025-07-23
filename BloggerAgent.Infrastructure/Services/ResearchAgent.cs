@@ -79,7 +79,7 @@ namespace BloggerAgent.Infrastructure.Services
 
             request.Messages.AddRange(historyMessages); // ✅ Add the actual history
 
-            var json = JsonSerializer.Serialize(request);
+            var json = JsonSerializer.Serialize(request, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             ApiRequest apiRequest = new ApiRequest
