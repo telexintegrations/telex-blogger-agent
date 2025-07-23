@@ -21,7 +21,7 @@ namespace BloggerAgent.Application.Configurations
             var geminiApiKey = configuration.GetValue<string>("GeminiSetting:ApiKey")
                 ?? throw new InvalidOperationException("Gemini API Key not configured!");
 
-            var geminiModel = configuration.GetValue("GeminiSetting:Model", "gemini-1.5-pro");
+            var geminiModel = configuration.GetValue("GeminiSetting:Model", "gemini-2.5-pro");
 
             _kernel = BuildKernel(geminiModel, geminiApiKey);
 
@@ -59,8 +59,16 @@ namespace BloggerAgent.Application.Configurations
 
         public void RegisterPlugins(IServiceProvider sp)
         {
-            _kernel.Plugins.AddFromType<BlogAgentFunctions>("Organization", sp);
+            // Fix: Replace 'this' with a collection of KernelFunction instances  
+          
+
+            //_kernel.Plugins.AddFromType<BlogPlugin>("BlogPlugin", sp);
+            //_kernel.Plugins.AddFromType<AgentPlugin>("AgentPlugin", sp);
+            _kernel.Plugins.AddFromType<OrganizationPlugin>("OrganizationPlugin", sp);
+            _kernel.Plugins.AddFromType<BlogAgentFunctions>("BlogAgentPlugin", sp);
         }
+
+      
     }
 
 }

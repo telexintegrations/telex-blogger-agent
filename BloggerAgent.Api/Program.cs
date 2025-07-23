@@ -61,16 +61,23 @@ Environment.SetEnvironmentVariable("OTEL_SERVICE_NAME", "blogger-agent");
 //        .AddOtlpExporter();
 //});
 
+builder.Services.AddSingleton<BlogPlugin>();
 builder.Services.AddSingleton<BlogAgentFunctions>();
+builder.Services.AddSingleton<OrganizationPlugin>();
+builder.Services.AddSingleton<AgentPlugin>();
 builder.Services.AddSingleton<KernelProvider>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IBlogAgentService, BlogAgentService>();
+builder.Services.AddScoped<IResearchAgent, ResearchAgent>();
+builder.Services.AddScoped<OutlineAgent>();
+builder.Services.AddScoped<WriterAgent>();
 builder.Services.AddScoped<IBlogPostIntervalService, BlogPostIntervalService>(); 
 
 builder.Services.AddScoped(typeof(ITelexRepository<>), typeof(TelexRepository<>));
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<IBlogRepository, BlogRepository>();
 builder.Services.AddScoped<IRequestProcessingService, RequestProcessor>();
 builder.Services.AddScoped<IAIService, AIService>();
 builder.Services.AddScoped<ILlmTool, SaveOrganizationContextTool>();

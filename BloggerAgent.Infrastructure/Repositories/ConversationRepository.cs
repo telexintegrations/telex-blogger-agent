@@ -41,12 +41,13 @@ namespace BloggerAgent.Infrastructure.Repositories
 
             return conversations
                 .Where(c => c.ContextId == contextId)
+                .OrderByDescending(m => m.Timestamp) // Get newest messages first
                 .Take(10)
-                .OrderBy(m => m.Timestamp)
+                .OrderBy(m => m.Timestamp) // Reorder them chronologically if needed
                 .Select(c => new TelexChatMessage()
                 {
                     Role = c.Role,
-                    Content =  c.Content 
+                    Content = c.Content
                 }).ToList();
         }
 

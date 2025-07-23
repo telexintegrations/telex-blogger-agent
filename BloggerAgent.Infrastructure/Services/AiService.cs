@@ -100,7 +100,7 @@ namespace BloggerAgent.Infrastructure.Services
         }
 
 
-        public async Task<string> ChatWithTools(TaskContext taskRequest, string systemPrompt)
+        public async Task<string> ChatWithTools(TaskContext taskRequest, string systemPrompt, IEnumerable<ChatMessageContent> messages)
         {
             try
             {
@@ -108,9 +108,9 @@ namespace BloggerAgent.Infrastructure.Services
                 var chatService = _kernelProvider.ChatCompletionService;
 
                 // Save user message
-                await _messageRepository.AddNewMessagesAsync(taskRequest.Message, taskRequest, Roles.User);
+                //await _messageRepository.AddNewMessagesAsync(taskRequest.Message, taskRequest, Roles.User);
 
-                var previousMessages = await _messageRepository.GetMessagesAsync(taskRequest.ContextId);
+                //var previousMessages = await _messageRepository.GetMessagesAsync(taskRequest.ContextId);
 
                 var history = new ChatHistory();
 
@@ -118,11 +118,12 @@ namespace BloggerAgent.Infrastructure.Services
                 history.AddSystemMessage(systemPrompt);
 
                 // Add prior conversation messages
-                history.AddRange(previousMessages.Select(m => new ChatMessageContent()
-                {
-                    Role = new AuthorRole(m.Role),
-                    Content = m.Content
-                }));
+                //history.AddRange(previousMessages.Select(m => new ChatMessageContent()
+                //{
+                //    Role = new AuthorRole(m.Role),
+                //    Content = m.Content
+                //}));
+                history.AddRange(messages);
                 history.AddUserMessage(taskRequest.Message);
 
                 // Enable Function Calling
@@ -138,7 +139,7 @@ namespace BloggerAgent.Infrastructure.Services
                 );
 
                 // Save AI reply (optional)
-                await _messageRepository.AddNewMessagesAsync(result.Content, taskRequest, Roles.Assistant);
+                //await _messageRepository.AddNewMessagesAsync(result.Content, taskRequest, Roles.Assistant);
 
                 return result.Content ?? "";
             }
@@ -148,6 +149,90 @@ namespace BloggerAgent.Infrastructure.Services
                 return "Sorry, something went wrong.";
             }
         }
+        
+        public async Task<string> GenerateAsync(string systemPrompt, TaskContext taskRequest = null, IEnumerable<ChatMessageContent> messages = null, string userMessage = null)
+        {
+            try
+            {
+                var kernel = _kernelProvider.Kernel;
+                var chatService = _kernelProvider.ChatCompletionService;
+
+                // Save user message
+              
+                var history = new ChatHistory();
+
+                // Add system message to guide the assistant
+                history.AddSystemMessage(systemPrompt);
+
+                if (messages != null)
+                {
+                    history.AddRange(messages);
+                }
+
+                if (userMessage != null) 
+                {
+                    history.AddUserMessage(userMessage);
+                }
+                var result = await chatService.GetChatMessageContentAsync(history);
+
+                
+                return result.Content ?? "";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"An Error occured during AI Chat with message: {ex.Message}");
+                return "Sorry, something went wrong.";
+            }
+        }
+
+        public async Task<string> GenerateResponseAsync(string systemPrompt, TaskContext taskRequest)
+        {
+            try
+            {
+                var kernel = _kernelProvider.Kernel;
+                var chatService = _kernelProvider.ChatCompletionService;
+
+                var history = new ChatHistory();
+                history.AddSystemMessage(systemPrompt);
+                history.AddUserMessage(taskRequest.Message); // Optional based on flow
+
+                // Step 1: Ask SK what to do next
+                var nextActionResult = await kernel.Plugins
+                    .GetFunction("Blog", "GetNextAction")
+                    .InvokeAsync(kernel, new KernelArguments
+                    {
+                        ["phase"] = taskRequest.BlogTask.CurrentPhase.ToString()
+                    });
+
+                var nextTool = nextActionResult.GetValue<string>();
+                if (string.IsNullOrWhiteSpace(nextTool))
+                {
+                    return "Agent couldn't determine the next action.";
+                }
+
+                // Step 2: Call tool dynamically
+                var function = kernel.Plugins.GetFunction("BlogPlugin", nextTool);
+                var toolResponse = await function.InvokeAsync(kernel, new KernelArguments
+                {
+                    ["interest"] = taskRequest.Message // or other contextual input
+                });
+
+                var assistantReply = toolResponse.GetValue<string>();
+
+                // Step 3: Respond as assistant
+                history.AddAssistantMessage(assistantReply);
+
+                var finalReply = await chatService.GetChatMessageContentAsync(history);
+
+                return finalReply.Content ?? assistantReply ?? "No content generated.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in GenerateAsync()");
+                return "Sorry, something went wrong.";
+            }
+        }
+
 
         public static string BuildSystemMessage()
         {

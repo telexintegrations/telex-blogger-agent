@@ -20,6 +20,8 @@ using BloggerAgent.Domain.Commons.constants;
 using BloggerAgent.Domain.Commons.DataEntities;
 using BloggerAgent.Infrastructure.Utilities;
 using BloggerAgent.Infrastructure.Commons.BloggerAgent.Infrastructure.Commons;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel;
 
 namespace BloggerAgent.Infrastructure.Services
 {
@@ -35,7 +37,7 @@ namespace BloggerAgent.Infrastructure.Services
         private readonly IAIService _aiService;
         private readonly HttpHelper _httpHelper;
         private readonly ToolRouter _toolRouter;
-        private readonly TaskManager _taskManager;
+        private readonly TaskContextAccessor _taskManager;
 
         public BlogAgentService(
             IOptions<TelexSetting> telexSettings, 
@@ -46,7 +48,7 @@ namespace BloggerAgent.Infrastructure.Services
             HttpHelper httpHelper,
             ToolRouter toolRouter, 
             IOrganizationRepository organizationRepository,
-            TaskManager taskManager)
+            TaskContextAccessor taskManager)
         {
             _webhookUrl = telexSettings.Value.WebhookUrl;
             _requestService = requestService;
@@ -57,7 +59,45 @@ namespace BloggerAgent.Infrastructure.Services
             _toolRouter = toolRouter;
             _organizationRepository = organizationRepository;
             _taskManager = taskManager;
-        }       
+        }
+
+        public async Task<MessageResponse> HandleUserInput(TaskRequest taskRequest)
+        {
+            try
+            {
+                //var newTaskContext = DataExtract.ExtractTaskData(taskRequest);
+                var newTaskContext = _taskManager.GetTaskContext();
+                await _messageRepository.AddNewMessagesAsync(newTaskContext.Message, newTaskContext, Roles.User);
+
+                //var organizations = await _organizationRepository.GetAllAsync();
+
+                //var organizationDetails = organizations.FirstOrDefault();
+
+                //var blogTask = await _taskManager.ResolveAsync(newTaskContext.ContextId, newTaskContext.UserId);
+                //newTaskContext.TaskId = blogTask?.Id;
+                var previousMessages = newTaskContext.ChatMessages.Select(m => new ChatMessageContent()
+                {
+                    Role = new AuthorRole(m.Role),
+                    Content = m.Content
+                });
+
+                var orgInfo = JsonSerializer.Serialize(newTaskContext.Organization);
+
+
+                _logger.LogInformation("HandleUserInput: UserMessage={Message}", newTaskContext.Message);
+
+                var aiReply = await _aiService.ChatWithTools(newTaskContext, PromptTemplate.BuildOrchestratorPrompt(orgInfo), previousMessages);
+                await _messageRepository.AddNewMessagesAsync(aiReply, newTaskContext, Roles.Assistant);
+
+                return DataExtract.ConstructResponse(taskRequest, aiReply);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in HandleUserInput()");
+                return DataExtract.ConstructResponse(taskRequest, "🤖 Sorry, something went wrong.");
+            }
+        }
+
 
         //public async Task<MessageResponse> HandleAsync(TaskRequest taskRequest)
         //{
@@ -129,35 +169,6 @@ namespace BloggerAgent.Infrastructure.Services
             return true;
         }
 
-        public async Task<MessageResponse> HandleUserInput(TaskRequest taskRequest)
-        {
-            try
-            {
-                var newTaskContext = DataExtract.ExtractTaskData(taskRequest);
-
-                var organizations = await _organizationRepository.GetAllAsync();
-
-                var organizationDetails = organizations.FirstOrDefault();
-
-                var blogTask = await _taskManager.ResolveAsync(newTaskContext.ContextId, newTaskContext.UserId);
-                newTaskContext.TaskId = blogTask?.Id;
-
-
-                var systemPrompt = PromptTemplate.BuildSystemMessage(null, null);
-
-
-                _logger.LogInformation("HandleUserInput: UserMessage={Message}", newTaskContext.Message);
-
-                var aiReply = await _aiService.ChatWithTools(newTaskContext, systemPrompt);
-
-                return DataExtract.ConstructResponse(taskRequest, aiReply);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error in HandleUserInput()");
-                return DataExtract.ConstructResponse(taskRequest, "🤖 Sorry, something went wrong.");
-            }
-        }
 
         public async Task<MessageResponse> HandleAsync(TaskRequest taskRequest)
         {
