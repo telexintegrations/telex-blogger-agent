@@ -102,9 +102,9 @@ namespace BloggerAgent.Application.Helpers
                     Status = new()
                     {
                         State = State.Submitted.ToString().ToLower(),
-                        Timestamp = DateTime.UtcNow,
                         Message = new TaskMessage
                         {
+                            MessageId = Guid.NewGuid().ToString(),
                             Role = "agent",
                             Kind = "message",
                             Parts = new List<TextPart>
@@ -113,7 +113,6 @@ namespace BloggerAgent.Application.Helpers
                                 {
                                     Kind = "text",
                                     Text = "Task submitted successfully",
-                                    Metadata = null
                                 }
                             }
                         }

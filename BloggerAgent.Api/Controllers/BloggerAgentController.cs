@@ -39,7 +39,7 @@ namespace BloggerAgent.Api.Controller
             Task.Run(() => 
             {
                 _logger.LogInformation($"Processing task {request.Id} in background");
-                TaskContextAccessor.Current = contextSnapshot;
+                _taskContextAccessor.SetTaskContext(contextSnapshot);
                 _blogService.HandleUserInput(request);
             });
 
