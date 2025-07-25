@@ -35,7 +35,7 @@ namespace BloggerAgent.Api.Middleware
                 context.Response.StatusCode = status;
                 context.Response.ContentType = "application/json";
 
-                var response = JsonSerializer.Serialize(new TaskErrorResponse
+                var response = JsonSerializer.Serialize(new A2aErrorResponse
                 {
                     Code = status,
                     Message = $"{ex?.Message ?? "An error occurred"}",

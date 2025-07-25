@@ -14,7 +14,7 @@ namespace BloggerAgent.Api.Controllers
         public IActionResult GetIntegrationConfig()
         {
 
-            var integrationJson = AgentSpec.GetAgentCard();
+            var integrationJson = A2aAgent.Get();
 
             if (integrationJson == null)
             {

@@ -31,17 +31,22 @@ namespace BloggerAgent.Domain.DomainHelper
                     httpRequest.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
 
-                _logger.LogDebug($"[HttpHelper] Request Headers:\n{request.Headers}");
+                _logger.LogInformation($"[HttpHelper] Request Headers:\n{request.Headers}");
 
             }
 
             // Add body if present
             if (request.Body != null)
             {
-                string json = JsonSerializer.Serialize(request.Body);
+                string json = JsonSerializer.Serialize(request.Body, new JsonSerializerOptions 
+                { 
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+                    WriteIndented = true, 
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
                 httpRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                _logger.LogDebug($"[HttpHelper] Request Body:\n{json}");
+                _logger.LogInformation($"[HttpHelper] Request Body:\n{json}");
             }
 
             _logger.LogInformation($"[HttpHelper] Sending {request.Method} request to {request.Url}");

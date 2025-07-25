@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BloggerAgent.Application.Dtos.A2ATaskDtos
 {
-    public class TaskErrorResponse
+    public class A2aErrorResponse
     {
         [JsonPropertyName("code")]
         public int Code { get; set; }

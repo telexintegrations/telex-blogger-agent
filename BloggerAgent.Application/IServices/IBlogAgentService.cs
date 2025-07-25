@@ -6,8 +6,8 @@ namespace BloggerAgent.Application.IServices
 {
     public interface IBlogAgentService
     {
-        Task<MessageResponse> HandleAsync(TaskRequest taskRequest);
-        Task<MessageResponse> HandleUserInput(TaskRequest taskRequest);
-        Task<bool> SendResponseAsync(string blogPost, TaskContext blogDto);
+        Task<AgentMessageResponse> HandleAsync(A2aTaskRequest taskRequest);
+        Task HandleUserInput(A2aTaskRequest taskRequest);
+        Task<bool> SendResponseAsync(AgentTaskResponse taskResponse, TaskContext taskContext);
     }
 }

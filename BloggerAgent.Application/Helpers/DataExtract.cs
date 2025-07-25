@@ -1,6 +1,8 @@
-﻿using BloggerAgent.Application.Dtos.A2ATaskDtos;
+﻿using BloggerAgent.Application.Contracts;
+using BloggerAgent.Application.Dtos.A2ATaskDtos;
 using BloggerAgent.Domain.Commons;
 using BloggerAgent.Domain.Commons.DataEntities;
+using BloggerAgent.Domain.Enums;
 using BloggerAgent.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -62,22 +64,21 @@ namespace BloggerAgent.Application.Helpers
             return settings.FirstOrDefault(s => s.Label == key)?.Default.ToString() ?? "";
         }
 
-        public static MessageResponse ConstructResponse(TaskRequest request, string response)
+        public static AgentMessageResponse ConstructResponse(A2aTaskRequest request, string response)
         {
-            return new MessageResponse
+            return new AgentMessageResponse
             {
-                Jsonrpc = "2.0",
+                Jsonrpc = request.Jsonrpc,
                 Id = request.Id,
-                Result = new ResponseMessage()
+                Result = new TaskMessage()
                 {
                     Role = "agent",
                     Kind = "message",
                     MessageId = Guid.NewGuid().ToString(),
-                    TaskId = request.Params.Message.TaskId,
                     ContextId = request.Params.Message.ContextId,
-                    Parts = new List<MessageResponsePart>
+                    Parts = new List<TextPart>
                     {
-                        new MessageResponsePart
+                        new TextPart
                         {
                             Kind = "text",
                             Text = response,
@@ -88,8 +89,93 @@ namespace BloggerAgent.Application.Helpers
                 }
             };
         }
+        
+        public static TaskReceivedResponse ConstructTaskReceivedResponse(A2aTaskRequest request)
+        {
+            return new TaskReceivedResponse
+            {
+                Jsonrpc = request.Jsonrpc,
+                Id = request.Id,
+                Result = new()
+                {
+                    Id = request.Params.Message.TaskId ?? Guid.NewGuid().ToString(),
+                    Status = new()
+                    {
+                        State = State.Submitted.ToString().ToLower(),
+                        Timestamp = DateTime.UtcNow,
+                        Message = new TaskMessage
+                        {
+                            Role = "agent",
+                            Kind = "message",
+                            Parts = new List<TextPart>
+                            {
+                                new TextPart
+                                {
+                                    Kind = "text",
+                                    Text = "Task submitted successfully",
+                                    Metadata = null
+                                }
+                            }
+                        }
+                    }
 
-        public static TaskContext ExtractTaskData(TaskRequest request)
+                }
+            };
+        }
+
+        public static AgentTaskResponse ConstructPushNotificationTask(A2aTaskRequest request, string response, string taskId)
+        {
+            var contextId = request.Params.Message.ContextId;
+
+            return new AgentTaskResponse
+            {
+                Jsonrpc = request.Jsonrpc,
+                Id = request.Id,
+                Result = new TaskResult
+                {
+                    Id = taskId,
+                    ContextId = contextId,
+                    Status = new Dtos.A2ATaskDtos.Status
+                    {
+                        State = State.Completed.ToString().ToLower(),
+                        Timestamp = DateTime.UtcNow,
+                        Message = new TaskMessage
+                        {
+                            Role = "agent",
+                            MessageId = Guid.NewGuid().ToString(),
+                            Kind = "message",
+                            Parts = new List<TextPart>
+                            {
+                                new TextPart
+                                {
+                                    Text = $"Task Completed Successfully",
+                                    
+                                }
+                            },
+                        }
+                    },
+                    Artifacts = new List<Artifact>
+                    {    new Artifact
+                        {
+                            ArtifactId = Guid.NewGuid().ToString(),
+                            Name = "push_notification_artifact",
+                            Parts = new List<TextPart>
+                            {
+                                new TextPart
+                                {
+                                    Text = response,
+                                    
+                                }
+                            },
+                        }
+                    },
+                }
+            };
+        }
+
+
+
+        public static TaskContext ExtractTaskData(A2aTaskRequest request)
         {
             var message = request?.Params?.Message;
             var config = request?.Params?.Configuration;

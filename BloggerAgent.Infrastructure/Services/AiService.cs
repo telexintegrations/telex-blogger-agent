@@ -129,7 +129,11 @@ namespace BloggerAgent.Infrastructure.Services
                 // Enable Function Calling
                 var executionSettings = new GeminiPromptExecutionSettings
                 {
-                    ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions
+                    ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
+
+                    Temperature = 0.7,               // Controls randomness; lower is more deterministic
+                    TopP = 0.9,                      // Nucleus sampling; focuses on top cumulative probability tokens
+                    TopK = 40,                       // Limits sampling to top-k probable tokens
                 };
 
                 var result = await chatService.GetChatMessageContentAsync(

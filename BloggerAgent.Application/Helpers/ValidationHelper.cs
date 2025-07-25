@@ -9,7 +9,7 @@ namespace BloggerAgent.Application.Helpers
 {
     public class ValidationHelper
     {
-        public static void ValidateRequest(TaskRequest request)
+        public static void ValidateRequest(A2aTaskRequest request)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
@@ -27,8 +27,8 @@ namespace BloggerAgent.Application.Helpers
             if (message == null)
                 throw new ArgumentException("Message params are required");
 
-            if (message.Role?.ToLower() != "user")
-                throw new ArgumentException("Role must be 'user'");
+            //if (message.Role?.ToLower() != "user")
+            //    throw new ArgumentException("Role must be 'user'");
 
             if (message.Parts == null || !message.Parts.Any())
                 throw new ArgumentException("Message parts cannot be empty");
@@ -50,7 +50,7 @@ namespace BloggerAgent.Application.Helpers
             //    throw new ArgumentException("Invalid TaskId format");
 
             if (string.IsNullOrEmpty(message.MessageId))
-                throw new ArgumentException("Invalid MessageId format");
+                throw new ArgumentException("Message Id is required");
 
             // Optional: Validate push notification config if present
             var config = request?.Params?.Configuration;

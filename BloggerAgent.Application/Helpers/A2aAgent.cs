@@ -1,32 +1,18 @@
-﻿using BloggerAgent.Application.Commons;
+﻿using BloggerAgent.Application.Commons.A2aAgentSpec;
+using BloggerAgent.Application.Contracts;
 using System.Text.Json;
 using static System.Net.WebRequestMethods;
 
 namespace BloggerAgent.Application.Helpers
 {
-    public class AgentSpec
+    public class A2aAgent
     {
-        public string Name { get; set; } = "";
-        public string Description { get; set; } = "";
-        public string Url { get; set; } = "";
-        public string Version { get; set; } = "";
-        public string IconUrl { get; set; } = "";
-        public string DocumentationUrl { get; set; } = "";
-        public Capability Capabilities { get; set; }
-        public string[] DefaultInputModes { get; set; }
-        public string[] DefaultOutputModes { get; set; }
-        public Skill[] Skills { get; set; }
-        public AgentProvider Provider { get; set; }
-        public List<Dictionary<string, List<string>>> Security { get; set; }
-        public Dictionary<string, SecurityScheme> SecuritySchemes { get; set; }
-        public bool SuppostsAuthenticatedExtendedCard { get; set; }
-
        
-        public static string GetAgentCard()
+        public static string Get()
         {
-            var agentA2A = new AgentSpec()
+            var agentA2A = new AgentCard()
             {
-                Name = "AI Blogger Agent",
+                Name = "Blogger Agent",
                 Description = "Blogger Agent helps users generate high-quality blog content effortlessly using AI, providing structure, creativity, and SEO optimization.",
                 Url = "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent",
                 Version = "1.0.0",
@@ -65,6 +51,7 @@ namespace BloggerAgent.Application.Helpers
                         }
                     }
                 }
+                
             };
 
             var options = new JsonSerializerOptions()
@@ -73,6 +60,23 @@ namespace BloggerAgent.Application.Helpers
             };
 
             return JsonSerializer.Serialize(agentA2A, options);
+        }
+
+        public ISecurityScheme HandleSecurityScheme(ISecurityScheme scheme)
+        {
+            switch (scheme.Type)
+            {
+                case "apiKey":
+                    return scheme as APIKeySecurityScheme;
+                    //Console.WriteLine(api.Name);
+                    break;
+                case "oauth2":
+                    return scheme as OAuth2SecurityScheme;
+                    //Console.WriteLine(oauth.Flows.Count);
+                    break;
+                default:
+                    return scheme as OpenIdConnectSecurityScheme;
+            }
         }
     }
 }

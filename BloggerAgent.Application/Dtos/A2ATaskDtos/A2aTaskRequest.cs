@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BloggerAgent.Application.Dtos.A2ATaskDtos
 {
-    public class TaskRequest
+    public class A2aTaskRequest
     {
         public string Jsonrpc { get; set; }
         public string Id { get; set; }
@@ -16,7 +16,7 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
        
         public static object SendTaskRequest()
         {
-            return new TaskRequest
+            return new A2aTaskRequest
             {
                 Jsonrpc = "2.0",
                 Id = "c006266b7e954f2fb07eb02b26ce6d9e",
@@ -28,9 +28,9 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
                     {
                         Kind = "message",
                         Role = "user",
-                        Parts = new List<MessagePart>
+                        Parts = new List<TextPart>
                         {
-                            new MessagePart
+                            new TextPart
                             {
                                 Kind = "text",
                                 Text = "Hello",
@@ -48,6 +48,13 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
             };
 
         }
+    }
+
+    public class TaskParams
+    {
+        public TaskMessage Message { get; set; }
+        public TaskConfiguration? Configuration { get; set; }
+        public Dictionary<string, object>? Metadata { get; set; }
     }
 
 

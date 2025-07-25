@@ -20,7 +20,7 @@ public class RequestLoggingMiddleware
         _logger = logger;
     }
 
-    public async Task Invoke(HttpContext context)
+    public async Task Invoke(HttpContext context, TaskContextAccessor contextAccessor)
     {
         try
         {
@@ -41,7 +41,7 @@ public class RequestLoggingMiddleware
 
                     if (request.Path == "/api/v1/blogger-agent" && request.Method == "POST")
                     {
-                        var requestBody = JsonSerializer.Deserialize<TaskRequest>(body, new JsonSerializerOptions
+                        var requestBody = JsonSerializer.Deserialize<A2aTaskRequest>(body, new JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true
                         });
@@ -51,7 +51,8 @@ public class RequestLoggingMiddleware
                         if (taskContext != null)
                         {
 
-                            context.Items["TaskContext"] = taskContext;
+                            //context.Items["TaskContext"] = taskContext;
+                            contextAccessor.SetTaskContext(taskContext);
 
                             // Resolve scoped services
                             var messageRepo = context.RequestServices.GetRequiredService<IConversationRepository>();
@@ -59,16 +60,17 @@ public class RequestLoggingMiddleware
 
                             // Populate history and org info
                             var organizations = await orgRepo.GetAllAsync();
-
-                            taskContext.ChatMessages = await messageRepo.GetMessagesAsync(taskContext.ContextId);
                             taskContext.Organization = organizations.FirstOrDefault();
 
+                            taskContext.ChatMessages = await messageRepo.GetMessagesAsync(taskContext.ContextId);
 
+                            if(taskContext.ChatMessages.Count > 0 || taskContext.Organization != null)
+                            {
+                                //context.Items["TaskContext"] = taskContext;      
+                                contextAccessor.SetTaskContext(taskContext);
 
-                            context.Items["TaskContext"] = taskContext;
+                            }
 
-
-                            // Save context for the request lifecycle
                         }
                     }
                 }

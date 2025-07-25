@@ -192,7 +192,7 @@ namespace BloggerAgent.Domain.Data
 
         private Dictionary<string, string> PrepareOrgHeader()
         {
-            if (string.IsNullOrEmpty(TaskContext.AuthToken))
+            if (string.IsNullOrEmpty(TaskContext?.AuthToken))
             {
                 _logger.LogError("Auth Token not found in Task Context");
                 throw new KeyNotFoundException(nameof(TaskContext.AuthToken));

@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Polly;
+using Polly.Retry;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text;
 using BloggerAgent.Application.IServices;
@@ -22,6 +24,8 @@ using BloggerAgent.Infrastructure.Utilities;
 using BloggerAgent.Infrastructure.Commons.BloggerAgent.Infrastructure.Commons;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel;
+using Polly;
+using Polly.Retry;
 
 namespace BloggerAgent.Infrastructure.Services
 {
@@ -61,20 +65,20 @@ namespace BloggerAgent.Infrastructure.Services
             _taskManager = taskManager;
         }
 
-        public async Task<MessageResponse> HandleUserInput(TaskRequest taskRequest)
+        public async Task HandleUserInput(A2aTaskRequest taskRequest)
         {
+                var newTaskContext = _taskManager.GetTaskContext();
             try
             {
                 //var newTaskContext = DataExtract.ExtractTaskData(taskRequest);
-                var newTaskContext = _taskManager.GetTaskContext();
+                if (newTaskContext.TaskId == null)
+                {
+                    newTaskContext.TaskId = Guid.NewGuid().ToString();
+                    _taskManager.SetTaskContext(newTaskContext);
+                }
+
                 await _messageRepository.AddNewMessagesAsync(newTaskContext.Message, newTaskContext, Roles.User);
-
-                //var organizations = await _organizationRepository.GetAllAsync();
-
-                //var organizationDetails = organizations.FirstOrDefault();
-
-                //var blogTask = await _taskManager.ResolveAsync(newTaskContext.ContextId, newTaskContext.UserId);
-                //newTaskContext.TaskId = blogTask?.Id;
+                
                 var previousMessages = newTaskContext.ChatMessages.Select(m => new ChatMessageContent()
                 {
                     Role = new AuthorRole(m.Role),
@@ -87,14 +91,32 @@ namespace BloggerAgent.Infrastructure.Services
                 _logger.LogInformation("HandleUserInput: UserMessage={Message}", newTaskContext.Message);
 
                 var aiReply = await _aiService.ChatWithTools(newTaskContext, PromptTemplate.BuildOrchestratorPrompt(orgInfo), previousMessages);
+
                 await _messageRepository.AddNewMessagesAsync(aiReply, newTaskContext, Roles.Assistant);
 
-                return DataExtract.ConstructResponse(taskRequest, aiReply);
+                var taskResponse = DataExtract.ConstructPushNotificationTask(taskRequest, aiReply, newTaskContext.TaskId);
+
+                // Define the retry policy
+                AsyncRetryPolicy<bool> retryPolicy = Policy<bool>
+                     .Handle<Exception>()
+                     .OrResult(result => result == false)
+                     .WaitAndRetryAsync(
+                         retryCount: 3,
+                         sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)),
+                         onRetry: (outcome, timespan, attempt, context) =>
+                         {
+                             _logger.LogWarning($"Retry {attempt} after {timespan.TotalSeconds}s due to: {outcome.Exception?.Message ?? "Unsuccessful response"}");
+                         });
+
+                // Execute with retry
+                await retryPolicy.ExecuteAsync(() => SendResponseAsync(taskResponse, newTaskContext));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in HandleUserInput()");
-                return DataExtract.ConstructResponse(taskRequest, "🤖 Sorry, something went wrong.");
+                var taskResponse = DataExtract.ConstructPushNotificationTask(taskRequest, "Sorry, something went wrong.", newTaskContext.TaskId);
+
+                await SendResponseAsync(taskResponse, newTaskContext);
             }
         }
 
@@ -131,27 +153,23 @@ namespace BloggerAgent.Infrastructure.Services
         //    }
         //}                   
 
-        public async Task<bool> SendResponseAsync(string messageContent, TaskContext taskContext)
+        public async Task<bool> SendResponseAsync(AgentTaskResponse taskResponse, TaskContext taskContext)
         {             
 
-            if (string.IsNullOrEmpty(taskContext.ContextId) || string.IsNullOrEmpty(_webhookUrl))
+            if (string.IsNullOrEmpty(taskContext.AuthToken))
             {
-                throw new Exception("Channel ID is null");
+                throw new Exception("Auth key is required");
             }
 
             var apiRequest = new ApiRequest()
             {
-                Url = $"{_webhookUrl}/{taskContext.ContextId}",
-                Body = new
-                {
-                    channel_id = taskContext.ContextId,
-                    org_id = taskContext.MessageId,
-                    thread_id = taskContext.TaskId,
-                    message = messageContent,
-                    reply = false, 
-                    username = "Blogger Agent"
-                },
+                Url = taskContext.CallbackUrl,
+                Body = taskResponse,
                 Method = HttpMethod.Post,
+                Headers = new Dictionary<string, string>()
+                {
+                    {"X-TELEX-API-KEY", taskContext.AuthToken }
+                }
             };
 
             var telexResponse = await _httpHelper.SendRequestAsync(apiRequest);
@@ -170,7 +188,7 @@ namespace BloggerAgent.Infrastructure.Services
         }
 
 
-        public async Task<MessageResponse> HandleAsync(TaskRequest taskRequest)
+        public async Task<AgentMessageResponse> HandleAsync(A2aTaskRequest taskRequest)
         {
             try
             {

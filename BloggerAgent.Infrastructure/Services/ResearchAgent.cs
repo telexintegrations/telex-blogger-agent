@@ -62,7 +62,7 @@ namespace BloggerAgent.Infrastructure.Services
             // ✅ Add chat history from task context
             var taskContext = _taskContextAccessor.GetTaskContext();
 
-            var chatHistory = _taskContextAccessor.GetTaskContext().ChatMessages;
+            var chatHistory = _taskContextAccessor.GetTaskContext()?.ChatMessages;
 
             chatHistory.Add(new TelexChatMessage()
             {
