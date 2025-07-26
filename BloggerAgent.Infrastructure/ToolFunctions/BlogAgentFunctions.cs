@@ -38,6 +38,25 @@ public class BlogAgentFunctions
             return "⚠️ Could not retrieve trending topics at the moment.";
         }
     }
+    
+    [KernelFunction("GetWebResearch")]
+    [Description("Gets a structured web research report on a particular topic.")]
+    public async Task<string> GetResearchAsync(
+        [Description("The topic to research on.")] string topic)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var topicAgent = scope.ServiceProvider.GetRequiredService<IResearchAgent>();
+
+        try
+        {
+            return await topicAgent.GetWebResearchAsync(topic);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get trending topics for interest: {Interest}", topic);
+            return "⚠️ Could not retrieve trending topics at the moment.";
+        }
+    }
 
     [KernelFunction("GenerateOutline")]
     [Description("Generate a structured outline for a blog post.")]
@@ -62,14 +81,14 @@ public class BlogAgentFunctions
     [KernelFunction("GenerateBlogPost")]
     [Description("Generate a compelling full blog post from outline.")]
     public async Task<string> GenerateBlogPostAsync(
-        [Description("The blog outline to use.")] string outline)
+        [Description("The blog outline to use.")] string outline, string keywords, string sources)
     {
         using var scope = _scopeFactory.CreateScope();
         var writerAgent = scope.ServiceProvider.GetRequiredService<WriterAgent>();
 
         try
         {
-            return await writerAgent.WriteBlogAsync(outline);
+            return await writerAgent.WriteBlogAsync(outline, keywords, sources);
         }
         catch (Exception ex)
         {

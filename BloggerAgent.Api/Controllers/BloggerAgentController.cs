@@ -42,7 +42,6 @@ namespace BloggerAgent.Api.Controller
                 _taskContextAccessor.SetTaskContext(contextSnapshot);
                 _blogService.HandleUserInput(request);
             });
-
             _logger.LogInformation($"Task {request.Id} submitted");
             var response = DataExtract.ConstructTaskReceivedResponse(request);
 
@@ -55,5 +54,7 @@ namespace BloggerAgent.Api.Controller
         {
             return Ok();
         }
+
+          
     }
 }

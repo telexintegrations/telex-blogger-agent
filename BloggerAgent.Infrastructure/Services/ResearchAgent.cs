@@ -28,7 +28,7 @@ namespace BloggerAgent.Infrastructure.Services
             _aiService = aIService;
             _blogRepository = blogRepository;
             _httpClient = httpHelper;
-            _apiKey = configuration.GetValue<string>("GroqApiKey");
+            _apiKey = configuration.GetValue<string>("GroqApiKey")!;
             _taskContextAccessor = taskContextAccessor;
         }
 
@@ -37,7 +37,7 @@ namespace BloggerAgent.Infrastructure.Services
 
         Task:
         - Based on the user’s interest or topic area, suggest 5 *blog-worthy*, *trending* topics.
-        - For each topic, provide 3 to 5 high-value SEO keywords.
+        - For each topic, provide a one sentence description and 3 to 5 high-value SEO keywords.
 
         Output format:
         ### Topic Title
@@ -47,8 +47,9 @@ namespace BloggerAgent.Infrastructure.Services
         """;
 
 
-        public async Task<string> GetTrendingTopicsAsync(string topic)
+        public async Task<string> GetTrendingTopicsAsync(string topic, string systemMessage = null)
         {
+            var taskContext = _taskContextAccessor.GetTaskContext();
             var url = "https://api.groq.com/openai/v1/chat/completions";
 
             var request = new GroqChatRequest
@@ -60,24 +61,91 @@ namespace BloggerAgent.Infrastructure.Services
             };
 
             // ✅ Add chat history from task context
-            var taskContext = _taskContextAccessor.GetTaskContext();
 
-            var chatHistory = _taskContextAccessor.GetTaskContext()?.ChatMessages;
+            var chatHistory = taskContext?.ChatMessages;
 
-            chatHistory.Add(new TelexChatMessage()
+            if (chatHistory != null)
             {
-                Role = "user",
-                Content = taskContext.Message
-            });
-
-            var historyMessages = chatHistory
-                .Select(m => new GroqChatRequest.Message
+                chatHistory.Add(new TelexChatMessage()
                 {
-                    Role = m.Role,  // Ensure these are "user" or "assistant"
-                    Content = m.Content
+                    Role = "user",
+                    Content = taskContext.Message
                 });
 
-            request.Messages.AddRange(historyMessages); // ✅ Add the actual history
+                var historyMessages = chatHistory
+                    .Select(m => new GroqChatRequest.Message
+                    {
+                        Role = m.Role,  // Ensure these are "user" or "assistant"
+                        Content = m.Content
+                    });
+
+                request.Messages.AddRange(historyMessages); // ✅ Add the actual history
+
+            }
+
+
+            var json = JsonSerializer.Serialize(request, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            ApiRequest apiRequest = new ApiRequest
+            {
+                Url = url,
+                Body = request,
+                Method = HttpMethod.Post,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Authorization", $"Bearer {_apiKey}" }
+                }
+            };
+                       
+            var response = await _httpClient.SendRequestAsync(apiRequest);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Groq API failed: {response.StatusCode}");
+            }
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GroqChatResponse>(responseJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true});
+
+            return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
+        }
+        
+        public async Task<string> GetWebResearchAsync(string topic, string systemMessage = null)
+        {
+            var taskContext = _taskContextAccessor.GetTaskContext();
+            var url = "https://api.groq.com/openai/v1/chat/completions";
+
+            var request = new GroqChatRequest
+            {
+                Messages = new List<GroqChatRequest.Message>
+                {
+                    new() { Role = "system", Content = PromptTemplate.GetResearchPrompt(topic, JsonSerializer.Serialize(taskContext.Organization)) }
+                }
+            };
+
+            // ✅ Add chat history from task context
+
+            var chatHistory = taskContext?.ChatMessages;
+
+           if (chatHistory != null)
+           {
+                chatHistory.Add(new TelexChatMessage()
+                {
+                    Role = "user",
+                    Content = taskContext.Message
+                });
+
+                var historyMessages = chatHistory
+                    .Select(m => new GroqChatRequest.Message
+                    {
+                        Role = m.Role,  // Ensure these are "user" or "assistant"
+                        Content = m.Content
+                    });
+
+                request.Messages.AddRange(historyMessages); // ✅ Add the actual history
+
+           }
 
             var json = JsonSerializer.Serialize(request, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -106,7 +174,9 @@ namespace BloggerAgent.Infrastructure.Services
             return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
         }
 
-    public class GroqService
+      
+
+        public class GroqService
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey = "YOUR_GROQ_API_KEY";
