@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -17,10 +17,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BloggerAgent.Application\BloggerAgent.Application.csproj" />
-    <ProjectReference Include="..\TelexBloggerAgent\BloggerAgent.Api.csproj" />
-  </ItemGroup>
+ 
 
   <ItemGroup>
     <Using Include="Xunit" />

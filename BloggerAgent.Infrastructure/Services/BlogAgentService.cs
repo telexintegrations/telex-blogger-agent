@@ -33,7 +33,7 @@ namespace BloggerAgent.Infrastructure.Services
     {
         //private static readonly ConcurrentDictionary<string, List<ChatMessage>> conversations = new(); // Group messages by channelId
 
-        private ILogger<BlogAgentService> _logger;
+        private readonly ILogger<BlogAgentService> _logger;
         private string _webhookUrl;
         private readonly IRequestProcessingService _requestService;
         private readonly IConversationRepository _messageRepository;

@@ -10,10 +10,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.6" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.59.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.59.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.59.0" />
-    <PackageReference Include="SemanticKernelPooling.Connectors.Google" Version="1.5.2" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.61.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.61.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.61.0" />
+	<PackageReference Include="Microsoft.SemanticKernel.Connectors.Google" Version="1.61.0-alpha" />
 	<PackageReference Include="OpenTelemetry" Version="1.12.0" />
 	<PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.12.0" />
   </ItemGroup>

@@ -15,6 +15,7 @@ namespace BloggerAgent.Application.Configurations
     {
         private readonly Kernel _kernel;
         private readonly IChatCompletionService _chatCompletionService;
+        private readonly ILogger<KernelProvider> _logger;
 
         public KernelProvider(IConfiguration configuration)
         {
@@ -24,7 +25,7 @@ namespace BloggerAgent.Application.Configurations
             var geminiModel = configuration.GetValue("GeminiSetting:Model", "gemini-2.5-pro");
 
             _kernel = BuildKernel(geminiModel, geminiApiKey);
-
+            
             _chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
         }
 
@@ -59,13 +60,18 @@ namespace BloggerAgent.Application.Configurations
 
         public void RegisterPlugins(IServiceProvider sp)
         {
-            // Fix: Replace 'this' with a collection of KernelFunction instances  
-          
+            //// Fix: Replace 'this' with a collection of KernelFunction instances  
+            //_kernel.Plugins.AddFromObject(new OutlinePlugin(sp), "Outline");
+            //_kernel.Plugins.AddFromObject(new ResearchPlugin(), "Research");
+            //_kernel.Plugins.AddFromObject(new WriterPlugin(), "Writer");
 
             //_kernel.Plugins.AddFromType<BlogPlugin>("BlogPlugin", sp);
             //_kernel.Plugins.AddFromType<AgentPlugin>("AgentPlugin", sp);
             _kernel.Plugins.AddFromType<OrganizationPlugin>("OrganizationPlugin", sp);
-            _kernel.Plugins.AddFromType<BlogAgentFunctions>("BlogAgentPlugin", sp);
+            _kernel.Plugins.AddFromType<TopicPlugin>("TopicPlugin", sp);
+            _kernel.Plugins.AddFromType<OutlinePlugin>("OutlinePlugin", sp);
+            _kernel.Plugins.AddFromType<ResearchPlugin>("ResearchPlugin", sp);
+            _kernel.Plugins.AddFromType<WriterPlugin>("WriterPlugin", sp);
         }
 
       

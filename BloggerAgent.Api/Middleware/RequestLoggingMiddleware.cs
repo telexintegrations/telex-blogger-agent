@@ -8,6 +8,7 @@ using BloggerAgent.Domain.Commons;
 using BloggerAgent.Domain.DomainHelper;
 using BloggerAgent.Application.Helpers;
 using BloggerAgent.Domain.Repositories;
+using BloggerAgent.Domain.Models;
 
 public class RequestLoggingMiddleware
 {
@@ -62,7 +63,7 @@ public class RequestLoggingMiddleware
                             var organizations = await orgRepo.GetAllAsync();
                             taskContext.Organization = organizations.FirstOrDefault();
 
-                            taskContext.ChatMessages = await messageRepo.GetMessagesAsync(taskContext.ContextId);
+                           taskContext.ChatMessages = await messageRepo.GetMessagesAsync(taskContext.ContextId);
 
                             if(taskContext.ChatMessages.Count > 0 || taskContext.Organization != null)
                             {

@@ -49,7 +49,7 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                var telexResponse = TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T>.ErrorResponse(responseContent);
             }
 
             return TelexApiResponse<T>.ExtractResponse(responseContent);
@@ -106,7 +106,7 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                var telexResponse = TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T>.ErrorResponse(responseContent);
             }
 
             return TelexApiResponse<T>.ExtractResponse(responseContent);
@@ -136,7 +136,7 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                var telexResponse = TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T>.ErrorResponse(responseContent);
             }
 
             return TelexApiResponse<T>.ExtractResponse(responseContent);
@@ -162,7 +162,7 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                var telexResponse = TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T>.ErrorResponse(responseContent);
             }
 
             return TelexApiResponse<T>.ExtractResponse(responseContent);
@@ -184,7 +184,7 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                var telexResponse = TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T>.ErrorResponse(responseContent);
             }
 
             return TelexApiResponse<T>.ExtractResponse(responseContent);

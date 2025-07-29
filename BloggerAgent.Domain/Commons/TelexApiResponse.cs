@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using BloggerAgent.Domain.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace BloggerAgent.Domain.Commons
 {
@@ -41,14 +42,11 @@ namespace BloggerAgent.Domain.Commons
             {
                 var root = document.RootElement;
 
-                if (root.TryGetProperty("error", out var errorProp))
-                    errorResponse.Error = errorProp.GetString();
-
-                if (root.TryGetProperty("message", out var messageProp))
+               if (root.TryGetProperty("message", out var messageProp))
                     errorResponse.Message = messageProp.GetString();
 
                 if (root.TryGetProperty("status", out var statusProp))
-                    errorResponse.Status = statusProp.GetString();
+                    errorResponse.Status = "error";                   
 
                 if (root.TryGetProperty("status_code", out var codeProp))
                     errorResponse.StatusCode = codeProp.GetInt32();
@@ -56,5 +54,6 @@ namespace BloggerAgent.Domain.Commons
 
             return errorResponse;
         }
+
     }
 }

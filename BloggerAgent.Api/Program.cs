@@ -65,6 +65,10 @@ builder.Services.AddSingleton<BlogPlugin>();
 builder.Services.AddSingleton<BlogAgentFunctions>();
 builder.Services.AddSingleton<OrganizationPlugin>();
 builder.Services.AddSingleton<AgentPlugin>();
+builder.Services.AddSingleton<TopicPlugin>();
+builder.Services.AddSingleton<ResearchPlugin>();
+builder.Services.AddSingleton<OutlinePlugin>();
+builder.Services.AddSingleton<WriterPlugin>();
 builder.Services.AddSingleton<KernelProvider>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
@@ -122,7 +126,7 @@ app.UseCors("AllowAnyOrigin");
 
 app.UseMiddleware<ExceptionHandler>();
 app.UseMiddleware<RequestLoggingMiddleware>();
-app.UseVigilTelemetry();
+//app.UseVigilTelemetry();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
