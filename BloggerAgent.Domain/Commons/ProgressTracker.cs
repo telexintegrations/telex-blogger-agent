@@ -1,4 +1,5 @@
 ﻿using BloggerAgent.Domain.Enums;
+using BloggerAgent.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,20 +10,30 @@ namespace BloggerAgent.Domain.Commons
 {
     public class ProgressTracker
     {
-        public TaskPhase CurrentPhase { get; private set; } = TaskPhase.Initialized;
-        public List<TaskPhase> History { get; private set; } = new();
-
-        public void Advance(TaskPhase newPhase)
+        public string GetProgressSummary(Blog context)
         {
-            CurrentPhase = newPhase;
-            History.Add(newPhase);
+            return $"Current phase: {context.CurrentPhase}, completed: {string.Join(", ", context.History)}";
         }
 
-        public bool HasReached(TaskPhase phase) => History.Contains(phase);
-
-        public string GetProgressSummary(TaskContext context)
+        public void AdvancePhase(TaskPhase newPhase, Blog task)
         {
-            return $"Current phase: {CurrentPhase}, completed: {string.Join(", ", History)}";
+            task.CurrentPhase = newPhase;
+            task.History.Add(newPhase);
         }
+
+        public void InitializeTaskPhase(string title)
+        {
+            Blog blogTask = new Blog();
+            blogTask.Id = Guid.NewGuid().ToString();
+            blogTask.Status = Status.Active;
+
+            blogTask.CurrentPhase = TaskPhase.Initialized;
+        }
+
+        public void MarkCompleted() => AdvancePhase(TaskPhase.Completed, new Blog());
+
+        public bool HasReached(TaskPhase phase, Blog task) => task.History.Contains(phase);
+
+      
     }
 }

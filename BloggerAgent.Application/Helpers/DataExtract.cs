@@ -76,7 +76,7 @@ namespace BloggerAgent.Application.Helpers
                     Kind = "message",
                     MessageId = Guid.NewGuid().ToString(),
                     ContextId = request.Params.Message.ContextId,
-                    Parts = new List<TextPart>
+                    Parts = new List<ITaskPart>
                     {
                         new TextPart
                         {
@@ -107,7 +107,7 @@ namespace BloggerAgent.Application.Helpers
                             MessageId = Guid.NewGuid().ToString(),
                             Role = "agent",
                             Kind = "message",
-                            Parts = new List<TextPart>
+                            Parts = new List<ITaskPart>
                             {
                                 new TextPart
                                 {
@@ -118,6 +118,55 @@ namespace BloggerAgent.Application.Helpers
                         }
                     }
 
+                }
+            };
+        }
+
+        public static AgentTaskResponse ConstructPushNotificationTask1(A2aTaskRequest request, string response, string taskId)
+        {
+            var contextId = request.Params.Message.ContextId;
+
+            return new AgentTaskResponse
+            {
+                Jsonrpc = request.Jsonrpc,
+                Id = request.Id,
+                Result = new TaskResult
+                {
+                    Id = taskId,
+                    ContextId = contextId,
+                    Status = new Dtos.A2ATaskDtos.Status
+                    {
+                        State = State.Completed.ToString().ToLower(),
+                        Timestamp = DateTime.UtcNow,
+                        Message = new TaskMessage
+                        {
+                            Role = "agent",
+                            MessageId = Guid.NewGuid().ToString(),
+                            Kind = "message",
+                            Parts = new List<ITaskPart>
+                            {
+                                new TextPart
+                                {
+                                    Text = $"Task Completed Successfully",                                    
+                                }
+                            },
+                        }
+                    },
+                    Artifacts = new List<Artifact>
+                    {   new Artifact
+                        {
+                            ArtifactId = Guid.NewGuid().ToString(),
+                            Name = "push_notification_artifact",
+                            Parts = new List<ITaskPart>
+                            {
+                                new TextPart
+                                {
+                                    Text = response,
+                                    
+                                }
+                            },
+                        }
+                    },
                 }
             };
         }
@@ -143,34 +192,45 @@ namespace BloggerAgent.Application.Helpers
                             Role = "agent",
                             MessageId = Guid.NewGuid().ToString(),
                             Kind = "message",
-                            Parts = new List<TextPart>
+                            Parts = new List<ITaskPart>
                             {
                                 new TextPart
                                 {
-                                    Text = $"Task Completed Successfully",
-                                    
+                                    Text = "Task Completed Successfully"
                                 }
                             },
                         }
                     },
                     Artifacts = new List<Artifact>
-                    {    new Artifact
+                    {
+                        new Artifact
                         {
                             ArtifactId = Guid.NewGuid().ToString(),
                             Name = "push_notification_artifact",
-                            Parts = new List<TextPart>
+                            Parts = new List<ITaskPart>
                             {
                                 new TextPart
                                 {
-                                    Text = response,
-                                    
+                                    Text = response
+                                },
+                                new FilePart
+                                {
+                                    File = new FileContent
+                                    {
+                                        Name = "notification-image.png",
+                                        MimeType = "image/png",
+                                        Url = "https://media.istockphoto.com/id/926196952/photo/beautiful-nature-background.jpg?s=1024x1024&w=is&k=20&c=EKZIvj3y_le8HiWP4Vg58dtDfMp8Zuaj8g77v-bLjPw=",
+                                        Bytes = ""
+                                        // Optionally: Bytes = Convert.ToBase64String(...)
+                                    },
                                 }
-                            },
+                            }
                         }
-                    },
+                    }
                 }
             };
         }
+
 
 
 
@@ -183,10 +243,10 @@ namespace BloggerAgent.Application.Helpers
 
             if (message == null || message.Parts == null || !message.Parts.Any())
                 throw new ArgumentException("Invalid message structure");
-
+            var part = message.Parts.FirstOrDefault() as TextPart;
             return new TaskContext
             {
-                Message = message.Parts.First().Text ?? string.Empty,
+                Message = part?.Text ?? string.Empty,
                 ContextId = message.ContextId ?? string.Empty,
                 TaskId = message.TaskId,
                 MessageId = message.MessageId ?? string.Empty,

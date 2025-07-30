@@ -40,7 +40,6 @@ namespace BloggerAgent.Domain.DomainHelper
         }
 
 
-
         public void Save(string taskId, TaskContext context, TimeSpan? ttl = null)
         {
             var options = new MemoryCacheEntryOptions
@@ -63,17 +62,5 @@ namespace BloggerAgent.Domain.DomainHelper
         }
 
 
-
-
-        public TaskContext? GetTaskContet()
-        {
-            var context = _httpContextAccessor.HttpContext;
-            if (context?.Items.TryGetValue("TaskContext", out var value) == true)
-            {
-                return value as TaskContext;
-            }
-
-            return null;
-        }
     }
 }

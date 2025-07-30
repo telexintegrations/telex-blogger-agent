@@ -9,8 +9,8 @@ namespace BloggerAgent.Domain.Enums
     public enum TaskPhase
     {
         Initialized,
-        Researching,
         TopicGenerated,
+        Researching,
         KeywordsGenerated,
         OutlineBuilt,
         ContentWritten,

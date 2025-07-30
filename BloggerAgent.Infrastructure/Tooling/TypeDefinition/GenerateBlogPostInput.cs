@@ -17,7 +17,6 @@ namespace BloggerAgent.Infrastructure.Tooling.Types
 
         [Description("Preferred tone, e.g., professional, casual, persuasive.")]
         public string Tone { get; set; }
-    }
-   
+    }  
 
 }

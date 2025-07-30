@@ -5,6 +5,6 @@ namespace BloggerAgent.Domain.IRepositories
     public interface IBlogRepository : ITelexRepository<Blog>
     {
         Task<bool> AddBlogAsync(Blog company);
-        Task<bool> UpdateBlogAsync(Blog company, string orgId);
+        Task<bool> UpdateBlogAsync(Dictionary<string, object> blogFieldsToUpdate, string topic);
     }
 }

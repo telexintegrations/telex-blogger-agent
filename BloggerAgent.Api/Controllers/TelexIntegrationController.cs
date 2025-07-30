@@ -24,5 +24,12 @@ namespace BloggerAgent.Api.Controllers
             return Ok(integrationJson);
         }
 
+        [HttpHead("/health")]
+        public IActionResult HeadHealthCheck()
+        {
+            return Ok(); // Just returns 200 OK with no body
+        }
+
+
     }
 }

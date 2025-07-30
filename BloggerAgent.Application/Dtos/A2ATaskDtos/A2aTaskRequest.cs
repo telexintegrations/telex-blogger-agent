@@ -1,4 +1,5 @@
-﻿using BloggerAgent.Domain.Commons.Gemini;
+﻿using BloggerAgent.Application.Contracts;
+using BloggerAgent.Domain.Commons.Gemini;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
                     {
                         Kind = "message",
                         Role = "user",
-                        Parts = new List<TextPart>
+                        Parts = new List<ITaskPart>
                         {
                             new TextPart
                             {

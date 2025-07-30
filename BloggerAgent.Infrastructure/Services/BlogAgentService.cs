@@ -120,39 +120,6 @@ namespace BloggerAgent.Infrastructure.Services
             }
         }
 
-
-        //public async Task<MessageResponse> HandleAsync(TaskRequest taskRequest)
-        //{
-           
-        //    try
-        //    {
-        //        ValidationHelper.ValidateRequest(taskRequest);
-
-        //        var blogPrompt = TaskContext.MapToTaskContext(taskRequest);
-
-
-        //        // Format the blog prompt based on user input and settings
-        //        var request = await _requestService.ProcessUserInputAsync(blogPrompt);
-
-        //        // Generate the response using the formatted message
-        //        var aiResponse = await _aiService.GenerateResponse(request.UserPrompt, request.SystemMessage, blogPrompt);
-
-        //        if (string.IsNullOrEmpty(aiResponse))
-        //        {
-        //            throw new Exception("Failed to generate response");
-        //        }
-
-        //        return DataExtract.ConstructResponse(taskRequest, aiResponse);
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        // Log the error and rethrow the exception
-        //        _logger.LogError(ex, "Failed to generate blog post");
-        //        throw;
-        //    }
-        //}                   
-
         public async Task<bool> SendResponseAsync(AgentTaskResponse taskResponse, TaskContext taskContext)
         {             
 
@@ -186,6 +153,39 @@ namespace BloggerAgent.Infrastructure.Services
 
             return true;
         }
+
+
+        //public async Task<MessageResponse> HandleAsync(TaskRequest taskRequest)
+        //{
+           
+        //    try
+        //    {
+        //        ValidationHelper.ValidateRequest(taskRequest);
+
+        //        var blogPrompt = TaskContext.MapToTaskContext(taskRequest);
+
+
+        //        // Format the blog prompt based on user input and settings
+        //        var request = await _requestService.ProcessUserInputAsync(blogPrompt);
+
+        //        // Generate the response using the formatted message
+        //        var aiResponse = await _aiService.GenerateResponse(request.UserPrompt, request.SystemMessage, blogPrompt);
+
+        //        if (string.IsNullOrEmpty(aiResponse))
+        //        {
+        //            throw new Exception("Failed to generate response");
+        //        }
+
+        //        return DataExtract.ConstructResponse(taskRequest, aiResponse);
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log the error and rethrow the exception
+        //        _logger.LogError(ex, "Failed to generate blog post");
+        //        throw;
+        //    }
+        //}                   
 
 
         public async Task<AgentMessageResponse> HandleAsync(A2aTaskRequest taskRequest)

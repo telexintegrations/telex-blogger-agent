@@ -27,8 +27,8 @@ namespace BloggerAgent.Infrastructure.Tooling
                 string description = prop.GetCustomAttribute<DescriptionAttribute>()?.Description ?? "";
 
                 // Check for [Required] or non-nullable value types
-                bool isRequired = prop.GetCustomAttribute<RequiredAttribute>() != null ||
-                                 (prop.PropertyType.IsValueType && Nullable.GetUnderlyingType(prop.PropertyType) == null);
+                bool isRequired = prop.GetCustomAttribute<RequiredAttribute>() != null 
+                    || (prop.PropertyType.IsValueType && Nullable.GetUnderlyingType(prop.PropertyType) == null);
 
                 if (isRequired)
                     requiredFields.Add(name);
@@ -62,6 +62,7 @@ namespace BloggerAgent.Infrastructure.Tooling
             if (type == typeof(string)) return "string";
             if (type == typeof(int) || type == typeof(long)) return "integer";
             if (type == typeof(bool)) return "boolean";
+            if (type == typeof(Enum)) return "enum";
             if (type == typeof(double) || type == typeof(float) || type == typeof(decimal)) return "number";
             if (type == typeof(List<Type>) || (type == typeof(Type[]))) return "array";
             if (type == typeof(DateTime)) return "string"; // as ISO-8601

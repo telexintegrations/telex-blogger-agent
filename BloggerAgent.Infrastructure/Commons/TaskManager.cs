@@ -16,16 +16,16 @@ namespace BloggerAgent.Infrastructure.Commons
     {
         public class TaskManager
         {
-            private readonly ITelexRepository<BlogTask> _taskRepo;
+            private readonly ITelexRepository<Blog> _taskRepo;
             private readonly ILogger<TaskManager> _logger;
 
-            public TaskManager(ITelexRepository<BlogTask> taskRepo, ILogger<TaskManager> logger)
+            public TaskManager(ITelexRepository<Blog> taskRepo, ILogger<TaskManager> logger)
             {
                 _taskRepo = taskRepo;
                 _logger = logger;
             }
 
-            public async Task<BlogTask?> ResolveAsync(string contextId, string userId)
+            public async Task<Blog?> ResolveAsync(string contextId, string userId)
             {
                 var tasks = await _taskRepo.FilterAsync(new Dictionary<string, object>
             {
@@ -34,12 +34,12 @@ namespace BloggerAgent.Infrastructure.Commons
                 { "status", Status.Active.ToString() }
             });
 
-                return tasks?.OrderByDescending(t => t.LastActivityAt).FirstOrDefault();
+                return tasks?.OrderByDescending(t => t.UpdatedAt).FirstOrDefault();
             }
 
-            public async Task<BlogTask> CreateNewAsync(string contextId, string userId, string? title = null)
+            public async Task<Blog> CreateNewAsync(string contextId, string userId, string? title = null)
             {
-                var newTask = new BlogTask
+                var newTask = new Blog
                 {
                     Id = Guid.NewGuid().ToString(),
                     ContextId = contextId,
@@ -47,7 +47,7 @@ namespace BloggerAgent.Infrastructure.Commons
                     Title = title ?? "Untitled Blog",
                     Status = Status.Active,
                     CurrentPhase = TaskPhase.Initialized,
-                    LastActivityAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
                     History = new List<TaskPhase> { TaskPhase.Initialized }
                 };
 
@@ -55,29 +55,29 @@ namespace BloggerAgent.Infrastructure.Commons
                 return newTask;
             }
 
-            public async Task AdvancePhaseAsync(BlogTask task, TaskPhase nextPhase)
+            public async Task AdvancePhaseAsync(Blog task, TaskPhase nextPhase)
             {
-                task.AdvancePhase(nextPhase);
-                task.LastActivityAt = DateTime.UtcNow;
+                task.CurrentPhase= nextPhase;
+                task.UpdatedAt = DateTime.UtcNow;
                 await _taskRepo.UpdateAsync(task.Id, task);
             }
 
-            public async Task UpdateContentAsync(BlogTask task, Blog updatedContent)
+            public async Task UpdateContentAsync(Blog taskBlog)
             {
-                task.BlogContent = updatedContent;
-                task.LastActivityAt = DateTime.UtcNow;
-                await _taskRepo.UpdateAsync(task.Id, task);
+
+                taskBlog.UpdatedAt = DateTime.UtcNow;
+                await _taskRepo.UpdateAsync(taskBlog.Id, taskBlog);
             }
 
-            public async Task MarkCompletedAsync(BlogTask task)
+            public async Task MarkCompletedAsync(Blog task)
             {
-                task.MarkCompleted();
+                task.CurrentPhase = TaskPhase.Completed;
                 task.Status = Status.Completed;
-                task.LastActivityAt = DateTime.UtcNow;
+                task.UpdatedAt = DateTime.UtcNow;
                 await _taskRepo.UpdateAsync(task.Id, task);
             }
 
-            public string GetProgressSummary(BlogTask task)
+            public string GetProgressSummary(Blog task)
             {
                 return $"Current phase: {task.CurrentPhase}, completed: {string.Join(", ", task.History)}";
             }

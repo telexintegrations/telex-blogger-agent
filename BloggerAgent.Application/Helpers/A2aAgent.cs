@@ -28,7 +28,7 @@ namespace BloggerAgent.Application.Helpers
                 Provider = new AgentProvider()
                 {
                     Organization = "AI Blogger Services Org",
-                    Url = "https://telex-blogger-agent-qdp4.onrender.com/api/v1/blogger-agent"
+                    Url = "https://telex-blogger-agent-qdp4.onrender.com/"
                 },                   
                 Skills = new[]
                 {

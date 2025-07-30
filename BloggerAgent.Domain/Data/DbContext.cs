@@ -49,10 +49,10 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                return TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T?>.ErrorResponse(responseContent);
             }
 
-            return TelexApiResponse<T>.ExtractResponse(responseContent);
+            return TelexApiResponse<T?>.ExtractResponse(responseContent);
         }
 
          
@@ -82,10 +82,10 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                return TelexApiResponse<List<T>>.ErrorResponse(responseContent);
+                return TelexApiResponse<List<T?>>.ErrorResponse(responseContent);
             }
 
-            return TelexApiResponse<List<T>>.ExtractResponse(responseContent);
+            return TelexApiResponse<List<T?>>.ExtractResponse(responseContent);
 
         }
 
@@ -106,10 +106,10 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                return TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T?>.ErrorResponse(responseContent);
             }
 
-            return TelexApiResponse<T>.ExtractResponse(responseContent);
+            return TelexApiResponse<T?>.ExtractResponse(responseContent);
 
         }
 
@@ -136,10 +136,10 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                return TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T?>.ErrorResponse(responseContent);
             }
 
-            return TelexApiResponse<T>.ExtractResponse(responseContent);
+            return TelexApiResponse<T?>.ExtractResponse(responseContent);
         }
          
         public async Task<TelexApiResponse<T?>> UpdateAsync<T>(string id, object document)
@@ -162,10 +162,10 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                return TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T?>.ErrorResponse(responseContent);
             }
 
-            return TelexApiResponse<T>.ExtractResponse(responseContent);
+            return TelexApiResponse<T?>.ExtractResponse(responseContent);
         }
          
        
@@ -184,10 +184,10 @@ namespace BloggerAgent.Domain.Data
             // Fallback: if something goes wrong with the HTTP call itself
             if (!response.IsSuccessStatusCode)
             {
-                return TelexApiResponse<T>.ErrorResponse(responseContent);
+                return TelexApiResponse<T?>.ErrorResponse(responseContent);
             }
 
-            return TelexApiResponse<T>.ExtractResponse(responseContent);
+            return TelexApiResponse<T?>.ExtractResponse(responseContent);
         }
 
         private Dictionary<string, string> PrepareOrgHeader()

@@ -13,10 +13,10 @@ namespace BloggerAgent.Domain.Models
         public string? UserId { get; set; }
 
         [JsonPropertyName("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } 
 
         [JsonPropertyName("updated_at")]
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } 
 
         [JsonPropertyName("organisation_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

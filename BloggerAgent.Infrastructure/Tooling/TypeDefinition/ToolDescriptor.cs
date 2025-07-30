@@ -33,8 +33,15 @@ public class ToolParameter
     public string Description { get; set; }
 }
 
-public class ToolArrayParameter
+public class ToolArrayParameter<T>
 {
     [JsonPropertyName("type")]
     public string Type { get; set; }
+    [JsonPropertyName("items")]
+    public ArrayItems<T> Items { get; set; }
+}
+
+public class ArrayItems<T>
+{
+    public string Type { get; set; } = typeof(T).Name;
 }

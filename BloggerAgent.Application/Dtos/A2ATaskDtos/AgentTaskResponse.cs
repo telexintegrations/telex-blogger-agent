@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BloggerAgent.Application.Dtos.A2ATaskDtos
@@ -32,7 +33,7 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
                         Message = new TaskMessage
                         {
                             Role = "agent",
-                            Parts = new List<TextPart>
+                            Parts = new List<ITaskPart>
                            {
                                new TextPart
                                {
@@ -49,7 +50,7 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
                         new Artifact()
                         {
                             Name = "sample_artifact",
-                            Parts = new List<TextPart>
+                            Parts = new List<ITaskPart>
                             {
                                 new TextPart
                                 {
@@ -112,7 +113,7 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
         public string ArtifactId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public List<TextPart> Parts { get; set; }
+        public List<ITaskPart> Parts { get; set; }
         public Dictionary<string, object>? Metadata { get; set; }
         public int? index { get; set; }
         public object? Append { get; set; }
@@ -121,13 +122,16 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
  
     public class TaskMessage
     {
+        public string Id  => Role;
+
         public string? TaskId { get; set; }
         public string MessageId { get; set; }
         public string ContextId { get; set; }
         public string Role { get; set; }
         public string? Kind { get; set; }
-        public List<TextPart> Parts { get; set; }
+        public List<ITaskPart> Parts { get; set; }
         public Dictionary<string, object>? Metadata { get; set; }
+
 
     }
 }

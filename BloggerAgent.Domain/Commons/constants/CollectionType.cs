@@ -18,7 +18,7 @@ namespace BloggerAgent.Domain.Commons.constants
 
            return type == typeof(Company) ? Company :
                   type == typeof(Conversation) ? Convesation :
-                  type == typeof(Blog) ? Blog :
+                  type == typeof(Models.Blog) ? Blog :
                   type == typeof(Message) ? Message :
                   type == typeof(User) ? User :
                   type == typeof(ApiKey) ? ApiKey :

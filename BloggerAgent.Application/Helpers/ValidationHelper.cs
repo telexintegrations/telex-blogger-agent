@@ -35,10 +35,11 @@ namespace BloggerAgent.Application.Helpers
 
             foreach (var part in message.Parts)
             {
-                if (part.Kind != "text")
+                var textParts = part as TextPart;
+                if (textParts.Kind != "text")
                     throw new ArgumentException("Only 'text' type supported in message parts");
 
-                if (string.IsNullOrWhiteSpace(part.Text))
+                if (string.IsNullOrWhiteSpace(textParts.Text))
                     throw new ArgumentException("Text cannot be empty");
             }
 

@@ -34,6 +34,12 @@ public class RequestLoggingMiddleware
             string body = await ReadRequestBodyAsync(request);
             string formattedBody = body;
 
+            _logger.LogInformation("Request logging middleware triggered.");
+            _logger.LogInformation("➡️ Incoming Request: {Method} {Path}", request.Method, request.Path);
+            _logger.LogInformation("📬 Headers: {Headers}", headersJson);
+            _logger.LogInformation("📘 Query Parameters: {Query}", queryJson);
+            _logger.LogInformation("📝 Body: {Body}", formattedBody);
+
             if (!string.IsNullOrWhiteSpace(body))
             {
                 try
@@ -81,11 +87,11 @@ public class RequestLoggingMiddleware
                 }
             }
 
-            _logger.LogInformation("Request logging middleware triggered.");
-            _logger.LogInformation("➡️ Incoming Request: {Method} {Path}", request.Method, request.Path);
-            _logger.LogInformation("📬 Headers: {Headers}", headersJson);
-            _logger.LogInformation("📘 Query Parameters: {Query}", queryJson);
-            _logger.LogInformation("📝 Body: {Body}", formattedBody);
+            //_logger.LogInformation("Request logging middleware triggered.");
+            //_logger.LogInformation("➡️ Incoming Request: {Method} {Path}", request.Method, request.Path);
+            //_logger.LogInformation("📬 Headers: {Headers}", headersJson);
+            //_logger.LogInformation("📘 Query Parameters: {Query}", queryJson);
+            //_logger.LogInformation("📝 Body: {Body}", formattedBody);
 
             await _next(context);
         }

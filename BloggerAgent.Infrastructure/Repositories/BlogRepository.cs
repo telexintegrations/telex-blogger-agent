@@ -1,5 +1,7 @@
-﻿using BloggerAgent.Domain.Commons.constants;
+﻿using BloggerAgent.Domain.Commons;
+using BloggerAgent.Domain.Commons.constants;
 using BloggerAgent.Domain.Data;
+using BloggerAgent.Domain.DomainHelper;
 using BloggerAgent.Domain.IRepositories;
 using BloggerAgent.Domain.Models;
 using System;
@@ -14,12 +16,15 @@ namespace BloggerAgent.Infrastructure.Repositories
     {
 
         private readonly ITelexRepository<Blog> _blogRepository;
+        private readonly TaskContextAccessor _taskContext;
 
-        public BlogRepository(ITelexRepository<Blog> blogRepository, DbContext context) : base(context)
+        public BlogRepository(ITelexRepository<Blog> blogRepository, DbContext context, TaskContextAccessor taskContext) : base(context)
         {
             _blogRepository = blogRepository;
+            _taskContext = taskContext;
         }
 
+        public TaskContext TaskContext => _taskContext.GetTaskContext();
 
         public async Task<bool> AddBlogAsync(Blog blogPost)
         {
@@ -27,34 +32,63 @@ namespace BloggerAgent.Infrastructure.Repositories
             {
                 throw new ArgumentException("Blog cannot be null");
             }
+            blogPost.CurrentPhase = Domain.Enums.TaskPhase.Initialized;
+            blogPost.CreatedAt = DateTime.Now;
+            blogPost.ContextId = TaskContext.ContextId;
+            blogPost.UserId = TaskContext.UserId;
+            blogPost.History.Add(Domain.Enums.TaskPhase.Initialized);
+
             return await _blogRepository.CreateAsync(blogPost);
         }
 
-        public async Task<bool> UpdateBlogAsync(Blog company, string orgId)
+        public async Task<bool> UpdateBlogAsync(Dictionary<string, object> blogFieldsToUpdate, string topic)
         {
-            if (company == null)
+            if (blogFieldsToUpdate == null || !blogFieldsToUpdate.Any())
             {
-                throw new ArgumentException("Company cannot be null or have an empty name.");
+                throw new ArgumentException("Update fields cannot be null or empty.");
             }
 
-            var companies = await FilterByFieldAsync("tag", CollectionType.Blog);
+            TaskContext taskContext = _taskContext.GetTaskContext();
 
-            if (companies == null) return false;
-
-            var existingCompany = companies.FirstOrDefault();
-
-            if (existingCompany == null)
+            var filter = new Dictionary<string, object>
             {
-                throw new ArgumentException("Blog with orgId {orgId} does not exist.", orgId);
+                { "tag", CollectionType.Blog },
+                { "contextId", taskContext.ContextId },
+                { "userId", taskContext.UserId },
+                {"title", topic },
+            };
+
+            var blogPosts = await FilterAsync(filter);
+            var existingBlog = blogPosts.FirstOrDefault();
+
+            if (existingBlog == null)
+            {
+                throw new ArgumentException($"Blog with orgId {taskContext.OrgId} does not exist.");
             }
 
-            existingCompany.Title = company.Title;
-            existingCompany.Content = company.Content;
-            existingCompany.Keywords = company.Keywords;
-            existingCompany.UpdatedAt = company.UpdatedAt;
+            foreach (var field in blogFieldsToUpdate)
+            {
+                switch (field.Key.ToLower())
+                {
+                    case "title":
+                        existingBlog.Title = field.Value?.ToString();
+                        break;
+                    case "blogcontent":
+                        existingBlog.BlogContent = field.Value?.ToString();
+                        break;
+                    case "keywords":
+                        existingBlog.Keywords = field.Value as List<string> ?? new List<string>();
+                        break;
+                        // Add more fields if needed, except UpdatedAt
+                }
+            }
 
-            return await _blogRepository.UpdateAsync(existingCompany.Id, company);
+            // Always set updated timestamp to current time
+            existingBlog.UpdatedAt = DateTime.UtcNow;
+
+            return await _blogRepository.UpdateAsync(existingBlog.Id, existingBlog);
         }
+
 
     }
 }

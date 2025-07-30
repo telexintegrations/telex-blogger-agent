@@ -25,7 +25,7 @@ namespace BloggerAgent.Infrastructure.ToolFunctions
 
         [KernelFunction("save_blog_post")]
         [Description("Adds or save a particular blog post at the behest of the user.")]
-        public async Task<string> SaveBlogPostAsync(string title, string content, string keywords = "")
+        public async Task<string> SaveBlogPostAsync(string title)
         {
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
@@ -33,10 +33,6 @@ namespace BloggerAgent.Infrastructure.ToolFunctions
             var blog = new Blog
             {
                 Title = title,
-                Content = content,
-                Keywords = { keywords },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
             };
 
             var success = await repo.AddBlogAsync(blog);
@@ -46,15 +42,15 @@ namespace BloggerAgent.Infrastructure.ToolFunctions
         }
 
         [KernelFunction("update_blog_post")]
-        [Description("Updates a previously saved blog post using its ID.")]
-        public async Task<string> UpdateBlogPostAsync(string topic, Blog updatedBlog)
+        [Description("Updates blog post as it progresses.")]
+        public async Task<string> UpdateBlogPostAsync([Description("One or more fields to be updated")]Dictionary<string,object> fieldsToUpdate, [Description("Blog topic to filter with")]string topic)
         {
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
 
-            var success = await repo.UpdateBlogAsync(updatedBlog, topic);
+            var success = await repo.UpdateBlogAsync(fieldsToUpdate, topic);
             return success
-                ? $"✏️ Blog post '{updatedBlog.Title}' updated successfully."
+                ? $"✏️ Blog post '{topic}' updated successfully."
                 : $"⚠️ Failed to update blog with topic '{topic}'.";
         }
 
