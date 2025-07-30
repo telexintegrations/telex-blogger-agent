@@ -122,7 +122,7 @@ namespace BloggerAgent.Application.Helpers
             };
         }
 
-        public static AgentTaskResponse ConstructPushNotificationTask1(A2aTaskRequest request, string response, string taskId)
+        public static AgentTaskResponse ConstructPushNotificationTask(A2aTaskRequest request, string response, string taskId)
         {
             var contextId = request.Params.Message.ContextId;
 
@@ -171,7 +171,7 @@ namespace BloggerAgent.Application.Helpers
             };
         }
 
-        public static AgentTaskResponse ConstructPushNotificationTask(A2aTaskRequest request, string response, string taskId)
+        public static AgentTaskResponse ConstructPushNotificationTaskWithFile(A2aTaskRequest request, string response, string taskId)
         {
             var contextId = request.Params.Message.ContextId;
 
