@@ -43,14 +43,14 @@ public class BlogAgentFunctions
     [KernelFunction("GetWebResearch")]
     [Description("Gets a structured web research report on a particular topic.")]
     public async Task<string> GetResearchAsync(
-        [Description("The topic to research on.")] string topic)
+        [Description("The topic to research on.")] string topic, string outline)
     {
         using var scope = _scopeFactory.CreateScope();
         var topicAgent = scope.ServiceProvider.GetRequiredService<IResearchAgent>();
 
         try
         {
-            return await topicAgent.GetWebResearchAsync(topic);
+            return await topicAgent.GetWebResearchAsync(topic, outline);
         }
         catch (Exception ex)
         {
@@ -167,7 +167,7 @@ public class KeywordPlugin
 
         try
         {
-            return await topicAgent.GetWebResearchAsync(topic);
+            return await topicAgent.GetTrendingTopicsAsync(topic);
         }
         catch (Exception ex)
         {
