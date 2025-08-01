@@ -37,7 +37,7 @@ namespace BloggerAgent.Infrastructure.Services
             _taskContextAccessor = taskContextAccessor;
         }
 
-        public async Task<string> WriteBlogAsync(string outline, string keywords, string sources)
+        public async Task<string> WriteBlogAsync(string outline, string keywords)
         {
             var taskContext = _taskContextAccessor.GetTaskContext();
             // ✅ Add chat history from task context
@@ -51,7 +51,7 @@ namespace BloggerAgent.Infrastructure.Services
 
             var orgInfo = JsonSerializer.Serialize(taskContext.Organization);
 
-            var response = await _aiService.GenerateAsync(PromptTemplate.GetBlogPrompt(orgInfo,outline, keywords, sources), messages: previousMessages, userMessage: taskContext.Message);
+            var response = await _aiService.GenerateAsync(PromptTemplate.GenerateBlogPrompt(orgInfo, outline, keywords), messages: previousMessages, userMessage: taskContext.Message);
             return response;
         }
 

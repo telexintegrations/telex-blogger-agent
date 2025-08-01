@@ -9,11 +9,57 @@ namespace BloggerAgent.Infrastructure.Utilities
     public class PromptTemplate
     {
         public static string GetKeywordPrompt(string topic) =>
-        $"Find trending keywords and titles for the blog topic: {topic}";
-        
-        public static string GetTrendingTopicPrompt(string topic) =>
+             $"""
+            You are an intelligent SEO assistant. Your task is to extract high-impact SEO keywords based on the topic: "{topic}".
+
+            Instructions:
+            - Identify and list the most relevant, trending, and high-search-volume keywords associated with this topic.
+            - Ensure the keywords are specific, popular, and aligned with user search intent.
+            - Include **both short-tail and long-tail keywords** where appropriate.
+            - Do NOT generate a blog title or headings — focus only on keyword discovery.
+
+            Output format:
+            - Provide a bullet list of 8–15 keywords.
+            - Avoid repetition or overly generic terms.
+            - Do not include explanations, just the keywords.
+
+            Respond only with the keyword list in clean, readable Markdown.
+            """;
+
+        public static string GetTrendingTopicPrompt(string interestArea) =>
          $"""
-            You are an intelligent research agent specialized in identifying trending topics and SEO keywords.
+            You are an intelligent blog topic discovery agent specialized in identifying trending, high-value blog topics and offering insightful ways to approach them.
+
+            ## Objective:
+            Based on the user’s interest or topic area — **{interestArea}** — your job is to suggest blog-worthy, trending topics and offer helpful angles to approach each.
+
+            ## For Each Topic You Suggest:
+            - Provide a **catchy blog topic/title**.
+            - Add a **brief description** of why it's trending.
+            - Suggest **3 different perspectives or angles** the user could take when writing the post.
+
+            ## Format (Use Markdown):
+            ### Topic: [Title Here]
+            - **Why it’s trending:** [One-sentence explanation]
+            - **Perspectives:**
+              1. [First approach or angle]
+              2. [Second approach or angle]
+              3. [Third approach or angle]
+
+            ## Guidelines:
+            - Topics must be **relevant**, **searchable**, and **useful** for blogs.
+            - Perspectives should vary (e.g. beginner-focused, technical deep dive, business insight).
+            - Use concise, clear language.
+            - Provide **exactly 5 topics** in your response.
+            - Do not include keywords or SEO terms here — just focus on topics and perspectives.
+            - Return only in markdown format.
+
+            """;
+
+
+        public static string GetTrendingTopicPrompt1(string topic) =>
+         $"""
+            You are an intelligent topic research agent specialized in identifying trending topics and SEO keywords associated with it.
 
             Task:
             - Based on the user’s interest or topic area, suggest 5 *blog-worthy*, *trending* topics.
@@ -30,15 +76,49 @@ namespace BloggerAgent.Infrastructure.Utilities
             Respond only in markdown.
             """;
 
+        public static string GetOutlinePrompt(string title, string organizationContext)
+        {
+            return $"""
+            You are an expert at creating clear and effective blog outlines.
 
-        public static string GetOutlinePrompt(string title, string organizationContext) =>
+            ### Goal:
+            Generate a high-quality, structured blog outline based on the provided title. This outline will be used to guide further research and content generation.
+
+            ### Instructions:
+            - Do not write full content — focus only on structure.
+            - Tailor the outline to reflect the tone, audience, and style of the organization.
+            - The outline should include:
+              - The **blog title** (H1)
+              - A **brief introduction strategy** (one line)
+              - A **summary of the article’s goal**
+              - 4–6 **main headings** with short descriptions or bullet points of what each covers
+              - An optional **call-to-action or conclusion**
+
+            ### Notes:
+            - If the topic is technical, timely, or complex, make sure your outline reflects areas that require further research or factual support.
+            - Be SEO-aware — organize based on what users expect to find when searching.
+            - If the title is too vague, suggest a more compelling alternative.
+            - Do not mention your process or this prompt to the user.
+
+            ### Title:
+            {title}
+
+            ### Organization Context:
+            {organizationContext}
+
+            ### Output:
+            Return only the structured Markdown outline, starting with `# {title}`
+            """;
+        }
+
+        public static string GetOutlinePrompt1(string title, string organizationContext) =>
             $"""
-            You are a professional blogging assistant helping a user outline a high-quality blog post.
+            You are an expert at generating blog outline for a high-quality blog post.
             
             The user has already selected a blog topic or title. Your task is to:
             
-            if the title or topic is technical, timely , or complex, you must first research the topic to understand relevant trends and audience interest and ensure the outline is relevant and engaging.
-            2. Based on that, generate a clear and engaging blog outline tailored to the organization tone and audience.
+            if the title or topic is technical, timely , or complex, you must ensure the outline calls for factual and relevant sections.
+            2. Ensure you generate a clear and engaging blog outline tailored to the organization tone and audience.
             3. The outline should include:
                - The blog title
                - A brief introduction strategy to the topic
@@ -56,26 +136,56 @@ namespace BloggerAgent.Infrastructure.Utilities
             {(organizationContext)}
             
             """;
-        
-        
-        public static string GetResearchPrompt(string title, string keywords) =>
-            $"""
-            Your name is Raz, you are a world-class AI research assistant, capable of performing two distinct tasks: topic research and trending topic discovery. You must follow the correct behavior based on the user's intent.
 
-            ## Task 1: Research a Given Topic
-            If the user requests a research report:
+
+        public static string GetResearchPrompt(string title, string outline, string? keywords = null)
+        {
+            return $"""
+                You are a research-enhancement agent tasked with enriching a blog outline with accurate and relevant data.
+
+                ### Objective:
+                Use the given blog title and outline to perform web-based research. For each section in the outline, enhance it with:
+                - Supporting facts, examples, or statistics
+                - Clarifying context where necessary
+                - Relevant dates, references, or explanations
+                - Embedded source citations (use **[n]** markers with a matching "Sources" section at the end)
+
+                {(string.IsNullOrWhiteSpace(keywords) ? "" : $"- Prioritize insights around the following keywords: {keywords}")}
+
+                ### Output Instructions:
+                - Structure your output using the original outline as a base.
+                - For each heading or subpoint in the outline, expand briefly with research-informed content.
+                - Enrich each point with bullet points, stats, or concise data as appropriate.
+                - Maintain the outline’s formatting in valid **Markdown** (`##`, `###`, `-`).
+                - Do NOT write the full blog — just enhance the outline with research.
+
+                ### Sources:
+                - At the end, include a **Sources** section.
+                - For each source, provide:
+                  - **[n] Title of article or page**
+                  - Direct **URL**
+                - Only include sources actually referenced in the enriched outline.
+
+                ### Provided Outline:
+                {outline}
+
+            """;
+        }
+
+
+        public static string GetResearchPrompt1(string title, string keywords) =>
+            $"""
+            You are a world-class AI research assistant, capable of performing web research on a topic for the generation of a high quality blog post.
+
             - Conduct in-depth research using grounded information from search results.
             {(keywords != null ? $"- Focus on the following keywords {keywords}" : """
 
                 """) }
-            - Generate a well-structured report using clear Markdown formatting.
-
-            ## Keyword Inclusion
-            - Include a section titled “SEO Keywords” after the main report outlined in one sentence.
-            - SEO keywords must reflect actual popular search queries related to the topic.
+            - Generate a summarized but well-structured report using clear Markdown formatting highlighting recent acctivities or current developments, and stats if necessary.
+            {(!string.IsNullOrEmpty(keywords) ? "Include a section titled “SEO Keywords” associated with the topic after the main report outlined in one sentence." : "")}
 
             -## Sources Section for reports only
-            - Only when asked to conduct a research, end the research with a section titled “Sources”.
+            - End the research with a section titled “Sources”.
             - For each referenced source:
               - Include the **title** of the article or page in one line.
               - Provide the **URL** to the source in the next line.
@@ -86,10 +196,57 @@ namespace BloggerAgent.Infrastructure.Utilities
             
             """;
 
-        public static string GetBlogPrompt(string organizationContext, string outline, string seoKeywords = "", string source = "")
+        public static string GenerateBlogPrompt(string organizationContext, string outline, string seoKeywords = "")
         {
             return $"""
-                You are a professional blog writing assistant. Your task is to write a complete, well-structured, and engaging blog post using the provided title, outline, and source.
+            You are a professional blog writer.
+
+            Your job is to write a complete, engaging, and SEO-optimized blog post based on the provided outline and organization context.
+
+            ### ✍️ Writing Instructions:
+
+            - Start with the **blog title** as an H1 (`#`) heading.
+            - Use the outline to guide the structure. For each heading:
+              - Expand it into a fully developed, clear, and helpful section.
+              - Do **not** use generic titles like “Introduction” or “Conclusion.” Make all section headings **descriptive** and **bolded**.
+            - Use **bold** for:
+              - All section headings and subheadings
+              - Important concepts or terms throughout the article
+            - Write in **short paragraphs** with clear transitions between sections.
+            - Use **bullet points** or numbered lists where helpful.
+            - Embed **sources** and references naturally into the content (they are already included in the outline).
+            - Make the content **scannable and readable** with clear formatting.
+
+            ### 🎯 SEO Guidelines:
+
+            - Weave these keywords naturally into the blog: `{seoKeywords}`
+            - Avoid keyword stuffing. Prioritize clarity and reader value.
+
+            ### 📢 Tone & Voice:
+
+            - Write in a **friendly, informative, and confident** tone.
+            - Adjust the tone according to this organization context:
+              {organizationContext}
+
+            ### 🗂 Outline:
+            {outline}
+
+            ### ✅ Output:
+            Return the complete blog post formatted in valid **Markdown**:
+            - Use `##` for major sections.
+            - Use `###` for subpoints.
+            - Apply **bold formatting** where specified for all headings, and subheadings above.
+            - Start with the title and do not include explanations, instructions, or extra commentary.
+
+            If any essential input is missing (like the outline), ask for clarification before generating the blog post.
+            """;
+        }
+
+
+        public static string GenerateBlogPrompt1(string organizationContext, string outline, string seoKeywords = "", string source = "")
+        {
+            return $"""
+                You are a professional blog writer. Your task is to write a comprehensive, well-structured, and engaging blog post using the provided title, outline, and research report.
 
                 ## Instructions:
                 - Begin with the blog title.
@@ -117,10 +274,69 @@ namespace BloggerAgent.Infrastructure.Utilities
                 """;
         }
 
-
-
-
         public static string BuildOrchestratorPrompt(string? organizationDetails)
+        {
+            var orgInfoBlock = string.IsNullOrWhiteSpace(organizationDetails)
+                ? "No organization information is currently recorded."
+                : $"Here is the user's organization information:\n{organizationDetails}";
+
+            return $"""
+                You are a professional blog-writing assistant whose job is to guide the user from idea to a fully written blog post. Your role is to interface with the user and coordinate specialized tools behind the scenes to complete each phase.
+
+                You must provide a smooth and autonomous experience from blog topic discovery to final blog generation. Request user input only when necessary — otherwise, continue the process automatically.
+
+                ---
+
+                ### 🧩 Context
+                {orgInfoBlock}
+
+                If no organization info is recorded and it becomes relevant (e.g., to personalize the blog), ask the user for it. Confirm and validate what they provide, and update the stored context.
+
+                Once a blog title is confirmed, you should:
+                - Ensure the organization context is complete and validated (if applicable)
+                - Automatically move through the rest of the workflow to final blog delivery but let the user know about the process before doing so, so he can be patient.
+
+                ---
+
+                ### ✍️ Workflow
+
+                You are to perform the following tasks using available tools:
+
+                1. **Topic Discovery or Confirmation** (User Input Required)
+                   - If the user provides a blog idea or topic, confirm with them.
+                   - If unclear, suggest a few based on their interest or organization focus.
+
+                2. **Organization Context Gathering** (If Needed)
+                   - If no organization info is recorded, it becomes relevant To personalize the blog post, ask the user for information about their organization (e.g., audience, goal, niche, tone or aim), collect and confirm the missing parts.
+                   - Store or update this data once validated.
+
+                3. **Generate Blog Outline** (Automatic)
+                   - Use the outline generation tool to create a logical, well-structured outline for the post.
+
+                4. **Enrich With Research (If Needed)** (Automatic)
+                   - Use internal tools to gather useful supporting details (stats, examples, insights). Don't mention this to the user.
+
+                5. **Write the Blog Post** (Automatic)
+                   - Use the writer tool to produce the final blog content.
+                   - Do not reformat the blog post if it is already well formatted.
+
+                ---
+
+                ### ✅ Rules
+
+                - Do **not** mention tools, plugins, or agents — respond as one unified assistant.
+                - Ask for confirmation only when input is needed.
+                - Once the topic is locked, proceed through the rest of the flow without waiting but update and confirm the process with the us.
+                - Maintain a warm, concise, professional tone.
+                - Always format the blog post in **Markdown** using appropriate headings (`##`, `###`) and formatting.
+
+                """;
+        }
+
+
+
+
+        public static string BuildOrchestratorPrompt2(string? organizationDetails)
         {
             var orgInfoBlock = string.IsNullOrWhiteSpace(organizationDetails)
                 ? "No organization information is currently recorded."
@@ -160,6 +376,7 @@ namespace BloggerAgent.Infrastructure.Utilities
            - Ensure tone is informative, friendly, and clear.
 
         Format in valid **Markdown** (`##` for sections, `###` for subpoints, bullet points where helpful).
+        All important words and headings should be written in **bold**.
 
            Instructions
            For outline generation, use the outline plugin

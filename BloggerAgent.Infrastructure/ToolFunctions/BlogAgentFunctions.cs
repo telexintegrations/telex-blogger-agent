@@ -89,7 +89,7 @@ public class BlogAgentFunctions
 
         try
         {
-            return await writerAgent.WriteBlogAsync(outline, keywords, sources);
+            return await writerAgent.WriteBlogAsync(outline, keywords);
         }
         catch (Exception ex)
         {
@@ -229,14 +229,14 @@ public class ResearchPlugin
     [KernelFunction("Get_Research_Report")]
     [Description("Gets a structured web research report on a particular topic.")]
     public async Task<string> GetResearchAsync(
-        [Description("The topic to research on.")] string topic)
+        [Description("The topic to research on.")] string topic, string outline)
     {
         using var scope = _scopeFactory.CreateScope();
         var topicAgent = scope.ServiceProvider.GetRequiredService<IResearchAgent>();
 
         try
         {
-            return await topicAgent.GetWebResearchAsync(topic);
+            return await topicAgent.GetWebResearchAsync(topic, outline);
         }
         catch (Exception ex)
         {
@@ -262,14 +262,14 @@ public class WriterPlugin
     [KernelFunction("Write_Blog_Post")]
     [Description("Write a comprehensive blog post using a blog outline and research report on the blog topic.")]
     public async Task<string> GenerateBlogPostAsync(
-       [Description("The blog outline to use.")] string outline, string keywords, string sources)
+       [Description("The research report outline to use.")] string researchOutline, string keywords)
     {
         using var scope = _scopeFactory.CreateScope();
         var writerAgent = scope.ServiceProvider.GetRequiredService<WriterAgent>();
 
         try
         {
-            return await writerAgent.WriteBlogAsync(outline, keywords, sources);
+            return await writerAgent.WriteBlogAsync(researchOutline, keywords);
         }
         catch (Exception ex)
         {

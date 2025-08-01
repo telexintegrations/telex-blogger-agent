@@ -111,7 +111,7 @@ namespace BloggerAgent.Infrastructure.Services
             return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
         }
         
-        public async Task<string> GetWebResearchAsync(string topic, string systemMessage = null)
+        public async Task<string> GetWebResearchAsync(string topic, string outline)
         {
             var taskContext = _taskContextAccessor.GetTaskContext();
             var url = "https://api.groq.com/openai/v1/chat/completions";
@@ -120,7 +120,7 @@ namespace BloggerAgent.Infrastructure.Services
             {
                 Messages = new List<GroqChatRequest.Message>
                 {
-                    new() { Role = "system", Content = PromptTemplate.GetResearchPrompt(topic, JsonSerializer.Serialize(taskContext.Organization)) }
+                    new() { Role = "system", Content = PromptTemplate.GetResearchPrompt(topic, outline ) }
                 }
             };
 
