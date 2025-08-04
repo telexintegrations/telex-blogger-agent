@@ -44,8 +44,8 @@ namespace BloggerAgent.Application.Helpers
             }
 
             // Validate IDs are GUIDs (optional but recommended)
-            if (string.IsNullOrEmpty(message.ContextId))
-                throw new ArgumentException("Invalid ContextId format");
+            //if (string.IsNullOrEmpty(message.ContextId))
+            //    throw new ArgumentException("Invalid ContextId format");
 
             //if (message.TaskId != null && !Guid.TryParse(message.TaskId, out _))
             //    throw new ArgumentException("Invalid TaskId format");

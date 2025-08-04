@@ -68,15 +68,18 @@ public class RequestLoggingMiddleware
                             var organizations = await orgRepo.GetAllAsync();
                             taskContext.Organization = organizations.FirstOrDefault();
 
-                           taskContext.ChatMessages = await messageRepo.GetMessagesAsync(taskContext.ContextId);
+                            if (taskContext.ContextId != null)
+                                taskContext.ChatMessages = await messageRepo.GetMessagesAsync(taskContext.ContextId);
 
                             if(taskContext.ChatMessages.Count > 0 || taskContext.Organization != null)
                             {
-                                //context.Items["TaskContext"] = taskContext;      
                                 contextAccessor.SetTaskContext(taskContext);
-
                             }
 
+                        }
+                        else
+                        {
+                            _logger.LogWarning("❌ Failed to extract task context from request body.");
                         }
                     }
                 }

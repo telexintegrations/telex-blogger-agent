@@ -112,7 +112,7 @@ namespace BloggerAgent.Application.Helpers
                                 new TextPart
                                 {
                                     Kind = "text",
-                                    Text = "Task submitted successfully",
+                                    Text = "Message recieved successfully",
                                 }
                             }
                         }
@@ -147,7 +147,7 @@ namespace BloggerAgent.Application.Helpers
                             {
                                 new TextPart
                                 {
-                                    Text = $"Task Completed Successfully",                                    
+                                    Text = $"Response generated successfully",                                    
                                 }
                             },
                         }
@@ -240,6 +240,8 @@ namespace BloggerAgent.Application.Helpers
             var config = request?.Params?.Configuration;
             var pushConfig = config?.PushNotificationConfig;
             var metadata = message?.Metadata ?? new Dictionary<string, object>();
+            var fallbackContextId = pushConfig?.Url?.TrimEnd('/')?.Split('/')?.LastOrDefault();
+            string channelId = metadata.TryGetValue("telex_channel_id", out var channel) ? channel?.ToString() ?? string.Empty : string.Empty;
 
             if (message == null || message.Parts == null || !message.Parts.Any())
                 throw new ArgumentException("Invalid message structure");
@@ -247,12 +249,12 @@ namespace BloggerAgent.Application.Helpers
             return new TaskContext
             {
                 Message = part?.Text ?? string.Empty,
-                ContextId = message.ContextId ?? string.Empty,
+                ContextId = message.ContextId ?? channelId ?? fallbackContextId ?? string.Empty,
                 TaskId = message.TaskId,
                 MessageId = message.MessageId ?? string.Empty,
                 OrgId = metadata.TryGetValue("org_id", out var org) ? org?.ToString() ?? string.Empty : string.Empty,
                 UserId = metadata.TryGetValue("telex_user_id", out var user) ? user?.ToString() ?? string.Empty : string.Empty,
-                ChannelId = metadata.TryGetValue("telex_channel_id", out var channel) ? channel?.ToString() ?? string.Empty : string.Empty,
+                ChannelId = channelId,
                 Settings = metadata.TryGetValue("settings", out var settingsObj) && settingsObj != null
                            ? JsonSerializer.Deserialize<List<Setting>>(settingsObj.ToString()!) ?? new List<Setting>()
                            : new List<Setting>(),
