@@ -126,7 +126,7 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
 
         public string? TaskId { get; set; }
         public string MessageId { get; set; }
-        public string ContextId { get; set; }
+        public string? ContextId { get; set; }
         public string Role { get; set; }
         public string? Kind { get; set; }
         public List<ITaskPart> Parts { get; set; }
