@@ -20,15 +20,26 @@ namespace BloggerAgent.Domain.Data
 
         public DbContext(IOptions<TelexApiSettings> options, HttpHelper httphelper, TaskContextAccessor contextAccessor, ILogger<DbContext> logger)
         {
-            _baseUrl = options.Value.BaseUrl;
             _taskContextAccessor = contextAccessor;
             _httpHelper = httphelper;
             _logger = logger;
-            _baseUrl += "/agent_db/collections";
+            _baseUrl = BuildBaseUrl() ?? 
+                $"{options.Value.BaseUrl.TrimEnd('/')}/agent_db/collections";
         }
 
         public TaskContext TaskContext => 
             _taskContextAccessor.GetTaskContext();
+
+        private string BuildBaseUrl()
+        {
+            var context = TaskContext;
+            if (context?.CallbackUrl != null && context.CallbackUrl.Contains("staging"))
+            {
+                return "https://api.staging.telex.im/api/v1/agent_db/collections";
+            }
+
+            return null;
+        }
 
         public async Task<TelexApiResponse<T?>> CreateCollection<T>()
         {
