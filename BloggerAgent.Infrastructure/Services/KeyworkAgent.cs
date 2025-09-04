@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BloggerAgent.test.Services
+namespace BloggerAgent.Infrastructure.Services
 {
-    public class TelexIntegrationService
+    internal class KeyworkAgent
     {
     }
 }

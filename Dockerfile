@@ -12,21 +12,29 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["TelexBloggerAgent/TelexBloggerAgent.csproj", "TelexBloggerAgent/"]
-RUN dotnet restore "./TelexBloggerAgent/TelexBloggerAgent.csproj"
+
+# Copy csproj files and restore dependencies
+COPY ["BloggerAgent.Api/BloggerAgent.Api.csproj", "BloggerAgent.Api/"]
+COPY ["BloggerAgent.Domain/BloggerAgent.Domain.csproj", "BloggerAgent.Domain/"]
+COPY ["BloggerAgent.Application/BloggerAgent.Application.csproj", "BloggerAgent.Application/"]
+COPY ["BloggerAgent.Infrastructure/BloggerAgent.Infrastructure.csproj", "BloggerAgent.Infrastructure/"]
+RUN dotnet restore "BloggerAgent.Api/BloggerAgent.Api.csproj"
+
+# Copy the rest of the project files
 COPY . .
-WORKDIR "/src/TelexBloggerAgent"
-RUN dotnet build "./TelexBloggerAgent.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# Build the project
+WORKDIR "/src/BloggerAgent.Api"
+RUN dotnet build "./BloggerAgent.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./TelexBloggerAgent.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./BloggerAgent.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-# <-- Added this line to copy the JSON file
-COPY TelexBloggerAgent/Integration.json /app/  
-ENTRYPOINT ["dotnet", "TelexBloggerAgent.dll"]
+
+ENTRYPOINT ["dotnet", "BloggerAgent.Api.dll"]

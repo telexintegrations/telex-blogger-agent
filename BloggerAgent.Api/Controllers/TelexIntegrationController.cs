@@ -1,0 +1,35 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using BloggerAgent.Application.IServices;
+using BloggerAgent.Application.Helpers;
+
+namespace BloggerAgent.Api.Controllers
+{
+    [Route("api/v1")]
+    [ApiController]
+    public class TelexIntegrationController : ControllerBase
+    {       
+
+        [HttpGet(".well-known/agent.json")]
+        public IActionResult GetIntegrationConfig()
+        {
+
+            var integrationJson = A2aAgent.Get();
+
+            if (integrationJson == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(integrationJson);
+        }
+
+        [HttpHead("/health")]
+        public IActionResult HeadHealthCheck()
+        {
+            return Ok(); // Just returns 200 OK with no body
+        }
+
+
+    }
+}
