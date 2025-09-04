@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace BloggerAgent.Infrastructure.Repositories
 {
-    public class BlogRepository : TelexRepository<Blog>, IBlogRepository
+    public class BlogRepository : TelexRepositoryBase<Blog>, IBlogRepository
     {
 
         private readonly ITelexRepository<Blog> _blogRepository;
@@ -32,13 +32,41 @@ namespace BloggerAgent.Infrastructure.Repositories
             {
                 throw new ArgumentException("Blog cannot be null");
             }
-            blogPost.CurrentPhase = Domain.Enums.TaskPhase.Initialized;
+            //blogPost.CurrentPhase = Domain.Enums.TaskPhase.Initialized;
             blogPost.CreatedAt = DateTime.Now;
             blogPost.ContextId = TaskContext.ContextId;
             blogPost.UserId = TaskContext.UserId;
-            blogPost.History.Add(Domain.Enums.TaskPhase.Initialized);
+            //blogPost.History.Add(Domain.Enums.TaskPhase.Initialized);
 
             return await _blogRepository.CreateAsync(blogPost);
+        }
+        
+        
+        public async Task<Blog> GetBlogAsync(string topic)
+        {
+            TaskContext taskContext = _taskContext.GetTaskContext();
+
+            var filter = new Dictionary<string, object>
+            {
+                { "tag", CollectionType.Blog },
+                { "contextId", taskContext.ContextId },
+                { "user_id", taskContext.UserId }
+            };
+
+            if (topic != null)
+            {
+                filter.Add("title", topic.ToUpper());
+            }
+
+            var blogPosts = await FilterAsync(filter);
+            var existingBlog = blogPosts.LastOrDefault();
+
+            if (existingBlog == null)
+            {
+                return null;
+            }
+
+            return existingBlog;
         }
 
         public async Task<bool> UpdateBlogAsync(Dictionary<string, object> blogFieldsToUpdate, string topic)
@@ -54,8 +82,8 @@ namespace BloggerAgent.Infrastructure.Repositories
             {
                 { "tag", CollectionType.Blog },
                 { "contextId", taskContext.ContextId },
-                { "userId", taskContext.UserId },
-                {"title", topic },
+                { "user_id", taskContext.UserId },
+                {"title", topic.ToUpper() },
             };
 
             var blogPosts = await FilterAsync(filter);
@@ -69,15 +97,18 @@ namespace BloggerAgent.Infrastructure.Repositories
             foreach (var field in blogFieldsToUpdate)
             {
                 switch (field.Key.ToLower())
-                {
-                    case "title":
-                        existingBlog.Title = field.Value?.ToString();
-                        break;
+                {                    
                     case "blogcontent":
                         existingBlog.BlogContent = field.Value?.ToString();
                         break;
                     case "keywords":
                         existingBlog.Keywords = field.Value as List<string> ?? new List<string>();
+                        break;
+                    case "outline":
+                        existingBlog.Outline = field.Value?.ToString();
+                        break;
+                    case "referencelinks":
+                        existingBlog.ReferenceLinks = field.Value as List<string> ?? new List<string>();
                         break;
                         // Add more fields if needed, except UpdatedAt
                 }

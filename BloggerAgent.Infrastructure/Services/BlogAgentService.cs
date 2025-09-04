@@ -26,6 +26,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel;
 using Polly;
 using Polly.Retry;
+using BloggerAgent.Domain.Models;
 
 namespace BloggerAgent.Infrastructure.Services
 {
@@ -41,6 +42,7 @@ namespace BloggerAgent.Infrastructure.Services
         private readonly IAIService _aiService;
         private readonly HttpHelper _httpHelper;
         private readonly ToolRouter _toolRouter;
+        private readonly IBlogRepository _blogRepository;
         private readonly TaskContextAccessor _taskManager;
 
         public BlogAgentService(
@@ -52,7 +54,8 @@ namespace BloggerAgent.Infrastructure.Services
             HttpHelper httpHelper,
             ToolRouter toolRouter, 
             IOrganizationRepository organizationRepository,
-            TaskContextAccessor taskManager)
+            TaskContextAccessor taskManager,
+            IBlogRepository blogRepository)
         {
             _webhookUrl = telexSettings.Value.WebhookUrl;
             _requestService = requestService;
@@ -63,11 +66,12 @@ namespace BloggerAgent.Infrastructure.Services
             _toolRouter = toolRouter;
             _organizationRepository = organizationRepository;
             _taskManager = taskManager;
+            _blogRepository = blogRepository;
         }
 
         public async Task HandleUserInput(A2aTaskRequest taskRequest)
         {
-                var newTaskContext = _taskManager.GetTaskContext();
+            var newTaskContext = _taskManager.GetTaskContext();
             try
             {
                 //var newTaskContext = DataExtract.ExtractTaskData(taskRequest);
@@ -90,7 +94,13 @@ namespace BloggerAgent.Infrastructure.Services
 
                 _logger.LogInformation("HandleUserInput: UserMessage={Message}", newTaskContext.Message);
 
-                var aiReply = await _aiService.ChatWithTools(newTaskContext, PromptTemplate.BuildOrchestratorPrompt(orgInfo), previousMessages);
+                Blog blog = await _blogRepository.GetBlogAsync();
+
+                string currentBlog = null;
+                if (blog == null)
+                    currentBlog = JsonSerializer.Serialize(blog);
+
+                var aiReply = await _aiService.ChatWithTools(newTaskContext, PromptTemplate.BuildOrchestratorPrompt(orgInfo, currentBlog), previousMessages);
 
                 await _messageRepository.AddNewMessagesAsync(aiReply, newTaskContext, Roles.Assistant);
 
@@ -119,6 +129,7 @@ namespace BloggerAgent.Infrastructure.Services
                 await SendResponseAsync(taskResponse, newTaskContext);
             }
         }
+
 
         public async Task<bool> SendResponseAsync(AgentTaskResponse taskResponse, TaskContext taskContext)
         {             
@@ -155,78 +166,63 @@ namespace BloggerAgent.Infrastructure.Services
         }
 
 
-        //public async Task<MessageResponse> HandleAsync(TaskRequest taskRequest)
+
+        //public async Task<string> HandleAsync(A2aTaskRequest taskRequest)
         //{
-           
         //    try
         //    {
-        //        ValidationHelper.ValidateRequest(taskRequest);
 
-        //        var blogPrompt = TaskContext.MapToTaskContext(taskRequest);
+        //        var context = DataExtract.ExtractTaskData(taskRequest);
 
-
-        //        // Format the blog prompt based on user input and settings
-        //        var request = await _requestService.ProcessUserInputAsync(blogPrompt);
-
-        //        // Generate the response using the formatted message
-        //        var aiResponse = await _aiService.GenerateResponse(request.UserPrompt, request.SystemMessage, blogPrompt);
-
-        //        if (string.IsNullOrEmpty(aiResponse))
-        //        {
-        //            throw new Exception("Failed to generate response");
-        //        }
-
-        //        return DataExtract.ConstructResponse(taskRequest, aiResponse);
+        //        return await _outlineAgent.GetOutlineAsync(context.Message, context);
 
         //    }
         //    catch (Exception ex)
         //    {
-        //        // Log the error and rethrow the exception
         //        _logger.LogError(ex, "Failed to generate blog post");
         //        throw;
         //    }
-        //}                   
+        //}
 
+        //public async Task<AgentMessageResponse> HandleMessageAsync(A2aTaskRequest taskRequest)
+        //{
+        //    try
+        //    {
+        //        ValidationHelper.ValidateRequest(taskRequest);
 
-        public async Task<AgentMessageResponse> HandleAsync(A2aTaskRequest taskRequest)
-        {
-            try
-            {
-                ValidationHelper.ValidateRequest(taskRequest);
+        //        var context = DataExtract.ExtractTaskData(taskRequest);
+        //        //var request = await _requestService.ProcessUserInputAsync(context);
 
-                var context = DataExtract.ExtractTaskData(taskRequest);
-                //var request = await _requestService.ProcessUserInputAsync(context);
+        //        string aiMessage = context.Message;
+        //        string systemMessage = _toolRouter.BuildSystemMessage();
+        //        string finalResponse = null;
+        //        await _messageRepository.AddNewMessagesAsync(context.Message, context, Roles.User);
+        //        while (true)
+        //        {
+        //            var aiResponse = await _aiService.GenerateResponse(aiMessage, systemMessage, context);
 
-                string aiMessage = context.Message;
-                string systemMessage = _toolRouter.BuildSystemMessage();
-                string finalResponse = null;
-                await _messageRepository.AddNewMessagesAsync(context.Message, context, Roles.User);
-                while (true)
-                {
-                    var aiResponse = await _aiService.GenerateResponse(aiMessage, systemMessage, context);
+        //            if (!_toolRouter.ShouldRunTool(aiResponse))
+        //            {
+        //                finalResponse = aiResponse;
+        //                break;
+        //            }
 
-                    if (!_toolRouter.ShouldRunTool(aiResponse))
-                    {
-                        finalResponse = aiResponse;
-                        break;
-                    }
+        //            var (toolName, aiParams) = _toolRouter.ExtractToolInfo(aiResponse);
+        //            var toolResult = await _toolRouter.ExecuteToolAsync(toolName, aiParams, context);
 
-                    var (toolName, aiParams) = _toolRouter.ExtractToolInfo(aiResponse);
-                    var toolResult = await _toolRouter.ExecuteToolAsync(toolName, aiParams, context);
+        //            // Inject tool result into the next AI message
+        //            aiMessage = _toolRouter.FormatToolResult(toolName, toolResult);
+        //        }
+        //        await _messageRepository.AddNewMessagesAsync(aiMessage, context, Roles.Assistant);
 
-                    // Inject tool result into the next AI message
-                    aiMessage = _toolRouter.FormatToolResult(toolName, toolResult);
-                }
-                await _messageRepository.AddNewMessagesAsync(aiMessage, context, Roles.Assistant);
-
-                return DataExtract.ConstructResponse(taskRequest, finalResponse);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to generate blog post");
-                throw;
-            }
-        }       
+        //        return DataExtract.ConstructResponse(taskRequest, finalResponse);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Failed to generate blog post");
+        //        throw;
+        //    }
+        //}       
 
     }
 }

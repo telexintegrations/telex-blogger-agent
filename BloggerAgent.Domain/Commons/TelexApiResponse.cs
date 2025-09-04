@@ -23,7 +23,7 @@ namespace BloggerAgent.Domain.Commons
         public int StatusCode { get; set; }
 
 
-        public static TelexApiResponse<T> ExtractResponse(string jsonResponse)
+        public static TelexApiResponse<T>? ExtractResponse(string jsonResponse)
         {
             var options = new JsonSerializerOptions
             {

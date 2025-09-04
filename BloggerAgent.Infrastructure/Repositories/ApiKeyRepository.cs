@@ -46,7 +46,6 @@ namespace BloggerAgent.Infrastructure.Repositories
     {
         [JsonPropertyName("_id")]
         public string Id { get; set; }
-
         public string OrganizationId { get; set; }
         public string Key { get; set; }
     }

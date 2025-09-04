@@ -79,7 +79,7 @@ public class RequestLoggingMiddleware
                         }
                         else
                         {
-                            _logger.LogWarning("❌ Failed to extract task context from request body.");
+                            _logger.LogWarning("❌ Failed to extract task context from request body. Task context could be empty");
                         }
                     }
                 }
@@ -97,7 +97,7 @@ public class RequestLoggingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "❌ Exception in RequestLoggingMiddleware");
+            _logger.LogError(ex, "❌ Exception in RequestLoggingMiddleware with message: " + ex.Message);
             throw;
         }
     }

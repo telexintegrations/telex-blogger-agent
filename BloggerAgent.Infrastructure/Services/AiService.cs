@@ -16,6 +16,9 @@ using BloggerAgent.Application.Dtos;
 using BloggerAgent.Domain.Commons.Options;
 using BloggerAgent.Domain.Commons.constants;
 using BloggerAgent.Domain.Commons.DataEntities;
+using BloggerAgent.Infrastructure.Utilities;
+using System.Net.Http;
+using System.Text;
 
 namespace BloggerAgent.Infrastructure.Services
 {
@@ -40,63 +43,73 @@ namespace BloggerAgent.Infrastructure.Services
         }
 
 
-        public async Task<string> GenerateResponse(string message, string systemMessage, TaskContext blogDto)
+        public async Task<string> GenerateReponse(string systemMessage, TaskContext context)
         {
+            TaskContext taskContext = context;
+           
+            var url = "https://api.telex.im/api/v1/telexai/chat";
 
-            //bool isAdded = await AddNewMessagesAsync(message, blogDto, Roles.User);
-
-            //if (!isAdded)
-            //    return "Sorry, an error occured";
-
-            var messages = new List<TelexChatMessage>()
+            var request = new
             {
-                new TelexChatMessage() { Role = Roles.System, Content = systemMessage }
-            };
-
-            var conversations = await _messageRepository.GetMessagesAsync(blogDto.ContextId);
-
-            if (conversations.Count > 0 || conversations != null)
-            {
-                messages.AddRange(conversations);
-            }
-
-            //messages.Add(new TelexChatMessage { Role = "user", Content = message });
-
-            var apiRequest = new ApiRequest()
-            {
-                Url = $"{_baseUrl}/telexai/chat",
-                Body = new { messages },
-                Method = HttpMethod.Post,
-                Headers = new Dictionary<string, string>
+                Model = "google/gemini-2.0-flash-001",
+                Messages = new List<TelexChatMessage>
                 {
-                    {TelexApiSettings.Header, _apiKey },
-                    {"X-Model", "google/gemini-2.5-flash-preview-05-20" }
+                    new() { Role = "system", Content = systemMessage }
                 }
             };
 
-            _logger.LogInformation("Sending message to Telex AI");
+            // ✅ Add chat history from task context
+            var chatHistory = taskContext.ChatMessages;
+
+            chatHistory.Add(new TelexChatMessage()
+            {
+                Role = "user",
+                Content = taskContext.Message
+            });
+
+            var historyMessages = chatHistory
+                .Select(m => new TelexChatMessage
+                {
+                    Role = m.Role,  // Ensure these are "user" or "assistant"
+                    Content = m.Content
+                });
+
+            request.Messages.AddRange(historyMessages); // ✅ Add the actual history
+
+            var json = JsonSerializer.Serialize(request, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            ApiRequest apiRequest = new ApiRequest
+            {
+                Url = url,
+                Body = request,
+                Method = HttpMethod.Post,
+                Headers = new Dictionary<string, string>
+                {
+                    { "X-AGENT-API-KEY", taskContext.AuthToken }
+                }
+            };
 
             var response = await _httpHelper.SendRequestAsync(apiRequest);
-            var responseString = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                var error = TelexApiResponse<TelexChatMessage>.ExtractResponse(responseString);
-
-                return $"An error occurred while communicating with Telex AI: {error.Message}";
+                throw new Exception($"Telex API Call failed: {response.StatusCode}");
             }
 
-            _logger.LogInformation("Message successfully generated from the Telex AI");
+            string responseJson = await response.Content.ReadAsStringAsync();
 
-            var generatedData = TelexApiResponse<TelexChatResponse>.ExtractResponse(responseString);
+            JsonElement docRootElement = JsonDocument.Parse(responseJson).RootElement;
 
-            string generatedResponse = generatedData.Data.Messages.Content;
+            if (!docRootElement.TryGetProperty("data", out JsonElement data))
+            {
+                Console.WriteLine($"Error: No 'data' property found in response: {responseJson}");
+                throw new Exception("No data found in Telex API response");
+            }
 
-            //await AddNewMessagesAsync(message, blogDto, Roles.Assistant);
+            GroqChatResponse? result = JsonSerializer.Deserialize<GroqChatResponse>(data, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
 
-            messages.Add(new TelexChatMessage() { Role = Roles.Assistant, Content = systemMessage });
-
-            return generatedResponse;
+            return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
         }
 
 
@@ -123,7 +136,11 @@ namespace BloggerAgent.Infrastructure.Services
                 //    Role = new AuthorRole(m.Role),
                 //    Content = m.Content
                 //}));
-                history.AddRange(messages);
+                if (messages != null && messages.Any())
+                {
+                    history.AddRange(messages);
+                }
+
                 history.AddUserMessage(taskRequest.Message);
 
                 // Enable Function Calling
@@ -131,7 +148,7 @@ namespace BloggerAgent.Infrastructure.Services
                 {
                     ToolCallBehavior = GeminiToolCallBehavior.AutoInvokeKernelFunctions,
 
-                    Temperature = 0.7,               // Controls randomness; lower is more deterministic
+                    Temperature = 0.8,               // Controls randomness; lower is more deterministic
                     TopP = 0.9,                      // Nucleus sampling; focuses on top cumulative probability tokens
                     TopK = 40,                       // Limits sampling to top-k probable tokens
                 };
@@ -168,17 +185,24 @@ namespace BloggerAgent.Infrastructure.Services
                 // Add system message to guide the assistant
                 history.AddSystemMessage(systemPrompt);
 
-                if (messages != null)
+                if (messages != null && messages.Any())
                 {
                     history.AddRange(messages);
                 }
 
-                if (userMessage != null) 
+                if (!string.IsNullOrEmpty(userMessage) || !string.IsNullOrEmpty(taskRequest?.Message))
                 {
-                    history.AddUserMessage(userMessage);
+                    history.AddUserMessage(userMessage ?? taskRequest.Message);
                 }
-                var result = await chatService.GetChatMessageContentAsync(history);
 
+                // Enable Function Calling
+                var executionSettings = new GeminiPromptExecutionSettings
+                {                   
+                    Temperature = 0.8,               // Controls randomness; lower is more deterministic
+                    TopP = 0.9,                      // Nucleus sampling; focuses on top cumulative probability tokens
+                    TopK = 40,                       // Limits sampling to top-k probable tokens
+                };
+                var result = await chatService.GetChatMessageContentAsync(history, executionSettings, kernel);
                 
                 return result.Content ?? "";
             }
@@ -238,24 +262,66 @@ namespace BloggerAgent.Infrastructure.Services
         }
 
 
-        public static string BuildSystemMessage()
+        public async Task<string> GenerateWebContentAsync(string systemMessage, TaskContext taskContext)
         {
-            return $$$"""
-                You are a professional blogging assistant whose responsibilities include:
-                1. Recommending topics, suggesting keywords, and brainstorming ideas.
-                2. Presenting a clear outline—title, headings, and bullet-pointed structure—for approval.
-                3. After outline approval, generating the full blog in the order: title, introduction, body sections, and conclusion using the organization contextual data.
-                
-                Always retrieve user organization before making a save inorder for to determine whether you are to save or update.
+            var url = "https://api.groq.com/openai/v1/chat/completions";
 
-                Don't ask users for more information until you have retrieved their organization context data. If no information is recorded, ask the user for their organization information. But if an information is provided in the request, go ahead and use the information provided. 
-                
-                When provided with an organizational information, get confirmation before proceeding to save it. If the information provided is not explicit enough, you can try to deduce most of these other fields based on the information provided and confirm the information with the user before proceeding to save it.
+            var request = new GroqChatRequest
+            {
+                Messages = new List<GroqChatRequest.Message>
+                {
+                    new() { Role = "system", Content = systemMessage }
+                }
+            };
 
-                Don't share your internal thought process with the user
+            // ✅ Add chat history from task context
 
-                Always keep your tone professional and focused on high-quality, actionable blogging guidance but maintain a friendly demeanour.
-                """;
+            var chatHistory = taskContext?.ChatMessages;
+
+            if (chatHistory != null)
+            {
+                chatHistory.Add(new TelexChatMessage()
+                {
+                    Role = "user",
+                    Content = taskContext.Message
+                });
+
+                var historyMessages = chatHistory
+                    .Select(m => new GroqChatRequest.Message
+                    {
+                        Role = m.Role,  // Ensure these are "user" or "assistant"
+                        Content = m.Content
+                    });
+
+                request.Messages.AddRange(historyMessages); // ✅ Add the actual history
+
+            }
+
+            var json = JsonSerializer.Serialize(request, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            ApiRequest apiRequest = new ApiRequest
+            {
+                Url = url,
+                Body = request,
+                Method = HttpMethod.Post,
+                Headers = new Dictionary<string, string>
+                {
+                    { "Authorization", $"Bearer {_apiKey}" }
+                }
+            };
+
+            var response = await _httpHelper.SendRequestAsync(apiRequest);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"Groq API failed: {response.StatusCode}");
+            }
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GroqChatResponse>(responseJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+
+            return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
         }
     }
 }

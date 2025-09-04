@@ -17,7 +17,7 @@ namespace BloggerAgent.Domain.Models
         public string Outline { get; set; }
         public string ImageUrl { get; set; }
         public string BlogContent { get; set; }
-        public Status Status { get; set; }
+        public string Status { get; set; } = Enums.Status.Active.ToString();
         public TaskPhase CurrentPhase { get; set; }
         public List<TaskPhase> History { get; set; } = new();
         public List<string> ReferenceLinks { get; set; } = new();

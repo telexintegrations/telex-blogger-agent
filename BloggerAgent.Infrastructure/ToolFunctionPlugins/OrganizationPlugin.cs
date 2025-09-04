@@ -22,7 +22,7 @@ namespace BloggerAgent.Infrastructure.ToolFunctions
             _scopeFactory = scopeFactory;
         }
 
-        [KernelFunction("save_organization_context")]
+        [KernelFunction("save_or_update_organization_context")]
         [Description("Stores or creates a new organization profile used to generate personalized blog content.")]
         public async Task<string> SaveOrganizationAsync(
            string name, string overview, string industry,
@@ -68,39 +68,6 @@ namespace BloggerAgent.Infrastructure.ToolFunctions
                 : $"❌ Failed to save organization '{name}'.";
         }
 
-        [KernelFunction("Get_Date_Time")]
-        public Task<string> GetDateTime()
-        {
-            return Task.FromResult(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
-        }
-
-        //[KernelFunction("update_organization_context")]
-        //[Description("Updates a saved organization profile using its ID.")]
-        //public async Task<string> UpdateOrganizationAsync(Company updatedCompany)
-        //{
-        //    using var scope = _scopeFactory.CreateScope();
-        //    var repo = scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
-
-        //    var success = await repo.UpdateCompanyAsync(updatedCompany);
-        //    return success
-        //        ? $"🔄 Organization '{updatedCompany.Name}' updated successfully."
-        //        : $"⚠️ Failed to update organization.";
-        //}
-
-        //[KernelFunction("get_organization_context")]
-        //[Description("Retrieves an organization context to be used in the blog post generation")]
-        //public async Task<string> GetOrganizationContextAsync()
-        //{
-        //    using var scope = _scopeFactory.CreateScope();
-        //    var repo = scope.ServiceProvider.GetRequiredService<IOrganizationRepository>();
-
-        //    var orgs = await repo.GetAllAsync();
-        //    if (orgs.Count == 0)
-        //    {
-        //        return "No company information recorded yet";
-        //    }
-        //    return string.Join(",", orgs.FirstOrDefault());
-
-        //}
+       
     }
 }

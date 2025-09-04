@@ -12,15 +12,13 @@ using System.Threading.Tasks;
 
 namespace BloggerAgent.Domain.Repositories
 {
-    public class OrganizationRepository : TelexRepository<Company>, IOrganizationRepository
+    public class OrganizationRepository : TelexRepositoryBase<Company>, IOrganizationRepository
     {
         private readonly ITelexRepository<Company> _companyRepository;
-        private readonly ITelexRepository<Blog> _blogRepository;
 
-        public OrganizationRepository(ITelexRepository<Company> companyRepository, ITelexRepository<Blog> blogRepository, DbContext context): base(context) 
+        public OrganizationRepository(ITelexRepository<Company> companyRepository, DbContext context): base(context) 
         {
             _companyRepository = companyRepository;
-            _blogRepository = blogRepository;
         }
 
         public async Task<bool> CreateCompanyAsync(Company company)
@@ -39,7 +37,7 @@ namespace BloggerAgent.Domain.Repositories
                 throw new ArgumentException("Company cannot be null or have an empty name.");
             }
 
-            var companies = await _companyRepository.FilterByFieldAsync("tag_name", CollectionType.Company);
+            var companies = await _companyRepository.FilterByFieldAsync("tag", CollectionType.Company);
 
             if (companies == null)
             {
@@ -56,7 +54,7 @@ namespace BloggerAgent.Domain.Repositories
             existingCompany.Website = company.Website ?? existingCompany.Website;
             existingCompany.UpdatedAt = company.UpdatedAt;
 
-            return await _companyRepository.UpdateAsync(existingCompany.Id, company);
+            return await _companyRepository.UpdateAsync(existingCompany.Id!, company);
         }
 
     }

@@ -2,20 +2,18 @@
 using BloggerAgent.Domain.Commons.DataEntities;
 using BloggerAgent.Domain.DomainHelper;
 using BloggerAgent.Domain.IRepositories;
-using BloggerAgent.Domain.Models;
 using BloggerAgent.Infrastructure.Utilities;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace BloggerAgent.Infrastructure.Services
 {
-    public class ResearchAgent : IResearchAgent
+    internal class KeywordAgent
     {
         private readonly HttpHelper _httpClient;
         private readonly string _apiKey;
@@ -23,7 +21,7 @@ namespace BloggerAgent.Infrastructure.Services
         private readonly IAIService _aiService;
         private readonly TaskContextAccessor _taskContextAccessor;
 
-        public ResearchAgent(IBlogRepository blogRepository, IAIService aIService, HttpHelper httpHelper, IConfiguration configuration, TaskContextAccessor taskContextAccessor)
+        public KeywordAgent(IBlogRepository blogRepository, IAIService aIService, HttpHelper httpHelper, IConfiguration configuration, TaskContextAccessor taskContextAccessor)
         {
             _aiService = aIService;
             _blogRepository = blogRepository;
@@ -32,21 +30,7 @@ namespace BloggerAgent.Infrastructure.Services
             _taskContextAccessor = taskContextAccessor;
         }
 
-
-
-        public async Task<string> GetTrendingTopicsAsync(string interestArea, string systemMessage = null)
-        {
-            systemMessage = PromptTemplate.GetTrendingTopicPrompt(interestArea);
-            return await GenerateWebContentAsync(systemMessage);
-        }
-
-        public async Task<string> GetWebResearchAsync(string topic, string outline)
-        {
-            string systemMessage = PromptTemplate.GetResearchPrompt(topic, outline);
-            return await GenerateWebContentAsync(systemMessage);
-        }
-
-        private async Task<string> GenerateWebContentAsync(string systemMessage)
+        public async Task<string> GetSeoKeywordsAsync(string topic)
         {
             var taskContext = _taskContextAccessor.GetTaskContext();
             var url = "https://api.groq.com/openai/v1/chat/completions";
@@ -55,32 +39,27 @@ namespace BloggerAgent.Infrastructure.Services
             {
                 Messages = new List<GroqChatRequest.Message>
                 {
-                    new() { Role = "system", Content = systemMessage }
+                    new() { Role = "system", Content = PromptTemplate.GetOutlinePrompt(topic, JsonSerializer.Serialize(taskContext.Organization)) }
                 }
             };
 
             // ✅ Add chat history from task context
+            var chatHistory = taskContext.ChatMessages;
 
-            var chatHistory = taskContext?.ChatMessages;
-
-            if (chatHistory != null)
+            chatHistory.Add(new TelexChatMessage()
             {
-                chatHistory.Add(new TelexChatMessage()
+                Role = "user",
+                Content = taskContext.Message
+            });
+
+            var historyMessages = chatHistory
+                .Select(m => new GroqChatRequest.Message
                 {
-                    Role = "user",
-                    Content = taskContext.Message
+                    Role = m.Role,  // Ensure these are "user" or "assistant"
+                    Content = m.Content
                 });
 
-                var historyMessages = chatHistory
-                    .Select(m => new GroqChatRequest.Message
-                    {
-                        Role = m.Role,  // Ensure these are "user" or "assistant"
-                        Content = m.Content
-                    });
-
-                request.Messages.AddRange(historyMessages); // ✅ Add the actual history
-
-            }
+            request.Messages.AddRange(historyMessages); // ✅ Add the actual history
 
             var json = JsonSerializer.Serialize(request, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             var content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -109,5 +88,4 @@ namespace BloggerAgent.Infrastructure.Services
             return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
         }
     }
-
 }

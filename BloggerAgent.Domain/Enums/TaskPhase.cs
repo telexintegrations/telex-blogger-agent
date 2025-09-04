@@ -10,8 +10,8 @@ namespace BloggerAgent.Domain.Enums
     {
         Initialized,
         TopicGenerated,
-        Researching,
         KeywordsGenerated,
+        Researching,
         OutlineBuilt,
         ContentWritten,
         ImageGenerated,

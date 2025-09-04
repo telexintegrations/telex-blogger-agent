@@ -37,8 +37,9 @@ namespace BloggerAgent.Api.Middleware
 
                 var response = JsonSerializer.Serialize(new A2aErrorResponse
                 {
+                    Data = ex?.InnerException?.Message,
                     Code = status,
-                    Message = $"{ex?.Message ?? ex?.InnerException?.Message ?? "An error occurred"}",
+                    Message = $"{ex?.Message ?? "An error occurred"}",
                 });
 
                 _logger.LogError(response);

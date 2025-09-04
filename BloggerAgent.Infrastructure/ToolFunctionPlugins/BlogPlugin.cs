@@ -23,16 +23,22 @@ namespace BloggerAgent.Infrastructure.ToolFunctions
             _scopeFactory = scopeFactory;
         }
 
-        [KernelFunction("save_blog_post")]
-        [Description("Adds or save a particular blog post at the behest of the user.")]
+        [KernelFunction("create_blog_post")]
+        [Description("Creates or adds a particular blog post at the behest of the user.")]
         public async Task<string> SaveBlogPostAsync(string title)
         {
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
 
+            var existingBlog = await repo.GetBlogAsync(title);
+            if (existingBlog != null)
+            {
+                return $"Blog post with title {existingBlog.Title} already exists";
+            }
+
             var blog = new Blog
             {
-                Title = title,
+                Title = title.ToUpper(),
             };
 
             var success = await repo.AddBlogAsync(blog);
@@ -43,7 +49,7 @@ namespace BloggerAgent.Infrastructure.ToolFunctions
 
         [KernelFunction("update_blog_post")]
         [Description("Updates blog post as it progresses.")]
-        public async Task<string> UpdateBlogPostAsync([Description("One or more fields to be updated")]Dictionary<string,object> fieldsToUpdate, [Description("Blog topic to filter with")]string topic)
+        public async Task<string> UpdateBlogPostAsync([Description("One or more blog post fields to be updated (eg: Keywords:array, Outline:string, BlogContent:string,ReferenceLinks:array")]Dictionary<string, object> fieldsToUpdate, [Description("Blog title to filter with")]string topic)
         {
             using var scope = _scopeFactory.CreateScope();
             var repo = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
@@ -54,23 +60,5 @@ namespace BloggerAgent.Infrastructure.ToolFunctions
                 : $"⚠️ Failed to update blog with topic '{topic}'.";
         }
 
-        //[KernelFunction("list_blog_posts")]
-        //[Description("Returns a list of all blog posts of an organization.")]
-        //public async Task<List<Blog>> ListBlogPostsAsync()
-        //{
-        //    using var scope = _scopeFactory.CreateScope();
-        //    var repo = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
-
-        //    var blogs = await repo.FilterByFieldAsync(nameof(BaseEntity.TagName), CollectionType.Blog);
-        //    return blogs.Select(b => b).ToList();
-        //}
-
-        //[KernelFunction("summarize_blog_activity")]
-        //[Description("Provides a summary of recent blog-related activity for a given organization (placeholder).")]
-        //public async Task<string> GetBlogSummaryAsync(string organizationId)
-        //{
-        //    // Future: pull real metrics, counts, engagement stats
-        //    return $"📊 Blog activity summary for org ID {organizationId}: [placeholder for posts, edits, keywords, etc.]";
-        //}
     }
 }

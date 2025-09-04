@@ -29,8 +29,8 @@ namespace BloggerAgent.Domain.Commons
 
         // Optional: Telex Channel ID (for routing or broadcasting)
         public string ChannelId { get; set; } = string.Empty;
-        public Blog BlogTask { get; set; }
-        public Company Organization { get; set; }
+        public Blog? BlogTask { get; set; }
+        public Company? Organization { get; set; }
         public List<TelexChatMessage> ChatMessages { get; set; } = new();
     }
 

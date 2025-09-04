@@ -22,7 +22,7 @@ namespace BloggerAgent.Domain.DomainHelper
             set => _current.Value = value;
         }
 
-        public TaskContext GetTaskContext()
+        public TaskContext? GetTaskContext()
         {
             return _current.Value;
         }
@@ -60,7 +60,6 @@ namespace BloggerAgent.Domain.DomainHelper
         {
             _cache.Remove(taskId);
         }
-
 
     }
 }

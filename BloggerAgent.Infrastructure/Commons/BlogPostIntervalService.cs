@@ -3,6 +3,7 @@ using System.Timers;
 using Microsoft.Extensions.Logging;
 using BloggerAgent.Application.Helpers;
 using BloggerAgent.Domain.Commons;
+using Timer = System.Timers.Timer;
 
 namespace BloggerAgent.Infrastructure.Commons
 {
@@ -10,13 +11,14 @@ namespace BloggerAgent.Infrastructure.Commons
     {
         private readonly IBlogAgentService blogAgentService;
         private readonly ILogger<BlogPostIntervalService> _logger;
-        private System.Timers.Timer _timer;
+        private Timer? _timer;
 
 
-        public BlogPostIntervalService(IBlogAgentService blogAgentService, ILogger<BlogPostIntervalService> logger)
+        public BlogPostIntervalService(IBlogAgentService blogAgentService, ILogger<BlogPostIntervalService> logger, Timer timer)
         {
             this.blogAgentService = blogAgentService;
             _logger = logger;
+            _timer = timer;
         }
 
         public void ScheduleBlogPostGeneration(string option, TaskContext blogPrompt)
@@ -24,13 +26,16 @@ namespace BloggerAgent.Infrastructure.Commons
             double interval = ConvertOptionToInterval(option);
 
             // Stop existing timer if running
-            _timer?.Stop();
-            _timer?.Dispose();
-            _timer = null;
+            if (_timer != null && _timer.Enabled)
+            {
+                _timer?.Stop();
+                _timer?.Dispose();
+                _timer = null;
+            }
 
             if (interval > 0)
             {
-                _timer = new System.Timers.Timer(interval);
+                _timer = new Timer(interval);
                 _timer.Elapsed += (sender, e) => GenerateBlogPost(blogPrompt);
                 _timer.AutoReset = true;
                 _timer.Start();

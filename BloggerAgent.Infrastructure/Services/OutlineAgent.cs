@@ -34,121 +34,19 @@ namespace BloggerAgent.Infrastructure.Services
             _taskContextAccessor = taskContextAccessor;
         }
 
+               
         public async Task<string> GetOutlineAsync(string topic)
         {
             var taskContext = _taskContextAccessor.GetTaskContext();
-            var url = "https://api.groq.com/openai/v1/chat/completions";
-
-            var request = new GroqChatRequest
+            if (taskContext == null)
             {
-                Messages = new List<GroqChatRequest.Message>
-                {
-                    new() { Role = "system", Content = PromptTemplate.GetOutlinePrompt(topic, JsonSerializer.Serialize(taskContext.Organization)) }
-                }
-            };
-
-            // ✅ Add chat history from task context
-            var chatHistory = taskContext.ChatMessages;
-
-            chatHistory.Add(new TelexChatMessage()
-            {
-                Role = "user",
-                Content = taskContext.Message
-            });
-
-            var historyMessages = chatHistory
-                .Select(m => new GroqChatRequest.Message
-                {
-                    Role = m.Role,  // Ensure these are "user" or "assistant"
-                    Content = m.Content
-                });
-
-            request.Messages.AddRange(historyMessages); // ✅ Add the actual history
-
-            var json = JsonSerializer.Serialize(request, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            ApiRequest apiRequest = new ApiRequest
-            {
-                Url = url,
-                Body = request,
-                Method = HttpMethod.Post,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Authorization", $"Bearer {_apiKey}" }
-                }
-            };
-
-            var response = await _httpClient.SendRequestAsync(apiRequest);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"Groq API failed: {response.StatusCode}");
+                return "Task context is not available.";
             }
 
-            var responseJson = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<GroqChatResponse>(responseJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-
-            return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
-        }
-        
-        public async Task<string> GetResearchAsync(string topic)
-        {
-            var taskContext = _taskContextAccessor.GetTaskContext();
-            var url = "https://api.groq.com/openai/v1/chat/completions";
-
-            var request = new GroqChatRequest
-            {
-                Messages = new List<GroqChatRequest.Message>
-                {
-                    new() { Role = "system", Content = PromptTemplate.GetOutlinePrompt(topic, JsonSerializer.Serialize(taskContext.Organization)) }
-                }
-            };
-
-            // ✅ Add chat history from task context
-            var chatHistory = taskContext.ChatMessages;
-
-            chatHistory.Add(new TelexChatMessage()
-            {
-                Role = "user",
-                Content = taskContext.Message
-            });
-
-            var historyMessages = chatHistory
-                .Select(m => new GroqChatRequest.Message
-                {
-                    Role = m.Role,  // Ensure these are "user" or "assistant"
-                    Content = m.Content
-                });
-
-            request.Messages.AddRange(historyMessages); // ✅ Add the actual history
-
-            var json = JsonSerializer.Serialize(request, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            ApiRequest apiRequest = new ApiRequest
-            {
-                Url = url,
-                Body = request,
-                Method = HttpMethod.Post,
-                Headers = new Dictionary<string, string>
-                {
-                    { "Authorization", $"Bearer {_apiKey}" }
-                }
-            };
-
-            var response = await _httpClient.SendRequestAsync(apiRequest);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"Groq API failed: {response.StatusCode}");
-            }
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<GroqChatResponse>(responseJson, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-
-            return result?.Choices?.FirstOrDefault()?.Message?.Content ?? "Couldn't generate any response";
-        }
+            string systemMessage = PromptTemplate.GetOutlinePrompt(topic, JsonSerializer.Serialize(taskContext.Organization));
+            return await _aiService.GenerateReponse(systemMessage, taskContext);
+            
+        }            
 
     }
 }

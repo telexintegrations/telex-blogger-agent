@@ -7,11 +7,11 @@ using BloggerAgent.Domain.DomainHelper;
 
 namespace BloggerAgent.Infrastructure.Repositories
 {
-    public class TelexRepository<T> : ITelexRepository<T> where T : IEntity
+    public class TelexRepositoryBase<T> : ITelexRepository<T> where T : IEntity
     {
         private readonly DbContext _context;
-        private readonly TaskContextAccessor _contextAccessor;
-        public TelexRepository(DbContext context)
+
+        public TelexRepositoryBase(DbContext context)
         {
             _context = context;
         }
@@ -38,7 +38,6 @@ namespace BloggerAgent.Infrastructure.Repositories
                 return new List<T>();
 
             return result.Data;
-
         }
 
         public async Task<List<T?>> FilterAsync(Dictionary<string, object> filter)

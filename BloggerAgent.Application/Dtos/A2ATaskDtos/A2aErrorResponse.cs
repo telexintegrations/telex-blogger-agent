@@ -16,6 +16,6 @@ namespace BloggerAgent.Application.Dtos.A2ATaskDtos
         public string Message { get; set; }
 
         [JsonPropertyName("data")]
-        public object Data { get; set; }
+        public object? Data { get; set; }
     }
 }

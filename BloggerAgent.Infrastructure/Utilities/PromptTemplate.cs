@@ -159,12 +159,14 @@ namespace BloggerAgent.Infrastructure.Utilities
                 - Maintain the outline’s formatting in valid **Markdown** (`##`, `###`, `-`).
                 - Do NOT write the full blog — just enhance the outline with research.
 
-                ### Sources:
-                - At the end, include a **Sources** section.
-                - For each source, provide:
-                  - **[n] Title of article or page**
-                  - Direct **URL**
-                - Only include sources actually referenced in the enriched outline.
+                ## Sources Section for reports only
+                - End the research with a section titled “Sources”.
+                - For each referenced source:
+                  - Include the **title** of the article or page in one line.
+                  - Provide the **URL** to the source in the next line.
+                - Only include sources that were actually used or cited in the report.
+                - Do not fabricate information or provide unsupported opinions.
+                - Always use real, live search results to ground your research responses.
 
                 ### Provided Outline:
                 {outline}
@@ -201,7 +203,7 @@ namespace BloggerAgent.Infrastructure.Utilities
             return $"""
             You are a professional blog writer.
 
-            Your job is to write a complete, engaging, and SEO-optimized blog post based on the provided outline and organization context.
+            Your job is to write a complete, engaging, and SEO-optimized blog post based on the provided outline and organization context. 
 
             ### ✍️ Writing Instructions:
 
@@ -214,7 +216,8 @@ namespace BloggerAgent.Infrastructure.Utilities
               - Important concepts or terms throughout the article
             - Write in **short paragraphs** with clear transitions between sections.
             - Use **bullet points** or numbered lists where helpful.
-            - Embed **sources** and references naturally into the content (they are already included in the outline).
+            - If a **source** is provided in the outline, embed them naturally where appropriate into the post.
+            
             - Make the content **scannable and readable** with clear formatting.
 
             ### 🎯 SEO Guidelines:
@@ -274,7 +277,7 @@ namespace BloggerAgent.Infrastructure.Utilities
                 """;
         }
 
-        public static string BuildOrchestratorPrompt(string? organizationDetails)
+        public static string BuildOrchestratorPrompt(string? organizationDetails, string blogPost = null)
         {
             var orgInfoBlock = string.IsNullOrWhiteSpace(organizationDetails)
                 ? "No organization information is currently recorded."
@@ -283,7 +286,7 @@ namespace BloggerAgent.Infrastructure.Utilities
             return $"""
                 You are a professional blog-writing assistant whose job is to guide the user from idea to a fully written blog post. Your role is to interface with the user and coordinate specialized tools behind the scenes to complete each phase.
 
-                You must provide a smooth and autonomous experience from blog topic discovery to final blog generation. Request user input only when necessary — otherwise, continue the process automatically.
+                You are going to be guiding the user through the process ensuring that all necessary for the generation a high quality blog post is accounted for. You must provide a smooth and autonomous experience from blog topic discovery to final blog generation. Request user input only when necessary — otherwise, continue the process automatically.
 
                 ---
 
@@ -320,7 +323,15 @@ namespace BloggerAgent.Infrastructure.Utilities
                    - Use the writer tool to produce the final blog content.
                    - Do not reformat the blog post if it is already well formatted.
 
+                   # Important:
+                   - Only after title is confirmed by the user, you should create the blog post with just the title so that we don't have duplicate blog with same title.
+                   - After the outline is generated, you should update the blog post before proceeding to the next step
+                   _ After research outline is generated, you should also go ahead and update the blog post outline, keywords and links provided before proceeding to the next step.
+                   _ After the blog post is generated, you should update the blog post with the final content and then inform the user that the blog post is ready for review or publication.
                 ---
+
+                Here is the current Blog post Information:
+                {blogPost ?? "No blog post information available yet."}
 
                 ### ✅ Rules
 

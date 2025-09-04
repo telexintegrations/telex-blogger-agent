@@ -28,11 +28,11 @@ namespace BloggerAgent.Infrastructure.Commons
             public async Task<Blog?> ResolveAsync(string contextId, string userId)
             {
                 var tasks = await _taskRepo.FilterAsync(new Dictionary<string, object>
-            {
-                { "contextId", contextId },
-                { "userId", userId },
-                { "status", Status.Active.ToString() }
-            });
+                {
+                    { "contextId", contextId },
+                    { "userId", userId },
+                    { "status", Status.Active.ToString() }
+                });
 
                 return tasks?.OrderByDescending(t => t.UpdatedAt).FirstOrDefault();
             }
@@ -45,7 +45,7 @@ namespace BloggerAgent.Infrastructure.Commons
                     ContextId = contextId,
                     UserId = userId,
                     Title = title ?? "Untitled Blog",
-                    Status = Status.Active,
+                    Status = Status.Active.ToString(),
                     CurrentPhase = TaskPhase.Initialized,
                     UpdatedAt = DateTime.UtcNow,
                     History = new List<TaskPhase> { TaskPhase.Initialized }
@@ -72,7 +72,7 @@ namespace BloggerAgent.Infrastructure.Commons
             public async Task MarkCompletedAsync(Blog task)
             {
                 task.CurrentPhase = TaskPhase.Completed;
-                task.Status = Status.Completed;
+                task.Status = Status.Completed.ToString();
                 task.UpdatedAt = DateTime.UtcNow;
                 await _taskRepo.UpdateAsync(task.Id, task);
             }

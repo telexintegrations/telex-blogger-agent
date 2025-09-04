@@ -13,7 +13,7 @@ using BloggerAgent.Domain.Commons.DataEntities;
 
 namespace BloggerAgent.Infrastructure.Repositories
 {
-    public class ConversationRepository : TelexRepository<Message>, IConversationRepository
+    public class ConversationRepository : TelexRepositoryBase<Message>, IConversationRepository
     {
         private readonly DbContext _context;
         private readonly ITelexRepository<Message> _repository;

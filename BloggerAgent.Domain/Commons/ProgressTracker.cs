@@ -25,7 +25,7 @@ namespace BloggerAgent.Domain.Commons
         {
             Blog blogTask = new Blog();
             blogTask.Id = Guid.NewGuid().ToString();
-            blogTask.Status = Status.Active;
+            blogTask.Status = Status.Active.ToString();
 
             blogTask.CurrentPhase = TaskPhase.Initialized;
         }
